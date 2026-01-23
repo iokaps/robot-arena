@@ -1,14 +1,27 @@
 import { kmClient } from '@/services/km-client';
+import type { MoveCommand } from '@/types/arena';
 
 export interface LocalPlayerState {
 	/** Player's display name (also registered in playersStore) */
 	name: string;
-	currentView: 'lobby' | 'game-state';
+	/** Current view for player navigation */
+	currentView:
+		| 'lobby'
+		| 'programming'
+		| 'spectating'
+		| 'eliminated'
+		| 'results';
+	/** Draft program being edited (before submission) */
+	draftProgram: MoveCommand[];
+	/** Whether the player has submitted their program this round */
+	hasSubmitted: boolean;
 }
 
 const initialState: LocalPlayerState = {
 	name: '',
-	currentView: 'lobby'
+	currentView: 'lobby',
+	draftProgram: [],
+	hasSubmitted: false
 };
 
 /**

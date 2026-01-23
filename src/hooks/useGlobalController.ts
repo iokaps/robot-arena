@@ -1,8 +1,11 @@
 import { kmClient } from '@/services/km-client';
-import { gameConfigStore } from '@/state/stores/game-config-store';
+import { arenaStore } from '@/state/stores/arena-store';
 import { gameSessionStore } from '@/state/stores/game-session-store';
+import { matchStore } from '@/state/stores/match-store';
+import { robotProgramsStore } from '@/state/stores/robot-programs-store';
+import type { Position, Rotation } from '@/types/arena';
 import { useSnapshot } from '@kokimoki/app';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useServerTimer } from './useServerTime';
 import { useStoreConnections } from './useStoreConnections';
 
@@ -43,10 +46,16 @@ import { useStoreConnections } from './useStoreConnections';
  */
 export function useGlobalController(): boolean {
 	const { controllerConnectionId } = useSnapshot(gameSessionStore.proxy);
+	const { phase, phaseStartTimestamp, programmingDuration, currentTick } =
+		useSnapshot(matchStore.proxy);
 	const { connectionIds } = useStoreConnections(gameSessionStore);
 
 	const isGlobalController = controllerConnectionId === kmClient.connectionId;
-	const serverTime = useServerTimer(1000); // tick every second
+	const serverTime = useServerTimer(500); // tick every 500ms for smoother execution
+
+	// Track if we're currently executing to prevent duplicate ticks
+	const isExecutingRef = useRef(false);
+	const lastTickRef = useRef(-1);
 
 	// Maintain connection that is assigned to be the global controller
 	useEffect(() => {
@@ -72,30 +81,372 @@ export function useGlobalController(): boolean {
 			return;
 		}
 
-		// IMPORTANT: Global controller-specific logic goes here
-		// For example, a time-based event that modifies the global state
-		// All global controller logic does not need to be time-based
-		const handleGameEnd = async () => {
-			await kmClient.transact(
-				[gameConfigStore, gameSessionStore],
-				([gameConfigState, gameSessionState]) => {
-					if (!gameSessionState.started) {
-						return;
-					}
+		// Handle programming phase timeout
+		const handleProgrammingPhase = async () => {
+			if (phase !== 'programming') return;
 
-					const gameDurationMs = gameConfigState.gameDuration * 60 * 1000;
+			const elapsedMs = serverTime - phaseStartTimestamp;
+			const totalMs = programmingDuration * 1000;
 
-					// End the game if duration has elapsed
-					if (serverTime - gameSessionState.startTimestamp > gameDurationMs) {
-						gameSessionState.started = false;
-						gameSessionState.startTimestamp = 0;
+			// Check if programming time is up
+			if (elapsedMs >= totalMs) {
+				// Transition to execution phase
+				await kmClient.transact(
+					[matchStore, robotProgramsStore, arenaStore],
+					([matchState, programsState, arenaState]) => {
+						if (matchState.phase !== 'programming') return;
+
+						// Auto-submit 'wait' for players who didn't submit
+						const activeRobots = Object.keys(arenaState.robots);
+						for (const clientId of activeRobots) {
+							if (!programsState.programs[clientId]) {
+								programsState.programs[clientId] = [
+									'wait',
+									'wait',
+									'wait',
+									'wait',
+									'wait'
+								];
+								matchState.submittedPlayers[clientId] = true;
+							}
+						}
+
+						matchState.phase = 'executing';
+						matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+						matchState.currentTick = 0;
 					}
-				}
-			);
+				);
+				lastTickRef.current = -1;
+			}
 		};
 
-		handleGameEnd();
-	}, [isGlobalController, serverTime]);
+		handleProgrammingPhase();
+	}, [
+		isGlobalController,
+		serverTime,
+		phase,
+		phaseStartTimestamp,
+		programmingDuration
+	]);
+
+	// Handle execution phase - tick by tick
+	useEffect(() => {
+		if (!isGlobalController || phase !== 'executing') {
+			isExecutingRef.current = false;
+			return;
+		}
+
+		// Prevent duplicate execution
+		if (isExecutingRef.current) return;
+
+		const executeTickLogic = async () => {
+			// Calculate which tick we should be on based on time elapsed
+			const elapsedMs = serverTime - phaseStartTimestamp;
+			const tickDuration = 1200; // 1.2 seconds per tick for animations
+			const expectedTick = Math.floor(elapsedMs / tickDuration);
+
+			// Don't re-execute the same tick
+			if (expectedTick <= lastTickRef.current || expectedTick > 4) {
+				// Check if execution is complete
+				if (expectedTick > 4 && lastTickRef.current >= 4) {
+					// Execution complete, check for winner or start next round
+					await handleExecutionComplete();
+				}
+				return;
+			}
+
+			isExecutingRef.current = true;
+			lastTickRef.current = expectedTick;
+
+			try {
+				// Execute the current tick
+				await executeTick(expectedTick);
+
+				// Update the tick counter in the store
+				await kmClient.transact([matchStore], ([matchState]) => {
+					matchState.currentTick = expectedTick;
+				});
+			} finally {
+				isExecutingRef.current = false;
+			}
+		};
+
+		executeTickLogic();
+	}, [isGlobalController, serverTime, phase, phaseStartTimestamp, currentTick]);
+
+	// Execute a single tick of robot commands
+	const executeTick = async (tick: number) => {
+		await kmClient.transact(
+			[arenaStore, robotProgramsStore, matchStore],
+			([arenaState, programsState, matchState]) => {
+				const robotIds = Object.keys(arenaState.robots);
+
+				// 1. Process rotations first
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					const program = programsState.programs[clientId];
+					if (!robot || !program || robot.lives <= 0) continue;
+
+					const command = program[tick];
+					if (command === 'rotate-left') {
+						robot.rotation = ((robot.rotation - 90 + 360) % 360) as Rotation;
+					} else if (command === 'rotate-right') {
+						robot.rotation = ((robot.rotation + 90) % 360) as Rotation;
+					}
+				}
+
+				// 2. Calculate intended movements
+				const intendedMoves: Record<string, Position> = {};
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					const program = programsState.programs[clientId];
+					if (!robot || !program || robot.lives <= 0) continue;
+
+					const command = program[tick];
+					if (command === 'move-forward') {
+						const newPos = getForwardPosition(robot.position, robot.rotation);
+
+						// Check bounds
+						if (
+							newPos.x >= 0 &&
+							newPos.x < arenaState.gridSize.width &&
+							newPos.y >= 0 &&
+							newPos.y < arenaState.gridSize.height
+						) {
+							// Check obstacles
+							const obstacleKey = `${newPos.x},${newPos.y}`;
+							if (!arenaState.obstacles[obstacleKey]) {
+								intendedMoves[clientId] = newPos;
+							}
+						}
+					}
+				}
+
+				// 3. Resolve movement collisions
+				const finalPositions: Record<string, Position> = {};
+				const destinationCounts: Record<string, string[]> = {};
+
+				// Count how many robots want to move to each cell
+				for (const [clientId, pos] of Object.entries(intendedMoves)) {
+					const key = `${pos.x},${pos.y}`;
+					if (!destinationCounts[key]) {
+						destinationCounts[key] = [];
+					}
+					destinationCounts[key].push(clientId);
+				}
+
+				// Also check if destination is occupied by a non-moving robot
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					if (!robot) continue;
+					if (!intendedMoves[clientId]) {
+						// This robot is staying put
+						const key = `${robot.position.x},${robot.position.y}`;
+						if (!destinationCounts[key]) {
+							destinationCounts[key] = [];
+						}
+						// Mark this cell as occupied
+					}
+				}
+
+				// Resolve collisions
+				for (const [clientId, pos] of Object.entries(intendedMoves)) {
+					const key = `${pos.x},${pos.y}`;
+
+					// Check if multiple robots want this cell
+					if (destinationCounts[key].length > 1) {
+						// Collision - nobody moves to this cell
+						continue;
+					}
+
+					// Check if a stationary robot is there
+					const occupyingRobot = robotIds.find((id) => {
+						const r = arenaState.robots[id];
+						return (
+							r &&
+							!intendedMoves[id] &&
+							r.position.x === pos.x &&
+							r.position.y === pos.y
+						);
+					});
+
+					if (occupyingRobot) {
+						// Can't move into occupied cell
+						continue;
+					}
+
+					// Check for head-on collision (swap)
+					const swappingRobot = robotIds.find((otherId) => {
+						if (otherId === clientId) return false;
+						const otherMove = intendedMoves[otherId];
+						const myRobot = arenaState.robots[clientId];
+						if (!otherMove || !myRobot) return false;
+
+						return (
+							otherMove.x === myRobot.position.x &&
+							otherMove.y === myRobot.position.y
+						);
+					});
+
+					if (swappingRobot) {
+						// Head-on collision - both stay
+						continue;
+					}
+
+					finalPositions[clientId] = pos;
+				}
+
+				// Apply movements
+				for (const [clientId, pos] of Object.entries(finalPositions)) {
+					if (arenaState.robots[clientId]) {
+						arenaState.robots[clientId].position = pos;
+					}
+				}
+
+				// 4. Process shooting
+				const hits: Array<{ targetId: string; damage: number }> = [];
+
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					const program = programsState.programs[clientId];
+					if (!robot || !program || robot.lives <= 0) continue;
+
+					const command = program[tick];
+					if (command === 'shoot') {
+						// Find first robot in line of fire (only alive robots)
+						const target = findShootTarget(
+							robot.position,
+							robot.rotation,
+							arenaState.gridSize,
+							arenaState.obstacles,
+							arenaState.robots,
+							clientId
+						);
+
+						if (target) {
+							hits.push({ targetId: target, damage: 1 });
+						}
+					}
+				}
+
+				// Apply damage
+				for (const hit of hits) {
+					const robot = arenaState.robots[hit.targetId];
+					if (robot && robot.lives > 0) {
+						robot.lives -= hit.damage;
+						if (robot.lives <= 0) {
+							robot.lives = 0;
+							matchState.eliminatedPlayers[hit.targetId] = true;
+						}
+					}
+				}
+			}
+		);
+	};
+
+	// Handle completion of execution phase
+	const handleExecutionComplete = async () => {
+		await kmClient.transact(
+			[matchStore, arenaStore, robotProgramsStore],
+			([matchState, arenaState, programsState]) => {
+				// Only count robots with lives > 0
+				const aliveRobots = Object.entries(arenaState.robots)
+					.filter(([, robot]) => robot.lives > 0)
+					.map(([id]) => id);
+
+				// Check win conditions
+				if (aliveRobots.length === 0) {
+					// Draw - all eliminated
+					matchState.phase = 'results';
+					matchState.winnerId = '';
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+				} else if (aliveRobots.length === 1) {
+					// Winner!
+					matchState.phase = 'results';
+					matchState.winnerId = aliveRobots[0];
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+				} else if (matchState.currentRound >= matchState.maxRounds) {
+					// Max rounds reached - most lives wins
+					let maxLives = 0;
+					let winnerId = '';
+					for (const [clientId, robot] of Object.entries(arenaState.robots)) {
+						if (robot.lives > maxLives) {
+							maxLives = robot.lives;
+							winnerId = clientId;
+						}
+					}
+					matchState.phase = 'results';
+					matchState.winnerId = winnerId;
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+				} else {
+					// Start next round
+					matchState.phase = 'programming';
+					matchState.currentRound += 1;
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					matchState.submittedPlayers = {};
+					matchState.currentTick = -1;
+					programsState.programs = {};
+				}
+			}
+		);
+		lastTickRef.current = -1;
+	};
 
 	return isGlobalController;
+}
+
+/** Get the position one cell forward based on rotation */
+function getForwardPosition(pos: Position, rotation: Rotation): Position {
+	switch (rotation) {
+		case 0: // Up
+			return { x: pos.x, y: pos.y - 1 };
+		case 90: // Right
+			return { x: pos.x + 1, y: pos.y };
+		case 180: // Down
+			return { x: pos.x, y: pos.y + 1 };
+		case 270: // Left
+			return { x: pos.x - 1, y: pos.y };
+		default:
+			return pos;
+	}
+}
+
+/** Find the first robot hit by a shot (hit-scan) - only targets alive robots */
+function findShootTarget(
+	from: Position,
+	rotation: Rotation,
+	gridSize: { width: number; height: number },
+	obstacles: Record<string, Position>,
+	robots: Record<string, { position: Position; lives: number }>,
+	shooterId: string
+): string | null {
+	const dx = rotation === 90 ? 1 : rotation === 270 ? -1 : 0;
+	const dy = rotation === 180 ? 1 : rotation === 0 ? -1 : 0;
+
+	let x = from.x + dx;
+	let y = from.y + dy;
+
+	while (x >= 0 && x < gridSize.width && y >= 0 && y < gridSize.height) {
+		// Check obstacle
+		if (obstacles[`${x},${y}`]) {
+			return null;
+		}
+
+		// Check robot (only alive ones)
+		for (const [clientId, robot] of Object.entries(robots)) {
+			if (
+				clientId !== shooterId &&
+				robot.lives > 0 &&
+				robot.position.x === x &&
+				robot.position.y === y
+			) {
+				return clientId;
+			}
+		}
+
+		x += dx;
+		y += dy;
+	}
+
+	return null;
 }

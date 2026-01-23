@@ -6,12 +6,16 @@ import { config } from '@/config';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGlobalController } from '@/hooks/useGlobalController';
 import { PlayerLayout } from '@/layouts/player';
+import { kmClient } from '@/services/km-client';
 import { localPlayerActions } from '@/state/actions/local-player-actions';
-import { gameSessionStore } from '@/state/stores/game-session-store';
 import { localPlayerStore } from '@/state/stores/local-player-store';
+import { matchStore } from '@/state/stores/match-store';
 import { CreateProfileView } from '@/views/create-profile-view';
+import { EliminatedView } from '@/views/eliminated-view';
 import { GameLobbyView } from '@/views/game-lobby-view';
-import { GameStateView } from '@/views/game-state-view';
+import { ProgrammingView } from '@/views/programming-view';
+import { ResultsView } from '@/views/results-view';
+import { SpectatingView } from '@/views/spectating-view';
 import { useSnapshot } from '@kokimoki/app';
 import * as React from 'react';
 
@@ -20,16 +24,39 @@ const App: React.FC = () => {
 	useGlobalController();
 
 	const { name, currentView } = useSnapshot(localPlayerStore.proxy);
-	const { started } = useSnapshot(gameSessionStore.proxy);
+	const { phase, eliminatedPlayers } = useSnapshot(matchStore.proxy);
 
+	const isEliminated = eliminatedPlayers[kmClient.id] === true;
+
+	// React to phase changes and update local view
 	React.useEffect(() => {
-		// While game start, force view to 'shared-state', otherwise to 'lobby'
-		if (started) {
-			localPlayerActions.setCurrentView('game-state');
-		} else {
+		if (phase === 'lobby') {
 			localPlayerActions.setCurrentView('lobby');
+			localPlayerActions.resetForNewRound();
+		} else if (phase === 'programming') {
+			if (isEliminated) {
+				localPlayerActions.setCurrentView('eliminated');
+			} else {
+				localPlayerActions.setCurrentView('programming');
+				localPlayerActions.resetForNewRound();
+			}
+		} else if (phase === 'executing') {
+			if (isEliminated) {
+				localPlayerActions.setCurrentView('eliminated');
+			} else {
+				localPlayerActions.setCurrentView('spectating');
+			}
+		} else if (phase === 'results') {
+			localPlayerActions.setCurrentView('results');
 		}
-	}, [started]);
+	}, [phase, isEliminated]);
+
+	// Check for elimination during execution
+	React.useEffect(() => {
+		if (phase === 'executing' && isEliminated && currentView !== 'eliminated') {
+			localPlayerActions.setCurrentView('eliminated');
+		}
+	}, [phase, isEliminated, currentView]);
 
 	if (!name) {
 		return (
@@ -42,31 +69,18 @@ const App: React.FC = () => {
 		);
 	}
 
-	if (!started) {
-		return (
-			<PlayerLayout.Root>
-				<PlayerLayout.Header>
-					<PlayerMenu />
-				</PlayerLayout.Header>
-
-				<PlayerLayout.Main>
-					<GameLobbyView />
-				</PlayerLayout.Main>
-
-				<PlayerLayout.Footer>
-					<NameLabel name={name} />
-				</PlayerLayout.Footer>
-			</PlayerLayout.Root>
-		);
-	}
-
 	return (
 		<PlayerLayout.Root>
-			<PlayerLayout.Header />
+			<PlayerLayout.Header>
+				<PlayerMenu />
+			</PlayerLayout.Header>
 
 			<PlayerLayout.Main>
-				{currentView === 'game-state' && <GameStateView />}
-				{/* Add new views here */}
+				{currentView === 'lobby' && <GameLobbyView />}
+				{currentView === 'programming' && <ProgrammingView />}
+				{currentView === 'spectating' && <SpectatingView />}
+				{currentView === 'eliminated' && <EliminatedView />}
+				{currentView === 'results' && <ResultsView />}
 			</PlayerLayout.Main>
 
 			<PlayerLayout.Footer>

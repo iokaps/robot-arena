@@ -1,92 +1,140 @@
 # yaml-language-server: $schema=./.kokimoki/schema.json
 
-# Translations
-title: 'Host Starter'
+# Code-A-Bot Arena Configuration
 
+# Game title
+title: 'Code-A-Bot Arena'
+
+# Lobby
 gameLobbyMd: |
-  # Game Lobby
+  # Welcome to Code-A-Bot Arena!
 
-  This is a sample markdown to demonstrate various markdown features.
+  **Program your robot. Battle your friends. Only one bot survives.**
 
-  ## Starting soon
+  ## How It Works
 
-  Game is starting soon. **Get ready!**
+  1. 🤖 Each player controls a robot on a 10x10 grid
+  2. ⏱️ You have 30 seconds to program 5 moves
+  3. ⚡ All robots execute their programs simultaneously
+  4. 💥 Last bot standing wins!
 
-  ## Rules
+  ## Commands
 
-  1. Wait for the host to start the game.
-  2. Follow the instructions on the presenter screen.
-  3. Open [Games for Crowds](https://gamesforcrowds.com) for more info.
-
-  ## What people say
-
-  > **This game is awesome!** - Player 1
-
-  > **I had a good time playing this.** - Player 2
-
-  > **Always looking forward to the next round!**  - Player 3
+  - **Move Forward** - Move one cell in facing direction
+  - **Rotate Left/Right** - Turn 90 degrees
+  - **Shoot** - Fire a laser (instant hit-scan)
+  - **Wait** - Stay put this turn
 
   ---
 
-  ## Sample Code
+  *Waiting for the host to start the match...*
 
-  ```typescript
-  // Code block
-  console.log('Hello, world!');
-  ```
+presenterLobbyMessage: 'Waiting for players to join...'
+playersJoinedLabel: 'players joined'
+scanToJoinMessage: 'Scan the QR code to join the battle'
+minPlayersMessage: 'Need at least 2 players'
 
-connectionsMd: |
-  Scan the QR to join the game.
-
-sharedStateMd: |
-  # Shared State Host
-  This is an example of shared state view. Host can start the game, open the presenter screen and allow players to join by scanning the QR.
-
-  ## Host Actions
-  Here's a demo of dashboard actions that can be used to control the state on presenter and player screens.
-
-sharedStatePlayerMd: |
-  # Shared State Player
-  You are connected as a player. Host has started the game. In this shared state example the playtime is synchronized between all players.
-
-players: 'Players Connected'
-online: 'Online'
-offline: 'Offline'
-startButton: 'Start Game'
-stopButton: 'Stop Game'
-
-loading: 'Loading...'
-
-menuHelpMd: |
-  # Help
-
-  This is the help section. Here you can find information about how to play the game and get assistance if needed.
-
-  ## How to Play
-
-  1. Join the game using the provided link or QR code.
-  2. Follow the instructions on your screen.
-  3. Interact with other players as required by the game.
-
-  ## Getting Assistance
-
-  If you encounter any issues, please contact the host or refer to the FAQ section on our website.
-
+# Player profile
 createProfileMd: |
-  # Welcome!
+  # Enter the Arena
 
-  Please enter your name to join the game.
+  Choose your pilot name to begin.
 
-playerNamePlaceholder: 'Your name...'
+playerNamePlaceholder: 'Pilot name...'
 playerNameLabel: 'Name:'
-playerNameButton: 'Continue'
+playerNameButton: 'Join Arena'
 
+# Navigation
 playerLinkLabel: 'Player Link'
 presenterLinkLabel: 'Presenter Link'
+togglePresenterQrButton: 'Toggle QR Code'
+menuAriaLabel: 'Open menu'
+menuHelpAriaLabel: 'Help'
 
-togglePresenterQrButton: 'Toggle Presenter QR'
+# Help
+menuHelpMd: |
+  # How to Play Code-A-Bot Arena
 
-menuAriaLabel: 'Open menu drawer'
-menuHelpAriaLabel: 'Open help drawer'
+  ## Goal
+  Be the last robot standing! Eliminate all other robots by shooting them.
 
-gameDurationLabel: 'Game duration (mins)'
+  ## Game Flow
+  1. **Programming Phase** (30 seconds)
+     - Drag or tap commands to program your next 5 moves
+     - Plan carefully - you can't change once submitted!
+
+  2. **Execution Phase**
+     - All robots execute their programs simultaneously
+     - Watch the chaos unfold on the presenter screen
+
+  3. **Repeat** until one robot remains
+
+  ## Commands
+
+  | Command | Effect |
+  |---------|--------|
+  | ↑ Move | Move forward one cell |
+  | ↺ Rotate Left | Turn 90° counter-clockwise |
+  | ↻ Rotate Right | Turn 90° clockwise |
+  | ⊕ Shoot | Fire a laser in facing direction |
+  | ◷ Wait | Do nothing this turn |
+
+  ## Rules
+  - Each robot has **3 lives**
+  - Getting hit by a laser removes 1 life
+  - Robots that collide both stop moving
+  - Lasers are blocked by obstacles and other robots
+
+  ## Tips
+  - Predict where opponents will move
+  - Use obstacles for cover
+  - Sometimes waiting is the best strategy!
+
+# Host controls
+phaseLabel: 'Phase'
+phaseLobby: 'Lobby'
+phaseProgramming: 'Programming'
+phaseExecuting: 'Executing'
+phaseResults: 'Results'
+mapSelectLabel: 'Arena Map'
+robotStatusLabel: 'Robots'
+startMatchButton: 'Start Match'
+resetMatchButton: 'Reset Match'
+startButton: 'Start Match'
+stopButton: 'End Match'
+
+# Programming phase
+programmingPhaseTitle: 'Program Your Bot'
+livesLabel: 'Lives'
+commandMoveForward: 'Move'
+commandRotateLeft: 'Left'
+commandRotateRight: 'Right'
+commandShoot: 'Shoot'
+commandWait: 'Wait'
+clearButton: 'Clear'
+submitButton: 'Submit'
+submittedMessage: 'Program Locked In!'
+submittedLabel: 'submitted'
+
+# Execution phase
+tickLabel: 'Tick'
+roundLabel: 'Round'
+yourProgramLabel: 'Your Program'
+
+# Eliminated
+eliminatedTitle: "You're Out!"
+eliminatedMessage: 'Your robot has been destroyed.'
+roundsSurvivedLabel: 'Rounds Survived'
+eliminatedWaitingMessage: 'Watch the remaining bots battle it out...'
+
+# Results
+winnerTitle: 'Victory!'
+drawTitle: 'Draw!'
+drawMessage: 'All robots were destroyed simultaneously.'
+matchCompleteMessage: 'The match has ended. Waiting for host to start a new match.'
+
+# Misc
+loading: 'Loading...'
+players: 'Players'
+online: 'Online'
+offline: 'Offline'

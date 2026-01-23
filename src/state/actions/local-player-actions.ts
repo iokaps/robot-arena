@@ -1,4 +1,5 @@
 import { kmClient } from '@/services/km-client';
+import type { MoveCommand } from '@/types/arena';
 import {
 	localPlayerStore,
 	type LocalPlayerState
@@ -33,5 +34,52 @@ export const localPlayerActions = {
 				playersState.players[kmClient.id] = { name };
 			}
 		);
+	},
+
+	/** Add a command to the draft program */
+	async addCommand(command: MoveCommand) {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			if (state.draftProgram.length < 5) {
+				state.draftProgram.push(command);
+			}
+		});
+	},
+
+	/** Remove a command at index from draft program */
+	async removeCommand(index: number) {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			if (index >= 0 && index < state.draftProgram.length) {
+				state.draftProgram.splice(index, 1);
+			}
+		});
+	},
+
+	/** Clear the draft program */
+	async clearProgram() {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			state.draftProgram = [];
+		});
+	},
+
+	/** Set the draft program directly */
+	async setDraftProgram(program: MoveCommand[]) {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			state.draftProgram = program.slice(0, 5);
+		});
+	},
+
+	/** Mark as submitted */
+	async setSubmitted(submitted: boolean) {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			state.hasSubmitted = submitted;
+		});
+	},
+
+	/** Reset for new round */
+	async resetForNewRound() {
+		await kmClient.transact([localPlayerStore], ([state]) => {
+			state.draftProgram = [];
+			state.hasSubmitted = false;
+		});
 	}
 };
