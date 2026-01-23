@@ -241,7 +241,7 @@ export const arenaActions = {
 
 				if (robot.lives === 0) {
 					matchState.eliminatedPlayers[clientId] = true;
-					delete arenaState.robots[clientId];
+					// Don't delete robot - keep it for rendering (filtered by lives > 0)
 				}
 			}
 		);
