@@ -15,7 +15,7 @@ export default defineConfig({
 		topLevelAwait(),
 
 		kokimokiKitPlugin({
-			conceptId: '69737e81709ac4d397989b0e',
+			conceptId: '697734d26db3ff26d09e270d',
 			schema,
 			deployCodes: [
 				{
