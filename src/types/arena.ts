@@ -37,14 +37,47 @@ export interface RobotState {
 /** Game phase state machine */
 export type GamePhase = 'lobby' | 'programming' | 'executing' | 'results';
 
+/** Terrain cell types */
+export type TerrainType = 'wall' | 'pit' | 'conveyor';
+
+/** Terrain cell definition */
+export interface TerrainCell {
+	position: Position;
+	type: TerrainType;
+	/** Direction for conveyor belts */
+	direction?: Rotation;
+}
+
 /** Pre-defined map layout identifiers */
-export type MapLayoutId = 'open' | 'cross' | 'maze';
+export type MapLayoutId =
+	| 'open'
+	| 'cross'
+	| 'maze'
+	| 'gauntlet'
+	| 'factory'
+	| 'deathtrap';
 
 /** Map layout definition */
 export interface MapLayout {
 	id: MapLayoutId;
 	name: string;
 	obstacles: Position[];
+}
+
+/** Arena size identifiers */
+export type ArenaSizeId = 'auto' | 'small' | 'medium' | 'large' | 'mega';
+
+/** Arena map configuration based on player count */
+export interface ArenaMapConfig {
+	id: ArenaSizeId;
+	/** Minimum players for this map size */
+	minPlayers: number;
+	/** Maximum players for this map size */
+	maxPlayers: number;
+	/** Grid dimensions */
+	gridSize: { width: number; height: number };
+	/** Obstacle density (0-1) */
+	obstacleDensity: number;
 }
 
 /** Execution event for animation */

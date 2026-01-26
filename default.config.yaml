@@ -13,8 +13,8 @@ gameLobbyMd: |
 
   ## How It Works
 
-  1. 🤖 Each player controls a robot on a 10x10 grid
-  2. ⏱️ You have 30 seconds to program 5 moves
+  1. 🤖 Each player controls a robot on the arena grid
+  2. ⏱️ You have 60 seconds to program 5 moves
   3. ⚡ All robots execute their programs simultaneously
   4. 💥 Last bot standing wins!
 
@@ -59,8 +59,8 @@ menuHelpMd: |
   Be the last robot standing! Eliminate all other robots by shooting them.
 
   ## Game Flow
-  1. **Programming Phase** (30 seconds)
-     - Drag or tap commands to program your next 5 moves
+  1. **Programming Phase** (60 seconds)
+     - Tap commands to program your next 5 moves
      - Plan carefully - you can't change once submitted!
 
   2. **Execution Phase**
@@ -96,12 +96,41 @@ phaseLobby: 'Lobby'
 phaseProgramming: 'Programming'
 phaseExecuting: 'Executing'
 phaseResults: 'Results'
-mapSelectLabel: 'Arena Map'
+arenaSizeLabel: 'Arena Size'
+mapSelectLabel: 'Obstacle Layout'
+mapAutoSelectLabel: 'Auto'
+mapOpenLabel: 'Open'
+mapCrossLabel: 'Cross'
+mapMazeLabel: 'Maze'
+mapGauntletLabel: 'Gauntlet'
+mapFactoryLabel: 'Factory'
+mapDeathtrapLabel: 'Death Trap'
+mapSmallLabel: 'Small (10×10)'
+mapMediumLabel: 'Medium (14×14)'
+mapLargeLabel: 'Large (18×18)'
+mapMegaLabel: 'Mega (22×22)'
+forPlayersLabel: 'for'
 robotStatusLabel: 'Robots'
 startMatchButton: 'Start Match'
 resetMatchButton: 'Reset Match'
 startButton: 'Start Match'
 stopButton: 'End Match'
+
+# Host How to Play
+hostHowToPlayTitle: 'How to Play'
+hostSetupTitle: 'Setup'
+hostSetupStep1: 'Share the Player Link or QR code'
+hostSetupStep2: 'Wait for players to join (min. 2)'
+hostSetupStep3: 'Select arena size and map layout'
+hostSetupStep4: 'Click Start Match when ready'
+hostTerrainTitle: 'Terrain Types'
+hostTerrainWall: 'Wall - Blocks movement & lasers'
+hostTerrainPit: 'Pit - Instant elimination'
+hostTerrainConveyor: 'Conveyor - Pushes robots each tick'
+hostRulesTitle: 'Quick Rules'
+hostRule1: 'Each robot has 3 lives'
+hostRule2: '60 seconds to program 5 moves'
+hostRule3: 'All robots execute simultaneously'
 
 # Programming phase
 programmingPhaseTitle: 'Program Your Bot'

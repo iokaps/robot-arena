@@ -340,6 +340,82 @@ export function useGlobalController(): boolean {
 						}
 					}
 				}
+
+				// 5. Check for pit deaths (robots standing on pits after movement)
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					if (!robot || robot.lives <= 0) continue;
+
+					const terrainKey = `${robot.position.x},${robot.position.y}`;
+					const terrainCell = arenaState.terrain?.[terrainKey];
+					if (terrainCell?.type === 'pit') {
+						// Instant death from pit
+						robot.lives = 0;
+						matchState.eliminatedPlayers[clientId] = true;
+					}
+				}
+
+				// 6. Apply conveyor belt movements (end of tick)
+				const conveyorMoves: Record<string, Position> = {};
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					if (!robot || robot.lives <= 0) continue;
+
+					const terrainKey = `${robot.position.x},${robot.position.y}`;
+					const terrainCell = arenaState.terrain?.[terrainKey];
+					if (
+						terrainCell?.type === 'conveyor' &&
+						terrainCell.direction !== undefined
+					) {
+						// Calculate push direction
+						const dir = terrainCell.direction;
+						const dx = dir === 90 ? 1 : dir === 270 ? -1 : 0;
+						const dy = dir === 180 ? 1 : dir === 0 ? -1 : 0;
+						const newX = robot.position.x + dx;
+						const newY = robot.position.y + dy;
+
+						// Check if push destination is valid
+						if (
+							newX >= 0 &&
+							newX < arenaState.gridSize.width &&
+							newY >= 0 &&
+							newY < arenaState.gridSize.height &&
+							!arenaState.obstacles[`${newX},${newY}`]
+						) {
+							conveyorMoves[clientId] = { x: newX, y: newY };
+						}
+					}
+				}
+
+				// Resolve conveyor collisions (similar to movement)
+				for (const [clientId, newPos] of Object.entries(conveyorMoves)) {
+					// Check if another robot is already there (and not being pushed)
+					const blocked = robotIds.some((otherId) => {
+						if (otherId === clientId) return false;
+						const other = arenaState.robots[otherId];
+						if (!other || other.lives <= 0) return false;
+						// Check if other is at destination and not being pushed away
+						if (
+							other.position.x === newPos.x &&
+							other.position.y === newPos.y
+						) {
+							return !conveyorMoves[otherId];
+						}
+						return false;
+					});
+
+					if (!blocked && arenaState.robots[clientId]) {
+						arenaState.robots[clientId].position = newPos;
+
+						// Check if pushed onto pit
+						const newTerrainKey = `${newPos.x},${newPos.y}`;
+						const newTerrain = arenaState.terrain?.[newTerrainKey];
+						if (newTerrain?.type === 'pit') {
+							arenaState.robots[clientId].lives = 0;
+							matchState.eliminatedPlayers[clientId] = true;
+						}
+					}
+				}
 			}
 		);
 	};

@@ -1,15 +1,23 @@
 import { arenaStore } from '@/state/stores/arena-store';
-import type { Position, RobotColor, RobotState, Rotation } from '@/types/arena';
+import type {
+	Position,
+	RobotColor,
+	RobotState,
+	Rotation,
+	TerrainCell
+} from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
-import { Heart } from 'lucide-react';
+import { ChevronUp, Heart, Skull } from 'lucide-react';
 import * as React from 'react';
 
 interface ArenaGridProps {
 	/** Highlighted robot client ID (e.g., current player) */
 	highlightedRobotId?: string;
-	/** Size of each cell in pixels */
+	/** Size of each cell in pixels (will be capped based on grid size) */
 	cellSize?: number;
+	/** Maximum width of the arena in pixels */
+	maxWidth?: number;
 	/** Whether to show player names */
 	showNames?: boolean;
 	/** Active laser shots to animate */
@@ -20,6 +28,21 @@ interface ArenaGridProps {
 	}>;
 	/** Optional className */
 	className?: string;
+}
+
+/**
+ * Calculate optimal cell size based on grid dimensions and constraints.
+ * Ensures the arena fits within maxWidth while maintaining a reasonable cell size.
+ */
+function calculateCellSize(
+	gridWidth: number,
+	gridHeight: number,
+	preferredCellSize: number,
+	maxWidth: number
+): number {
+	const maxDimension = Math.max(gridWidth, gridHeight);
+	const maxCellSizeForWidth = Math.floor(maxWidth / maxDimension);
+	return Math.min(preferredCellSize, maxCellSizeForWidth);
 }
 
 /** Color mapping for robot colors to Tailwind classes */
@@ -71,6 +94,59 @@ const ROTATION_DEGREES: Record<Rotation, number> = {
 	90: 90, // Right
 	180: 180, // Down
 	270: 270 // Left
+};
+
+/** Terrain cell component for pits and conveyors */
+interface TerrainCellProps {
+	terrain: TerrainCell;
+	cellSize: number;
+}
+
+const TerrainCellSprite: React.FC<TerrainCellProps> = ({
+	terrain,
+	cellSize
+}) => {
+	if (terrain.type === 'pit') {
+		return (
+			<div
+				className="absolute flex items-center justify-center rounded-sm bg-gradient-to-br from-red-950 to-red-900"
+				style={{
+					left: terrain.position.x * cellSize + 2,
+					top: terrain.position.y * cellSize + 2,
+					width: cellSize - 4,
+					height: cellSize - 4
+				}}
+			>
+				<Skull className="h-1/2 w-1/2 text-red-500/60" />
+			</div>
+		);
+	}
+
+	if (terrain.type === 'conveyor') {
+		const rotation = terrain.direction ?? 0;
+		return (
+			<div
+				className="absolute flex items-center justify-center rounded-sm bg-amber-900/50"
+				style={{
+					left: terrain.position.x * cellSize + 2,
+					top: terrain.position.y * cellSize + 2,
+					width: cellSize - 4,
+					height: cellSize - 4
+				}}
+			>
+				<ChevronUp
+					className="animate-pulse text-amber-400/70"
+					style={{
+						width: cellSize * 0.5,
+						height: cellSize * 0.5,
+						transform: `rotate(${rotation}deg)`
+					}}
+				/>
+			</div>
+		);
+	}
+
+	return null;
 };
 
 interface RobotSpriteProps {
@@ -255,12 +331,23 @@ const LaserBeam: React.FC<LaserBeamProps> = ({
  */
 export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	highlightedRobotId,
-	cellSize = 48,
+	cellSize: preferredCellSize = 48,
+	maxWidth = 800,
 	showNames = true,
 	activeShots = [],
 	className
 }) => {
-	const { gridSize, robots, obstacles } = useSnapshot(arenaStore.proxy);
+	const { gridSize, robots, obstacles, terrain } = useSnapshot(
+		arenaStore.proxy
+	);
+
+	// Calculate responsive cell size based on grid dimensions
+	const cellSize = calculateCellSize(
+		gridSize.width,
+		gridSize.height,
+		preferredCellSize,
+		maxWidth
+	);
 
 	const gridWidth = gridSize.width * cellSize;
 	const gridHeight = gridSize.height * cellSize;
@@ -304,6 +391,15 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 					/>
 				))}
 			</svg>
+
+			{/* Terrain (pits and conveyors) */}
+			{Object.values(terrain).map((terrainCell) => (
+				<TerrainCellSprite
+					key={`terrain-${terrainCell.position.x}-${terrainCell.position.y}`}
+					terrain={terrainCell}
+					cellSize={cellSize}
+				/>
+			))}
 
 			{/* Obstacles */}
 			{Object.values(obstacles).map((pos) => (

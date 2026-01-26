@@ -7,7 +7,7 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ## Game Flow
 
 1. **Lobby Phase**: Players join and wait for host to start
-2. **Programming Phase** (30 seconds): Each player programs 5 moves for their robot
+2. **Programming Phase** (60 seconds): Each player programs 5 moves for their robot
 3. **Execution Phase**: All robots execute their programs simultaneously, one move at a time
 4. **Repeat** rounds 2-3 until one robot remains or all are eliminated
 5. **Results Phase**: Display winner and final standings
@@ -16,21 +16,42 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 ### Grid
 
-- **Size**: 10x10 cells
+- **Dynamic Size**: Scales based on player count
+  - **Small (2-4 players)**: 10×10 cells
+  - **Medium (5-8 players)**: 14×14 cells
+  - **Large (9-12 players)**: 18×18 cells
+  - **Mega (13+ players)**: 22×22 cells
+- **Size Selection**: Host can choose "Auto" (recommended) or manually select a size
 - **Coordinate System**: (0,0) at top-left, x increases right, y increases down
 
 ### Obstacles
 
-- Static cells that block movement and shots
-- 2-3 pre-defined map layouts:
-  - **Open Arena**: Minimal obstacles, 4 corner blocks
-  - **Cross**: Cross-shaped obstacle pattern in center
-  - **Maze**: Scattered obstacles creating corridors
+- Dynamic density based on arena size (10-15%)
+- Obstacles avoid spawn zones (2-cell buffer around spawns)
+- Impassable by movement and block lasers
+
+### Terrain Types
+
+| Type     | Visual      | Effect                                                |
+| -------- | ----------- | ----------------------------------------------------- |
+| Wall     | Dark block  | Blocks movement and lasers                            |
+| Pit      | Red + skull | Instant death when standing on it                     |
+| Conveyor | Amber arrow | Pushes robot 1 cell in arrow direction at end of tick |
+
+### Map Layouts
+
+- **Open Arena**: Scattered corner obstacles, center cover on larger maps
+- **Cross**: Cross-shaped obstacle pattern scaled to grid
+- **Maze**: Random scattered obstacles based on density
+- **Gauntlet**: Corridor with pits on sides, conveyors at ends
+- **Factory**: Conveyor belt loop around center obstacles
+- **Death Trap**: Checkered pits/walls with edge conveyors pushing inward
 
 ### Spawning
 
-- **≤4 players**: Fixed corner positions (0,0), (9,0), (0,9), (9,9)
-- **>4 players**: Random placement on empty cells, minimum 3 cells apart
+- **All players**: Distributed evenly around arena perimeter
+- Robots face toward center of arena
+- Minimum spacing ensured by perimeter distribution
 
 ## Robots
 
@@ -59,6 +80,8 @@ A turn-based strategy game where players "program" their robot's moves during a 
 2. **Movement**: All movements attempted simultaneously
 3. **Shooting**: All shots fired simultaneously
 4. **Damage**: Apply damage from shots
+5. **Pit Death**: Robots standing on pits are eliminated
+6. **Conveyor Push**: Conveyors push robots 1 cell (can push onto pits)
 
 ### Collision Rules
 
@@ -88,6 +111,19 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 ## Player Interface
 
+### Lobby View (How It Works)
+
+Displayed to players before the match starts:
+
+- Welcome message with game title
+- **How It Works** summary:
+  1. 🤖 Each player controls a robot on a grid arena
+  2. ⏱️ You have 60 seconds to program 5 moves
+  3. ⚡ All robots execute their programs simultaneously
+  4. 💥 Last bot standing wins!
+- Command overview (Move, Rotate, Shoot, Wait)
+- "Waiting for host to start" message
+
 ### Programming View
 
 - 5-slot horizontal timeline
@@ -107,15 +143,60 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ### Eliminated View
 
 - "You're out!" message with glitch effect
-- Stats: rounds survived, damage dealt
-- Watch remaining match
+- Stats: rounds survived
+- "Watch remaining bots battle it out" message
+
+### Help Menu (accessible via menu icon)
+
+Detailed instructions available in player menu:
+
+- **Goal**: Be the last robot standing
+- **Game Flow**: Programming phase → Execution phase → Repeat
+- **Commands Table**: Move, Rotate Left/Right, Shoot, Wait
+- **Terrain Hazards**: Pits (instant death), Conveyors (push each tick)
+- **Rules**: 3 lives, collision behavior, laser blocking
+- **Tips**: Predict opponents, use cover, watch for conveyors
 
 ## Host Controls
 
-- Map selection dropdown
-- Start match / Reset buttons
-- Phase indicator
-- Player list with lives overview
+### Host Screen Features
+
+- **Arena Size Selection**: Auto / Small / Medium / Large / Mega
+- **Map Layout Selection**: Open / Cross / Maze / Gauntlet / Factory / Death Trap
+- **Minimap Preview**: Visual preview of selected layout at actual arena size
+- **Player Count**: Shows joined players with minimum requirement (2+)
+- **Match Controls**: Start Match / Reset Match buttons
+- **QR Toggle**: Show/hide QR code on presenter screen
+- **Phase Indicator**: Current phase with round number
+- **Robot Status** (during match): Player names with life hearts
+
+### How to Host Guide
+
+1. Share the Player Link or QR code with participants
+2. Wait for players to join (minimum 2 players required)
+3. Select arena size (Auto recommended scales with player count)
+4. Choose map layout using minimap preview to see terrain
+5. Click "Start Match" when ready
+
+### Arena Options
+
+| Size   | Grid  | Players |
+| ------ | ----- | ------- |
+| Small  | 10×10 | 2-4     |
+| Medium | 14×14 | 5-8     |
+| Large  | 18×18 | 9-12    |
+| Mega   | 22×22 | 13+     |
+
+### Map Layouts
+
+| Layout     | Description                                     |
+| ---------- | ----------------------------------------------- |
+| Open       | Minimal obstacles, corner cover                 |
+| Cross      | Cross-shaped walls for tactical play            |
+| Maze       | Random scattered obstacles                      |
+| Gauntlet   | Corridor with pit hazards, conveyor ends        |
+| Factory    | Conveyor belt loop, central walls               |
+| Death Trap | Checkered pits/walls, edge conveyors pushing in |
 
 ## Presenter Display
 
@@ -133,8 +214,8 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 | Phase           | Duration                  |
 | --------------- | ------------------------- |
-| Programming     | 30 seconds (configurable) |
-| Execution tick  | 1 second animation        |
+| Programming     | 60 seconds (configurable) |
+| Execution tick  | 1.2 seconds animation     |
 | Results display | 5 seconds                 |
 
 ## Visual Theme
@@ -143,4 +224,6 @@ A turn-based strategy game where players "program" their robot's moves during a 
 - **Grid lines**: Subtle neon glow
 - **Robot colors**: Neon palette (cyan-400, fuchsia-500, lime-400, orange-400, rose-400, violet-400)
 - **Obstacles**: Dark with accent borders
+- **Pits**: Red gradient with skull icon
+- **Conveyors**: Amber with animated directional arrow
 - **Effects**: Glow, pulse animations, laser trails

@@ -1,22 +1,34 @@
 import { kmClient } from '@/services/km-client';
-import type { MapLayoutId, Position, RobotState } from '@/types/arena';
+import type {
+	ArenaSizeId,
+	MapLayoutId,
+	Position,
+	RobotState,
+	TerrainCell
+} from '@/types/arena';
 
 export interface ArenaState {
 	/** Grid dimensions */
 	gridSize: { width: number; height: number };
 	/** Robots on the arena, keyed by clientId */
 	robots: Record<string, RobotState>;
-	/** Obstacle positions, keyed by "x,y" string */
+	/** Obstacle positions (walls), keyed by "x,y" string */
 	obstacles: Record<string, Position>;
-	/** Current map layout ID */
+	/** Terrain cells (pits, conveyors), keyed by "x,y" string */
+	terrain: Record<string, TerrainCell>;
+	/** Current map layout ID (obstacle pattern) */
 	mapLayoutId: MapLayoutId;
+	/** Selected arena size ID ('auto' for player-count based) */
+	selectedSizeId: ArenaSizeId;
 }
 
 const initialState: ArenaState = {
 	gridSize: { width: 10, height: 10 },
 	robots: {},
 	obstacles: {},
-	mapLayoutId: 'open'
+	terrain: {},
+	mapLayoutId: 'open',
+	selectedSizeId: 'auto'
 };
 
 /**

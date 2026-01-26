@@ -29,7 +29,7 @@ const initialState: MatchState = {
 	currentRound: 0,
 	maxRounds: 10,
 	phaseStartTimestamp: 0,
-	programmingDuration: 30,
+	programmingDuration: 60,
 	submittedPlayers: {},
 	eliminatedPlayers: {},
 	currentTick: -1,
