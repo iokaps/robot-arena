@@ -118,6 +118,24 @@ export function generateLayoutTerrain(
 		}
 	};
 
+	// Add perimeter walls to prevent robots from falling off edges
+	// Top edge
+	for (let x = 0; x < width; x++) {
+		obstacles[`${x},0`] = { x, y: 0 };
+	}
+	// Bottom edge
+	for (let x = 0; x < width; x++) {
+		obstacles[`${x},${height - 1}`] = { x, y: height - 1 };
+	}
+	// Left edge
+	for (let y = 1; y < height - 1; y++) {
+		obstacles[`0,${y}`] = { x: 0, y };
+	}
+	// Right edge
+	for (let y = 1; y < height - 1; y++) {
+		obstacles[`${width - 1},${y}`] = { x: width - 1, y };
+	}
+
 	switch (layoutId) {
 		case 'open': {
 			// Scattered corner obstacles
