@@ -81,7 +81,9 @@ export const SpectatingView: React.FC = () => {
 				{/* My robot status */}
 				{myRobot && (
 					<div className="flex items-center gap-2">
-						<span className="text-sm text-slate-400">{config.livesLabel}</span>
+						<span className="font-mono text-sm text-slate-400 uppercase">
+							{config.livesLabel}
+						</span>
 						<div className="flex gap-1">
 							{Array.from({ length: 3 }).map((_, i) => (
 								<Heart
@@ -98,8 +100,8 @@ export const SpectatingView: React.FC = () => {
 				)}
 
 				{/* Execution tick indicator */}
-				<div className="border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 rounded-lg border px-4 py-2">
-					<span className="font-display text-lg">
+				<div className="border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 border-2 px-4 py-2">
+					<span className="font-display text-lg tracking-wide uppercase">
 						{config.tickLabel} {currentTick + 1}/5
 					</span>
 				</div>
@@ -116,7 +118,7 @@ export const SpectatingView: React.FC = () => {
 			{/* My program display */}
 			{myProgram.length > 0 && (
 				<div className="flex w-full max-w-md flex-col items-center gap-2">
-					<span className="text-sm text-slate-400">
+					<span className="font-mono text-sm text-slate-400 uppercase">
 						{config.yourProgramLabel}
 					</span>
 					<div className="flex gap-2">
@@ -124,7 +126,7 @@ export const SpectatingView: React.FC = () => {
 							<div
 								key={index}
 								className={cn(
-									'flex h-12 w-12 items-center justify-center rounded-lg border-2 transition-all',
+									'flex h-12 w-12 items-center justify-center border-2 transition-all',
 									index === currentTick
 										? 'border-neon-lime bg-neon-lime/20 text-neon-lime scale-110'
 										: index < currentTick

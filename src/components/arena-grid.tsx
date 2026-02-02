@@ -56,37 +56,37 @@ const ROBOT_COLOR_CLASSES: Record<
 		bg: 'bg-neon-cyan',
 		border: 'border-neon-cyan',
 		text: 'text-neon-cyan',
-		glow: 'shadow-[0_0_15px_var(--color-neon-cyan)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-cyan)]'
 	},
 	fuchsia: {
 		bg: 'bg-neon-fuchsia',
 		border: 'border-neon-fuchsia',
 		text: 'text-neon-fuchsia',
-		glow: 'shadow-[0_0_15px_var(--color-neon-fuchsia)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-fuchsia)]'
 	},
 	lime: {
 		bg: 'bg-neon-lime',
 		border: 'border-neon-lime',
 		text: 'text-neon-lime',
-		glow: 'shadow-[0_0_15px_var(--color-neon-lime)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-lime)]'
 	},
 	orange: {
 		bg: 'bg-neon-orange',
 		border: 'border-neon-orange',
 		text: 'text-neon-orange',
-		glow: 'shadow-[0_0_15px_var(--color-neon-orange)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-orange)]'
 	},
 	rose: {
 		bg: 'bg-neon-rose',
 		border: 'border-neon-rose',
 		text: 'text-neon-rose',
-		glow: 'shadow-[0_0_15px_var(--color-neon-rose)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-rose)]'
 	},
 	violet: {
 		bg: 'bg-neon-violet',
 		border: 'border-neon-violet',
 		text: 'text-neon-violet',
-		glow: 'shadow-[0_0_15px_var(--color-neon-violet)]'
+		glow: 'shadow-[0_0_8px_var(--color-neon-violet)]'
 	}
 };
 
@@ -111,7 +111,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 	if (terrain.type === 'pit') {
 		return (
 			<div
-				className="absolute flex items-center justify-center rounded-sm bg-gradient-to-br from-red-950 to-red-900"
+				className="border-neon-rose/50 absolute flex items-center justify-center border-2 bg-slate-950"
 				style={{
 					left: terrain.position.x * cellSize + 2,
 					top: terrain.position.y * cellSize + 2,
@@ -119,7 +119,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 					height: cellSize - 4
 				}}
 			>
-				<Skull className="h-1/2 w-1/2 text-red-500/60" />
+				<Skull className="text-neon-rose/70 h-1/2 w-1/2" />
 			</div>
 		);
 	}
@@ -128,7 +128,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 		const rotation = terrain.direction ?? 0;
 		return (
 			<div
-				className="absolute flex items-center justify-center rounded-sm bg-amber-900/50"
+				className="border-neon-fuchsia/40 absolute flex items-center justify-center border-2 bg-slate-900/80"
 				style={{
 					left: terrain.position.x * cellSize + 2,
 					top: terrain.position.y * cellSize + 2,
@@ -137,7 +137,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 				}}
 			>
 				<ChevronUp
-					className="animate-pulse text-amber-400/70"
+					className="text-neon-fuchsia/80"
 					style={{
 						width: cellSize * 0.5,
 						height: cellSize * 0.5,
@@ -154,25 +154,25 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 /** Pickup color and icon mapping */
 const PICKUP_STYLES: Record<
 	PickupType,
-	{ bg: string; icon: typeof Heart; iconColor: string; glow: string }
+	{ bg: string; icon: typeof Heart; iconColor: string; border: string }
 > = {
 	'health-pack': {
-		bg: 'bg-red-900/60',
+		bg: 'bg-slate-800',
 		icon: Heart,
-		iconColor: 'text-red-400',
-		glow: 'shadow-[0_0_10px_rgba(248,113,113,0.6)]'
+		iconColor: 'text-neon-rose',
+		border: 'border-neon-rose/60'
 	},
 	shield: {
-		bg: 'bg-blue-900/60',
+		bg: 'bg-slate-800',
 		icon: Shield,
-		iconColor: 'text-blue-400',
-		glow: 'shadow-[0_0_10px_rgba(96,165,250,0.6)]'
+		iconColor: 'text-neon-cyan',
+		border: 'border-neon-cyan/60'
 	},
 	'power-cell': {
-		bg: 'bg-yellow-900/60',
+		bg: 'bg-slate-800',
 		icon: Zap,
-		iconColor: 'text-yellow-400',
-		glow: 'shadow-[0_0_10px_rgba(250,204,21,0.6)]'
+		iconColor: 'text-neon-orange',
+		border: 'border-neon-orange/60'
 	}
 };
 
@@ -189,10 +189,9 @@ const PickupSprite: React.FC<PickupSpriteProps> = ({ pickup, cellSize }) => {
 	return (
 		<div
 			className={cn(
-				'absolute flex items-center justify-center rounded-lg border border-white/20',
+				'absolute flex items-center justify-center border-2',
 				style.bg,
-				style.glow,
-				'animate-pulse'
+				style.border
 			)}
 			style={{
 				left: pickup.position.x * cellSize + 4,
@@ -232,7 +231,7 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 	return (
 		<div
 			className={cn(
-				'absolute flex flex-col items-center justify-center transition-all duration-500 ease-out',
+				'absolute flex flex-col items-center justify-center transition-all duration-300 ease-out',
 				isHighlighted && 'z-10'
 			)}
 			style={{
@@ -242,14 +241,14 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 				height: cellSize
 			}}
 		>
-			{/* Robot body */}
+			{/* Robot body - boxy mechanical style */}
 			<div
 				className={cn(
-					'relative flex items-center justify-center rounded-lg border-2 transition-all duration-300',
+					'relative flex items-center justify-center border-2 transition-all duration-200',
 					colors.bg,
 					colors.border,
 					isHighlighted && colors.glow,
-					'bg-opacity-80'
+					'bg-opacity-90'
 				)}
 				style={{
 					width: cellSize * 0.7,
@@ -257,20 +256,25 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 					transform: `rotate(${rotationDeg}deg)`
 				}}
 			>
-				{/* Direction indicator (triangle pointing up) */}
-				<div className="absolute -top-1 left-1/2 -translate-x-1/2 border-r-[6px] border-b-[10px] border-l-[6px] border-r-transparent border-b-slate-900 border-l-transparent" />
+				{/* Direction indicator (blocky arrow) */}
+				<div className="absolute -top-1 left-1/2 -translate-x-1/2 border-r-[5px] border-b-[8px] border-l-[5px] border-r-transparent border-b-slate-900 border-l-transparent" />
+				{/* Robot rivet details */}
+				<div className="absolute top-1 left-1 h-1 w-1 rounded-full bg-slate-900/60" />
+				<div className="absolute top-1 right-1 h-1 w-1 rounded-full bg-slate-900/60" />
+				<div className="absolute bottom-1 left-1 h-1 w-1 rounded-full bg-slate-900/60" />
+				<div className="absolute right-1 bottom-1 h-1 w-1 rounded-full bg-slate-900/60" />
 			</div>
 
-			{/* Buff indicators */}
+			{/* Buff indicators - industrial LED style */}
 			<div className="absolute top-0 -right-1 flex flex-col gap-0.5">
 				{robot.shield > 0 && (
-					<div className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500/80 shadow-[0_0_6px_rgba(96,165,250,0.8)]">
-						<Shield className="h-3 w-3 text-white" />
+					<div className="border-neon-cyan/60 flex h-4 w-4 items-center justify-center border bg-slate-800">
+						<Shield className="text-neon-cyan h-3 w-3" />
 					</div>
 				)}
 				{robot.powerBoost && (
-					<div className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(250,204,21,0.8)]">
-						<Zap className="h-3 w-3 text-white" />
+					<div className="border-neon-orange/60 flex h-4 w-4 items-center justify-center border bg-slate-800">
+						<Zap className="text-neon-orange h-3 w-3" />
 					</div>
 				)}
 			</div>
@@ -293,9 +297,8 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 			{showName && (
 				<div
 					className={cn(
-						'absolute -top-5 left-1/2 -translate-x-1/2 rounded px-1 text-xs font-medium whitespace-nowrap',
-						colors.text,
-						'bg-slate-900/80'
+						'absolute -top-5 left-1/2 -translate-x-1/2 border border-slate-600 bg-slate-900/90 px-1 font-mono text-xs font-medium tracking-wide whitespace-nowrap uppercase',
+						colors.text
 					)}
 				>
 					{robot.name}
@@ -389,11 +392,7 @@ const LaserBeam: React.FC<LaserBeamProps> = ({
 
 	return (
 		<div
-			className={cn(
-				'absolute h-1 origin-left animate-pulse',
-				colors.bg,
-				colors.glow
-			)}
+			className={cn('absolute h-1 origin-left', colors.bg, 'opacity-90')}
 			style={{
 				left: startCenterX,
 				top: startCenterY - 2,
@@ -433,7 +432,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	return (
 		<div
 			className={cn(
-				'bg-arena-bg relative overflow-hidden rounded-xl border-2 border-slate-700',
+				'bg-arena-bg relative overflow-hidden border-2 border-slate-500',
 				className
 			)}
 			style={{ width: gridWidth, height: gridHeight }}
@@ -453,7 +452,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 						x2={i * cellSize}
 						y2={gridHeight}
 						className="stroke-arena-grid"
-						strokeWidth={1}
+						strokeWidth={1.5}
 					/>
 				))}
 				{/* Horizontal lines */}
@@ -465,7 +464,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 						x2={gridWidth}
 						y2={i * cellSize}
 						className="stroke-arena-grid"
-						strokeWidth={1}
+						strokeWidth={1.5}
 					/>
 				))}
 			</svg>
@@ -483,7 +482,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 			{Object.values(obstacles).map((pos) => (
 				<div
 					key={`obstacle-${pos.x}-${pos.y}`}
-					className="bg-arena-obstacle absolute rounded border border-slate-600"
+					className="bg-arena-obstacle absolute border-2 border-slate-500"
 					style={{
 						left: pos.x * cellSize + 2,
 						top: pos.y * cellSize + 2,

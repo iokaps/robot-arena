@@ -20,7 +20,7 @@ export const ResultsView: React.FC = () => {
 			{/* Trophy icon */}
 			<div className="text-neon-lime">
 				{winnerId ? (
-					<Trophy className="neon-glow-lime h-24 w-24" />
+					<Trophy className="h-24 w-24" />
 				) : (
 					<Medal className="h-24 w-24 text-slate-400" />
 				)}
@@ -30,17 +30,21 @@ export const ResultsView: React.FC = () => {
 			<div className="space-y-2">
 				{winnerId ? (
 					<>
-						<h1 className="font-display text-neon-lime neon-text-glow text-4xl">
+						<h1 className="font-display text-neon-lime neon-text-glow text-4xl tracking-wider uppercase">
 							{config.winnerTitle}
 						</h1>
-						<p className="font-display text-2xl text-slate-100">{winnerName}</p>
+						<p className="font-display text-2xl tracking-wide text-slate-100 uppercase">
+							{winnerName}
+						</p>
 					</>
 				) : (
 					<>
-						<h1 className="font-display text-4xl text-slate-400">
+						<h1 className="font-display text-4xl tracking-wider text-slate-400 uppercase">
 							{config.drawTitle}
 						</h1>
-						<p className="text-lg text-slate-500">{config.drawMessage}</p>
+						<p className="font-mono text-lg text-slate-500">
+							{config.drawMessage}
+						</p>
 					</>
 				)}
 			</div>
@@ -48,13 +52,15 @@ export const ResultsView: React.FC = () => {
 			{/* Match complete message */}
 			<div
 				className={cn(
-					'rounded-xl border px-6 py-4',
+					'border-2 px-6 py-4',
 					winnerId
-						? 'border-neon-lime/30 bg-neon-lime/10'
+						? 'border-neon-lime/40 bg-neon-lime/10'
 						: 'border-slate-600 bg-slate-800/50'
 				)}
 			>
-				<p className="text-slate-300">{config.matchCompleteMessage}</p>
+				<p className="font-mono text-slate-300">
+					{config.matchCompleteMessage}
+				</p>
 			</div>
 		</div>
 	);

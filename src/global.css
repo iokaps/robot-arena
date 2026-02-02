@@ -1,5 +1,5 @@
 /* Font imports */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 /* Imports */
 @import 'tailwindcss';
@@ -8,27 +8,29 @@
 @plugin '@tailwindcss/typography';
 
 @theme {
-	/* Cyber/Neon Theme for Code-A-Bot Arena */
+	/* Retro Robot Industrial Theme for Code-A-Bot Arena */
 	--km-font-sans:
-		'Space Grotesk', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-	--font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
+		'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace;
+	--font-display:
+		'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace;
 	--font-mono:
-		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-		'Courier New', monospace;
+		'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		'Liberation Mono', 'Courier New', monospace;
 
-	/* Neon color palette */
-	--color-neon-cyan: oklch(0.8 0.15 192);
-	--color-neon-fuchsia: oklch(0.7 0.25 320);
-	--color-neon-lime: oklch(0.85 0.25 125);
-	--color-neon-orange: oklch(0.75 0.2 55);
-	--color-neon-rose: oklch(0.7 0.2 10);
-	--color-neon-violet: oklch(0.65 0.25 290);
+	/* Industrial color palette - desaturated, mechanical tones */
+	--color-neon-cyan: oklch(0.7 0.08 200); /* Steel blue - primary */
+	--color-neon-fuchsia: oklch(0.6 0.12 45); /* Bronze/copper */
+	--color-neon-lime: oklch(0.75 0.15 145); /* Terminal green - success */
+	--color-neon-orange: oklch(0.65 0.15 55); /* Rust orange */
+	--color-neon-rose: oklch(0.6 0.15 25); /* Warning red */
+	--color-neon-violet: oklch(0.55 0.08 280); /* Gunmetal purple */
 
-	/* Arena colors */
-	--color-arena-bg: oklch(0.15 0.02 260);
-	--color-arena-grid: oklch(0.25 0.04 260);
-	--color-arena-obstacle: oklch(0.2 0.03 260);
+	/* Arena colors - factory floor */
+	--color-arena-bg: oklch(0.12 0.01 240);
+	--color-arena-grid: oklch(0.22 0.02 240);
+	--color-arena-obstacle: oklch(0.18 0.01 240);
 }
 
 /* Markdown styling with Tailwind Typography (prose) */
@@ -51,100 +53,89 @@ body {
 }
 
 .km-input {
-	@apply focus:border-neon-cyan focus:ring-neon-cyan/50 w-full max-w-96 rounded-xl border border-slate-600 bg-slate-800 px-5 py-3 text-slate-100 transition-colors placeholder:text-slate-500 focus:ring-2 focus:outline-none disabled:opacity-50;
+	@apply focus:border-neon-cyan focus:ring-neon-cyan/50 w-full max-w-96 border-2 border-slate-500 bg-slate-800 px-4 py-3 font-mono tracking-wider text-slate-100 uppercase transition-colors placeholder:text-slate-500 placeholder:normal-case focus:ring-2 focus:outline-none disabled:opacity-50;
 }
 
 .km-btn-primary,
 .km-btn-secondary,
 .km-btn-error,
 .km-btn-neutral {
-	@apply inline-flex items-center justify-center gap-3 rounded-xl px-5 py-3 font-medium transition-all duration-200 not-disabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40;
+	@apply inline-flex items-center justify-center gap-3 border-2 px-5 py-3 font-mono font-semibold tracking-wider uppercase transition-all duration-150 not-disabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40;
 }
 
 .km-btn-primary {
-	@apply border-neon-cyan/50 bg-neon-cyan/20 text-neon-cyan not-disabled:hover:bg-neon-cyan/30 border not-disabled:hover:shadow-[0_0_20px_rgba(0,255,255,0.3)] disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-500;
+	@apply border-neon-cyan bg-neon-cyan/20 text-neon-cyan not-disabled:hover:bg-neon-cyan/30 not-disabled:active:translate-y-0.5 not-disabled:active:border-b-2 disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-500;
+	border-bottom-width: 4px;
 }
 
 .km-btn-secondary {
-	@apply not-disabled:hover:border-neon-cyan/50 not-disabled:hover:text-neon-cyan border border-slate-600 bg-slate-800 text-slate-300 disabled:text-slate-600;
+	@apply not-disabled:hover:border-neon-cyan not-disabled:hover:text-neon-cyan border-slate-500 bg-slate-800 text-slate-300 not-disabled:active:translate-y-0.5 not-disabled:active:border-b-2 disabled:text-slate-600;
+	border-bottom-width: 4px;
 }
 
 .km-btn-error {
-	@apply border-neon-rose/50 bg-neon-rose/20 text-neon-rose not-disabled:hover:bg-neon-rose/30 border not-disabled:hover:shadow-[0_0_20px_rgba(255,100,100,0.3)] disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-500;
+	@apply border-neon-rose bg-neon-rose/20 text-neon-rose not-disabled:hover:bg-neon-rose/30 not-disabled:active:translate-y-0.5 not-disabled:active:border-b-2 disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-500;
+	border-bottom-width: 4px;
 }
 
 .km-btn-neutral {
-	@apply border border-slate-500 bg-slate-700 text-slate-200 not-disabled:hover:bg-slate-600 disabled:border-slate-700 disabled:bg-slate-800 disabled:text-slate-500;
+	@apply border-slate-400 bg-slate-700 text-slate-200 not-disabled:hover:bg-slate-600 not-disabled:active:translate-y-0.5 not-disabled:active:border-b-2 disabled:border-slate-700 disabled:bg-slate-800 disabled:text-slate-500;
+	border-bottom-width: 4px;
 }
 
-/* Neon glow utilities */
-.neon-glow-cyan {
-	box-shadow:
-		0 0 10px var(--color-neon-cyan),
-		0 0 20px var(--color-neon-cyan),
-		0 0 30px var(--color-neon-cyan);
+/* Industrial mechanical styling utilities */
+.retro-border {
+	@apply border-2 border-slate-500;
+	border-bottom-width: 4px;
 }
 
-.neon-glow-fuchsia {
-	box-shadow:
-		0 0 10px var(--color-neon-fuchsia),
-		0 0 20px var(--color-neon-fuchsia);
+.retro-panel {
+	@apply border-2 border-slate-600 bg-slate-800/80;
 }
 
-.neon-glow-lime {
-	box-shadow:
-		0 0 10px var(--color-neon-lime),
-		0 0 20px var(--color-neon-lime);
-}
-
+/* Text styling - mechanical terminal look */
 .neon-text-glow {
-	text-shadow:
-		0 0 10px currentColor,
-		0 0 20px currentColor;
+	text-shadow: 0 0 8px currentColor;
 }
 
-/* Pulse animation for urgent states */
+/* Pulse animation for urgent states - more mechanical, stepped */
 @keyframes neon-pulse {
 	0%,
-	100% {
+	49% {
 		opacity: 1;
 	}
-	50% {
-		opacity: 0.6;
+	50%,
+	100% {
+		opacity: 0.5;
 	}
 }
 
 .animate-neon-pulse {
-	animation: neon-pulse 1s ease-in-out infinite;
+	animation: neon-pulse 0.8s steps(2) infinite;
 }
 
-/* Glitch effect for elimination */
+/* Glitch effect for elimination - more mechanical shake */
 @keyframes glitch {
-	0% {
-		transform: translate(0);
-	}
-	20% {
-		transform: translate(-2px, 2px);
-	}
-	40% {
-		transform: translate(-2px, -2px);
-	}
-	60% {
-		transform: translate(2px, 2px);
-	}
-	80% {
-		transform: translate(2px, -2px);
-	}
+	0%,
 	100% {
 		transform: translate(0);
+	}
+	25% {
+		transform: translate(-3px, 0);
+	}
+	50% {
+		transform: translate(3px, 0);
+	}
+	75% {
+		transform: translate(-3px, 0);
 	}
 }
 
 .animate-glitch {
-	animation: glitch 0.3s ease-in-out infinite;
+	animation: glitch 0.2s steps(4) infinite;
 }
 
-/* Robot direction indicator */
+/* Robot mechanical indicator */
 .robot-indicator {
 	@apply relative;
 }

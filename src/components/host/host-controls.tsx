@@ -79,17 +79,19 @@ export function HostControls() {
 		<div className="space-y-6">
 			{/* Phase indicator */}
 			<div className="flex items-center gap-4">
-				<span className="text-sm text-slate-400">{config.phaseLabel}:</span>
+				<span className="font-mono text-sm text-slate-400 uppercase">
+					{config.phaseLabel}:
+				</span>
 				<div
 					className={cn(
-						'font-display rounded-lg border px-4 py-2 text-sm',
+						'font-display border-2 px-4 py-2 text-sm tracking-wide uppercase',
 						phase === 'lobby' && 'border-slate-600 bg-slate-800 text-slate-300',
 						phase === 'programming' &&
-							'border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan',
+							'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan',
 						phase === 'executing' &&
-							'border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia',
+							'border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia',
 						phase === 'results' &&
-							'border-neon-lime/50 bg-neon-lime/10 text-neon-lime'
+							'border-neon-lime/60 bg-neon-lime/10 text-neon-lime'
 					)}
 				>
 					{phase === 'lobby' && config.phaseLobby}
@@ -105,13 +107,13 @@ export function HostControls() {
 			{phase === 'lobby' && (
 				<div className="space-y-4">
 					{/* How to Play - Collapsible */}
-					<div className="rounded-xl border border-slate-600 bg-slate-800/50">
+					<div className="border-2 border-slate-600 bg-slate-800/50">
 						<button
 							type="button"
 							onClick={() => setShowHowToPlay(!showHowToPlay)}
 							className="flex w-full items-center justify-between px-4 py-3 text-left"
 						>
-							<span className="flex items-center gap-2 text-sm font-medium text-slate-200">
+							<span className="flex items-center gap-2 font-mono text-sm font-medium text-slate-200 uppercase">
 								<HelpCircle className="text-neon-cyan h-4 w-4" />
 								{config.hostHowToPlayTitle}
 							</span>
@@ -123,10 +125,10 @@ export function HostControls() {
 						</button>
 
 						{showHowToPlay && (
-							<div className="space-y-4 border-t border-slate-700 px-4 py-3 text-sm">
+							<div className="space-y-4 border-t border-slate-700 px-4 py-3 font-mono text-sm">
 								{/* Setup Steps */}
 								<div>
-									<h4 className="mb-2 font-medium text-slate-200">
+									<h4 className="mb-2 font-medium text-slate-200 uppercase">
 										{config.hostSetupTitle}
 									</h4>
 									<ol className="list-inside list-decimal space-y-1 text-slate-400">
@@ -139,23 +141,23 @@ export function HostControls() {
 
 								{/* Terrain Legend */}
 								<div>
-									<h4 className="mb-2 font-medium text-slate-200">
+									<h4 className="mb-2 font-medium text-slate-200 uppercase">
 										{config.hostTerrainTitle}
 									</h4>
 									<div className="space-y-1 text-slate-400">
 										<div className="flex items-center gap-2">
-											<div className="bg-arena-obstacle h-4 w-4 rounded-sm border border-slate-600" />
+											<div className="bg-arena-obstacle h-4 w-4 border-2 border-slate-500" />
 											<span>{config.hostTerrainWall}</span>
 										</div>
 										<div className="flex items-center gap-2">
-											<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-gradient-to-br from-red-950 to-red-900">
-												<Skull className="h-3 w-3 text-red-500/80" />
+											<div className="border-neon-rose/50 flex h-4 w-4 items-center justify-center border-2 bg-slate-950">
+												<Skull className="text-neon-rose/70 h-3 w-3" />
 											</div>
 											<span>{config.hostTerrainPit}</span>
 										</div>
 										<div className="flex items-center gap-2">
-											<div className="flex h-4 w-4 items-center justify-center rounded-sm bg-amber-900/50">
-												<ChevronUp className="h-3 w-3 text-amber-400/70" />
+											<div className="border-neon-fuchsia/40 flex h-4 w-4 items-center justify-center border-2 bg-slate-900/80">
+												<ChevronUp className="text-neon-fuchsia/80 h-3 w-3" />
 											</div>
 											<span>{config.hostTerrainConveyor}</span>
 										</div>
@@ -164,7 +166,7 @@ export function HostControls() {
 
 								{/* Quick Rules */}
 								<div>
-									<h4 className="mb-2 font-medium text-slate-200">
+									<h4 className="mb-2 font-medium text-slate-200 uppercase">
 										{config.hostRulesTitle}
 									</h4>
 									<ul className="list-inside list-disc space-y-1 text-slate-400">
@@ -179,7 +181,7 @@ export function HostControls() {
 
 					{/* Arena Size Selection */}
 					<div className="space-y-2">
-						<label className="flex items-center gap-2 text-sm text-slate-400">
+						<label className="flex items-center gap-2 font-mono text-sm text-slate-400 uppercase">
 							<Maximize2 className="h-4 w-4" />
 							{config.arenaSizeLabel}:
 							{selectedSizeId === 'auto' && (
@@ -198,10 +200,10 @@ export function HostControls() {
 									type="button"
 									onClick={() => handleArenaSizeChange(sizeId)}
 									className={cn(
-										'rounded-lg border px-3 py-2 text-sm transition-all',
+										'border-2 px-3 py-2 font-mono text-sm uppercase transition-all',
 										selectedSizeId === sizeId
 											? 'border-neon-cyan bg-neon-cyan/20 text-neon-cyan'
-											: 'hover:border-neon-cyan/50 border-slate-600 bg-slate-800 text-slate-300'
+											: 'hover:border-neon-cyan/60 border-slate-600 bg-slate-800 text-slate-300'
 									)}
 								>
 									{ARENA_SIZE_LABELS[sizeId]}
@@ -212,7 +214,7 @@ export function HostControls() {
 
 					{/* Obstacle Layout Selection */}
 					<div className="space-y-2">
-						<label className="flex items-center gap-2 text-sm text-slate-400">
+						<label className="flex items-center gap-2 font-mono text-sm text-slate-400 uppercase">
 							<Map className="h-4 w-4" />
 							{config.mapSelectLabel}:
 						</label>
@@ -223,10 +225,10 @@ export function HostControls() {
 									type="button"
 									onClick={() => handleMapLayoutChange(layout.id)}
 									className={cn(
-										'rounded-lg border px-4 py-2 text-sm transition-all',
+										'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
 										mapLayoutId === layout.id
 											? 'border-neon-cyan bg-neon-cyan/20 text-neon-cyan'
-											: 'hover:border-neon-cyan/50 border-slate-600 bg-slate-800 text-slate-300'
+											: 'hover:border-neon-cyan/60 border-slate-600 bg-slate-800 text-slate-300'
 									)}
 								>
 									{layout.name}
@@ -261,13 +263,13 @@ export function HostControls() {
 			)}
 
 			{/* Player count */}
-			<div className="flex items-center gap-4 rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3">
+			<div className="flex items-center gap-4 border-2 border-slate-600 bg-slate-800/50 px-4 py-3">
 				<Users className="text-neon-cyan h-5 w-5" />
-				<span className="text-slate-300">
+				<span className="font-mono text-slate-300">
 					{playerCount} {config.playersJoinedLabel}
 				</span>
 				{playerCount < 2 && phase === 'lobby' && (
-					<span className="text-neon-rose text-sm">
+					<span className="text-neon-rose font-mono text-sm">
 						({config.minPlayersMessage})
 					</span>
 				)}
@@ -276,14 +278,14 @@ export function HostControls() {
 			{/* Robot status (during match) */}
 			{isInMatch && Object.keys(robots).length > 0 && (
 				<div className="space-y-2">
-					<span className="text-sm text-slate-400">
+					<span className="font-mono text-sm text-slate-400 uppercase">
 						{config.robotStatusLabel}:
 					</span>
 					<div className="flex flex-wrap gap-2">
 						{Object.entries(robots).map(([clientId, robot]) => (
 							<div
 								key={clientId}
-								className="flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2"
+								className="flex items-center gap-2 border-2 border-slate-600 bg-slate-800 px-3 py-2"
 							>
 								<span
 									className={cn(
@@ -296,7 +298,9 @@ export function HostControls() {
 										robot.color === 'violet' && 'bg-neon-violet'
 									)}
 								/>
-								<span className="text-sm text-slate-300">{robot.name}</span>
+								<span className="font-mono text-sm text-slate-300">
+									{robot.name}
+								</span>
 								<div className="flex gap-0.5">
 									{Array.from({ length: 3 }).map((_, i) => (
 										<Heart

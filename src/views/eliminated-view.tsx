@@ -20,27 +20,31 @@ export const EliminatedView: React.FC = () => {
 
 			{/* Main message */}
 			<div className="space-y-2">
-				<h1 className="font-display text-neon-rose neon-text-glow text-4xl">
+				<h1 className="font-display text-neon-rose neon-text-glow text-4xl tracking-wider uppercase">
 					{config.eliminatedTitle}
 				</h1>
-				<p className="text-lg text-slate-400">{config.eliminatedMessage}</p>
+				<p className="font-mono text-lg text-slate-400">
+					{config.eliminatedMessage}
+				</p>
 			</div>
 
 			{/* Stats */}
 			<div className="flex gap-8">
-				<div className="flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800/50 px-6 py-4">
+				<div className="flex flex-col items-center border-2 border-slate-600 bg-slate-800/50 px-6 py-4">
 					<span className="font-display text-neon-cyan text-3xl">
 						{currentRound}
 					</span>
-					<span className="text-sm text-slate-400">
+					<span className="font-mono text-sm text-slate-400 uppercase">
 						{config.roundsSurvivedLabel}
 					</span>
 				</div>
 			</div>
 
 			{/* Waiting message */}
-			<div className="rounded-xl border border-slate-600 bg-slate-800/50 px-6 py-4">
-				<p className="text-slate-300">{config.eliminatedWaitingMessage}</p>
+			<div className="border-2 border-slate-600 bg-slate-800/50 px-6 py-4">
+				<p className="font-mono text-slate-300">
+					{config.eliminatedWaitingMessage}
+				</p>
 			</div>
 		</div>
 	);

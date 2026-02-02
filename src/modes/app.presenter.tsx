@@ -100,19 +100,19 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 				<HostPresenterLayout.Header />
 				<HostPresenterLayout.Main>
 					<div className="flex flex-col items-center gap-8">
-						<h1 className="font-display text-neon-cyan neon-text-glow text-4xl">
+						<h1 className="font-display text-neon-cyan neon-text-glow text-4xl tracking-widest uppercase">
 							{config.title}
 						</h1>
-						<p className="text-xl text-slate-300">
+						<p className="font-mono text-xl text-slate-300">
 							{config.presenterLobbyMessage}
 						</p>
 
-						<div className="flex items-center gap-4 rounded-xl border border-slate-600 bg-slate-800/50 px-6 py-4">
+						<div className="flex items-center gap-4 border-2 border-slate-600 bg-slate-800/50 px-6 py-4">
 							<Users className="text-neon-cyan h-8 w-8" />
 							<span className="font-display text-3xl text-slate-100">
 								{Object.keys(players).length}
 							</span>
-							<span className="text-slate-400">
+							<span className="font-mono text-slate-400 uppercase">
 								{config.playersJoinedLabel}
 							</span>
 						</div>
@@ -123,7 +123,9 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 							className={cn({ invisible: !showPresenterQr })}
 						/>
 
-						<p className="text-slate-500">{config.scanToJoinMessage}</p>
+						<p className="font-mono text-slate-500">
+							{config.scanToJoinMessage}
+						</p>
 					</div>
 				</HostPresenterLayout.Main>
 			</HostPresenterLayout.Root>
@@ -139,20 +141,22 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					<div className="flex flex-col items-center gap-8">
 						{winnerId ? (
 							<>
-								<Trophy className="text-neon-lime neon-glow-lime h-32 w-32" />
-								<h1 className="font-display text-neon-lime neon-text-glow text-5xl">
+								<Trophy className="text-neon-lime h-32 w-32" />
+								<h1 className="font-display text-neon-lime neon-text-glow text-5xl tracking-wider uppercase">
 									{config.winnerTitle}
 								</h1>
-								<p className="font-display text-4xl text-slate-100">
+								<p className="font-display text-4xl tracking-wide text-slate-100 uppercase">
 									{winnerName}
 								</p>
 							</>
 						) : (
 							<>
-								<h1 className="font-display text-5xl text-slate-400">
+								<h1 className="font-display text-5xl tracking-wider text-slate-400 uppercase">
 									{config.drawTitle}
 								</h1>
-								<p className="text-2xl text-slate-500">{config.drawMessage}</p>
+								<p className="font-mono text-2xl text-slate-500">
+									{config.drawMessage}
+								</p>
 							</>
 						)}
 					</div>
@@ -167,8 +171,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			<HostPresenterLayout.Header>
 				<div className="flex items-center gap-6">
 					{/* Round indicator */}
-					<div className="flex items-center gap-2 text-slate-300">
-						<span className="font-display text-lg">
+					<div className="flex items-center gap-2 font-mono text-slate-300">
+						<span className="font-display text-lg tracking-wide uppercase">
 							{config.roundLabel} {currentRound}
 						</span>
 					</div>
@@ -177,10 +181,10 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					{phase === 'programming' && (
 						<div
 							className={cn(
-								'font-display flex items-center gap-2 rounded-lg border px-4 py-2',
+								'font-display flex items-center gap-2 border-2 px-4 py-2',
 								isUrgent
-									? 'animate-neon-pulse border-neon-rose/50 bg-neon-rose/10 text-neon-rose'
-									: 'border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan'
+									? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose'
+									: 'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan'
 							)}
 						>
 							<Clock className="h-5 w-5" />
@@ -189,8 +193,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					)}
 
 					{phase === 'executing' && (
-						<div className="border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 rounded-lg border px-4 py-2">
-							<span className="font-display text-lg">
+						<div className="border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 border-2 px-4 py-2">
+							<span className="font-display text-lg tracking-wide uppercase">
 								{config.tickLabel} {currentTick + 1}/5
 							</span>
 						</div>
@@ -198,7 +202,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 
 					{/* Submission status during programming */}
 					{phase === 'programming' && (
-						<div className="flex items-center gap-2 text-slate-400">
+						<div className="flex items-center gap-2 font-mono text-slate-400">
 							<span>
 								{submittedCount}/{robotCount} {config.submittedLabel}
 							</span>

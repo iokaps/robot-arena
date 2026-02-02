@@ -35,35 +35,35 @@ const COMMANDS: {
 		icon: <ArrowUp className="h-6 w-6" />,
 		label: config.commandMoveForward,
 		color:
-			'text-neon-cyan border-neon-cyan/50 bg-neon-cyan/10 hover:bg-neon-cyan/20'
+			'text-neon-cyan border-neon-cyan/60 bg-neon-cyan/10 hover:bg-neon-cyan/20'
 	},
 	{
 		id: 'rotate-left',
 		icon: <RotateCcw className="h-6 w-6" />,
 		label: config.commandRotateLeft,
 		color:
-			'text-neon-fuchsia border-neon-fuchsia/50 bg-neon-fuchsia/10 hover:bg-neon-fuchsia/20'
+			'text-neon-fuchsia border-neon-fuchsia/60 bg-neon-fuchsia/10 hover:bg-neon-fuchsia/20'
 	},
 	{
 		id: 'rotate-right',
 		icon: <RotateCw className="h-6 w-6" />,
 		label: config.commandRotateRight,
 		color:
-			'text-neon-fuchsia border-neon-fuchsia/50 bg-neon-fuchsia/10 hover:bg-neon-fuchsia/20'
+			'text-neon-fuchsia border-neon-fuchsia/60 bg-neon-fuchsia/10 hover:bg-neon-fuchsia/20'
 	},
 	{
 		id: 'shoot',
 		icon: <Crosshair className="h-6 w-6" />,
 		label: config.commandShoot,
 		color:
-			'text-neon-rose border-neon-rose/50 bg-neon-rose/10 hover:bg-neon-rose/20'
+			'text-neon-rose border-neon-rose/60 bg-neon-rose/10 hover:bg-neon-rose/20'
 	},
 	{
 		id: 'wait',
 		icon: <Clock className="h-6 w-6" />,
 		label: config.commandWait,
 		color:
-			'text-slate-400 border-slate-500/50 bg-slate-700/50 hover:bg-slate-600/50'
+			'text-slate-400 border-slate-500/60 bg-slate-700/50 hover:bg-slate-600/50'
 	}
 ];
 
@@ -137,10 +137,10 @@ export const ProgrammingView: React.FC = () => {
 				{/* Timer */}
 				<div
 					className={cn(
-						'font-display flex items-center gap-2 rounded-lg border px-4 py-2 text-2xl',
+						'font-display flex items-center gap-2 border-2 px-4 py-2 text-2xl',
 						isUrgent
-							? 'animate-neon-pulse border-neon-rose/50 bg-neon-rose/10 text-neon-rose'
-							: 'border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan'
+							? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose'
+							: 'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan'
 					)}
 				>
 					<Clock className="h-5 w-5" />
@@ -163,7 +163,7 @@ export const ProgrammingView: React.FC = () => {
 						<div
 							key={index}
 							className={cn(
-								'relative flex h-20 flex-1 flex-col items-center justify-center rounded-xl border-2 transition-all',
+								'relative flex h-20 flex-1 flex-col items-center justify-center border-2 transition-all',
 								commandConfig
 									? commandConfig.color
 									: 'border-dashed border-slate-600 bg-slate-800/50'
@@ -172,19 +172,19 @@ export const ProgrammingView: React.FC = () => {
 							{commandConfig ? (
 								<>
 									{commandConfig.icon}
-									<span className="mt-1 text-xs">{index + 1}</span>
+									<span className="mt-1 font-mono text-xs">{index + 1}</span>
 									{!hasSubmitted && (
 										<button
 											type="button"
 											onClick={() => handleRemoveCommand(index)}
-											className="absolute -top-2 -right-2 rounded-full bg-slate-700 p-1 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+											className="absolute -top-2 -right-2 border border-slate-500 bg-slate-700 p-1 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
 										>
 											<X className="h-3 w-3" />
 										</button>
 									)}
 								</>
 							) : (
-								<span className="text-slate-600">{index + 1}</span>
+								<span className="font-mono text-slate-600">{index + 1}</span>
 							)}
 						</div>
 					);
@@ -201,13 +201,15 @@ export const ProgrammingView: React.FC = () => {
 							onClick={() => handleAddCommand(command.id)}
 							disabled={draftProgram.length >= 5}
 							className={cn(
-								'flex flex-col items-center justify-center rounded-xl border-2 p-3 transition-all',
+								'flex flex-col items-center justify-center border-2 p-3 transition-all',
 								command.color,
 								'disabled:cursor-not-allowed disabled:opacity-40'
 							)}
 						>
 							{command.icon}
-							<span className="mt-1 text-xs">{command.label}</span>
+							<span className="mt-1 font-mono text-xs uppercase">
+								{command.label}
+							</span>
 						</button>
 					))}
 				</div>
@@ -236,9 +238,11 @@ export const ProgrammingView: React.FC = () => {
 						</button>
 					</>
 				) : (
-					<div className="border-neon-lime/50 bg-neon-lime/10 text-neon-lime flex w-full flex-col items-center gap-2 rounded-xl border p-4">
+					<div className="border-neon-lime/60 bg-neon-lime/10 text-neon-lime flex w-full flex-col items-center gap-2 border-2 p-4">
 						<Check className="h-8 w-8" />
-						<span className="font-medium">{config.submittedMessage}</span>
+						<span className="font-mono font-medium tracking-wide uppercase">
+							{config.submittedMessage}
+						</span>
 					</div>
 				)}
 			</div>
