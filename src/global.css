@@ -135,6 +135,83 @@ body {
 	animation: glitch 0.2s steps(4) infinite;
 }
 
+/* Chibi robot animations */
+@keyframes antenna-bob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-2px);
+	}
+}
+
+@keyframes chibi-idle {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.02);
+	}
+}
+
+@keyframes chibi-broken {
+	0% {
+		transform: rotate(0deg);
+		opacity: 1;
+	}
+	10% {
+		transform: rotate(-5deg) translateX(-2px);
+	}
+	20% {
+		transform: rotate(5deg) translateX(2px);
+	}
+	30% {
+		transform: rotate(-3deg) translateX(-1px);
+	}
+	40% {
+		transform: rotate(8deg);
+		opacity: 1;
+	}
+	100% {
+		transform: rotate(8deg);
+		opacity: 0;
+	}
+}
+
+@keyframes shield-bubble {
+	0%,
+	100% {
+		opacity: 0.6;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.85;
+		transform: scale(1.03);
+	}
+}
+
+.animate-antenna-bob {
+	animation: antenna-bob 2s ease-in-out infinite;
+	will-change: transform;
+}
+
+.animate-chibi-idle {
+	animation: chibi-idle 3s ease-in-out infinite;
+	will-change: transform;
+}
+
+.animate-chibi-broken {
+	animation: chibi-broken 1.5s ease-out forwards;
+	will-change: transform, opacity;
+}
+
+.animate-shield-bubble {
+	animation: shield-bubble 1.5s ease-in-out infinite;
+	will-change: opacity, transform;
+}
+
 /* Robot mechanical indicator */
 .robot-indicator {
 	@apply relative;

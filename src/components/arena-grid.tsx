@@ -12,6 +12,7 @@ import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
 import { ChevronUp, Heart, Shield, Skull, Zap } from 'lucide-react';
 import * as React from 'react';
+import { ChibiRobot } from './chibi-robot';
 
 interface ArenaGridProps {
 	/** Highlighted robot client ID (e.g., current player) */
@@ -217,16 +218,19 @@ interface RobotSpriteProps {
 	isHighlighted?: boolean;
 	showName?: boolean;
 	cellSize: number;
+	isBroken?: boolean;
 }
 
 const RobotSprite: React.FC<RobotSpriteProps> = ({
 	robot,
 	isHighlighted,
 	showName,
-	cellSize
+	cellSize,
+	isBroken = false
 }) => {
 	const colors = ROBOT_COLOR_CLASSES[robot.color];
 	const rotationDeg = ROTATION_DEGREES[robot.rotation];
+	const chibiSize = cellSize * 0.85;
 
 	return (
 		<div
@@ -241,60 +245,49 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 				height: cellSize
 			}}
 		>
-			{/* Robot body - boxy mechanical style */}
+			{/* Chibi Robot */}
 			<div
-				className={cn(
-					'relative flex items-center justify-center border-2 transition-all duration-200',
-					colors.bg,
-					colors.border,
-					isHighlighted && colors.glow,
-					'bg-opacity-90'
-				)}
 				style={{
-					width: cellSize * 0.7,
-					height: cellSize * 0.7,
-					transform: `rotate(${rotationDeg}deg)`
+					transform: `rotate(${rotationDeg}deg)`,
+					transition: 'transform 0.2s ease-out'
 				}}
 			>
-				{/* Direction indicator (blocky arrow) */}
-				<div className="absolute -top-1 left-1/2 -translate-x-1/2 border-r-[5px] border-b-[8px] border-l-[5px] border-r-transparent border-b-slate-900 border-l-transparent" />
-				{/* Robot rivet details */}
-				<div className="absolute top-1 left-1 h-1 w-1 rounded-full bg-slate-900/60" />
-				<div className="absolute top-1 right-1 h-1 w-1 rounded-full bg-slate-900/60" />
-				<div className="absolute bottom-1 left-1 h-1 w-1 rounded-full bg-slate-900/60" />
-				<div className="absolute right-1 bottom-1 h-1 w-1 rounded-full bg-slate-900/60" />
+				<ChibiRobot
+					color={robot.color}
+					lives={robot.lives}
+					size={chibiSize}
+					hasShield={robot.shield > 0}
+					hasPowerBoost={robot.powerBoost}
+					isHighlighted={isHighlighted}
+					isBroken={isBroken}
+				/>
 			</div>
 
-			{/* Buff indicators - industrial LED style */}
-			<div className="absolute top-0 -right-1 flex flex-col gap-0.5">
-				{robot.shield > 0 && (
-					<div className="border-neon-cyan/60 flex h-4 w-4 items-center justify-center border bg-slate-800">
-						<Shield className="text-neon-cyan h-3 w-3" />
-					</div>
-				)}
-				{robot.powerBoost && (
-					<div className="border-neon-orange/60 flex h-4 w-4 items-center justify-center border bg-slate-800">
-						<Zap className="text-neon-orange h-3 w-3" />
-					</div>
-				)}
-			</div>
+			{/* Power boost indicator (shown as small lightning when active) */}
+			{robot.powerBoost && !isBroken && (
+				<div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900/80">
+					<Zap className="text-neon-orange h-3 w-3" fill="currentColor" />
+				</div>
+			)}
 
-			{/* Lives display */}
-			<div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5">
-				{Array.from({ length: 3 }).map((_, i) => (
-					<Heart
-						key={i}
-						className={cn(
-							'h-3 w-3',
-							i < robot.lives ? colors.text : 'text-slate-700'
-						)}
-						fill={i < robot.lives ? 'currentColor' : 'none'}
-					/>
-				))}
-			</div>
+			{/* Lives display (hidden when broken) */}
+			{!isBroken && (
+				<div className="absolute -bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5">
+					{Array.from({ length: 3 }).map((_, i) => (
+						<Heart
+							key={i}
+							className={cn(
+								'h-3 w-3',
+								i < robot.lives ? colors.text : 'text-slate-700'
+							)}
+							fill={i < robot.lives ? 'currentColor' : 'none'}
+						/>
+					))}
+				</div>
+			)}
 
-			{/* Player name */}
-			{showName && (
+			{/* Player name (hidden when broken) */}
+			{showName && !isBroken && (
 				<div
 					className={cn(
 						'absolute -top-5 left-1/2 -translate-x-1/2 border border-slate-600 bg-slate-900/90 px-1 font-mono text-xs font-medium tracking-wide whitespace-nowrap uppercase',
@@ -418,6 +411,45 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 		arenaStore.proxy
 	);
 
+	// Track robots that have completed their broken animation and should be hidden
+	const [hiddenRobots, setHiddenRobots] = React.useState<Set<string>>(
+		new Set()
+	);
+	// Track robots currently showing broken animation
+	const [brokenRobots, setBrokenRobots] = React.useState<Set<string>>(
+		new Set()
+	);
+
+	// Detect newly eliminated robots and trigger broken animation
+	React.useEffect(() => {
+		const robotEntries = Object.entries(robots);
+		for (const [clientId, robot] of robotEntries) {
+			// Robot just died (lives went to 0) and hasn't been marked as broken yet
+			if (
+				robot.lives <= 0 &&
+				!brokenRobots.has(clientId) &&
+				!hiddenRobots.has(clientId)
+			) {
+				// Start broken animation
+				setBrokenRobots((prev) => new Set(prev).add(clientId));
+
+				// Hide after 1.5s animation completes
+				setTimeout(() => {
+					setHiddenRobots((prev) => new Set(prev).add(clientId));
+				}, 1500);
+			}
+		}
+	}, [robots, brokenRobots, hiddenRobots]);
+
+	// Reset hidden/broken state when robots are reset (new round/match)
+	React.useEffect(() => {
+		const allAlive = Object.values(robots).every((r) => r.lives > 0);
+		if (allAlive && (hiddenRobots.size > 0 || brokenRobots.size > 0)) {
+			setHiddenRobots(new Set());
+			setBrokenRobots(new Set());
+		}
+	}, [robots, hiddenRobots.size, brokenRobots.size]);
+
 	// Calculate responsive cell size based on grid dimensions
 	const cellSize = calculateCellSize(
 		gridSize.width,
@@ -522,7 +554,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 
 			{/* Robots */}
 			{Object.entries(robots)
-				.filter(([, robot]) => robot.lives > 0)
+				.filter(([clientId]) => !hiddenRobots.has(clientId))
 				.map(([clientId, robot]) => (
 					<RobotSprite
 						key={clientId}
@@ -530,6 +562,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 						isHighlighted={clientId === highlightedRobotId}
 						showName={showNames}
 						cellSize={cellSize}
+						isBroken={brokenRobots.has(clientId)}
 					/>
 				))}
 		</div>
