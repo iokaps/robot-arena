@@ -2,6 +2,7 @@ import { kmClient } from '@/services/km-client';
 import type {
 	ArenaSizeId,
 	MapLayoutId,
+	PickupCell,
 	Position,
 	RobotState,
 	TerrainCell
@@ -16,6 +17,8 @@ export interface ArenaState {
 	obstacles: Record<string, Position>;
 	/** Terrain cells (pits, conveyors), keyed by "x,y" string */
 	terrain: Record<string, TerrainCell>;
+	/** Pickups on the arena, keyed by "x,y" string */
+	pickups: Record<string, PickupCell>;
 	/** Current map layout ID (obstacle pattern) */
 	mapLayoutId: MapLayoutId;
 	/** Selected arena size ID ('auto' for player-count based) */
@@ -27,6 +30,7 @@ const initialState: ArenaState = {
 	robots: {},
 	obstacles: {},
 	terrain: {},
+	pickups: {},
 	mapLayoutId: 'open',
 	selectedSizeId: 'auto'
 };

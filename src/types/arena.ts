@@ -32,6 +32,19 @@ export interface RobotState {
 	color: RobotColor;
 	/** Player name for display */
 	name: string;
+	/** Shield - absorbs next hit then disappears (0 or 1) */
+	shield: number;
+	/** Power boost - next shot deals 2 damage, consumed on use */
+	powerBoost: boolean;
+}
+
+/** Pickup types available in the arena */
+export type PickupType = 'health-pack' | 'shield' | 'power-cell';
+
+/** Pickup cell definition */
+export interface PickupCell {
+	position: Position;
+	type: PickupType;
 }
 
 /** Game phase state machine */

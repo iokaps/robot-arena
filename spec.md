@@ -49,9 +49,10 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 ### Spawning
 
-- **All players**: Distributed evenly around arena perimeter
+- **All players**: Distributed evenly around the inner perimeter (1 cell inside walls)
 - Robots face toward center of arena
 - Minimum spacing ensured by perimeter distribution
+- Spawn positions avoid wall obstacles to ensure robots can move immediately
 
 ## Robots
 
@@ -78,10 +79,11 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 1. **Rotation**: All rotations applied simultaneously
 2. **Movement**: All movements attempted simultaneously
-3. **Shooting**: All shots fired simultaneously
-4. **Damage**: Apply damage from shots
-5. **Pit Death**: Robots standing on pits are eliminated
-6. **Conveyor Push**: Conveyors push robots 1 cell (can push onto pits)
+3. **Pickup Collection**: Robots standing on pickups collect them
+4. **Shooting**: All shots fired simultaneously
+5. **Damage**: Apply damage from shots (shields absorb first)
+6. **Pit Death**: Robots standing on pits are eliminated
+7. **Conveyor Push**: Conveyors push robots 1 cell (can push onto pits)
 
 ### Collision Rules
 
@@ -93,8 +95,25 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 - **Type**: Hit-scan (instant)
 - **Range**: Infinite until hitting obstacle or edge
-- **Damage**: 1 life per hit
+- **Damage**: 1 life per hit (2 with Power Cell)
 - **Penetration**: Stops at first robot hit
+
+### Pickups
+
+Collectible items that spawn on the arena and provide bonuses.
+
+| Pickup      | Icon | Effect                                | Duration   |
+| ----------- | ---- | ------------------------------------- | ---------- |
+| Health Pack | ❤️   | Restore 1 life (max 3)                | Instant    |
+| Shield      | 🛡️   | Block the next incoming hit           | Until hit  |
+| Power Cell  | ⚡   | Next shot deals 2 damage instead of 1 | Single use |
+
+**Spawn Rules:**
+
+- 1-3 pickups spawn based on arena size (small=1, medium=2, large=3)
+- New pickups spawn at the start of each round
+- Pickups spawn in center region, avoiding walls, terrain, and robots
+- Collected when a robot moves onto the pickup cell
 
 ### Elimination
 

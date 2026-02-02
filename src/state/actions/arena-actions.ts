@@ -5,6 +5,8 @@ import type {
 	ArenaSizeId,
 	MapLayout,
 	MapLayoutId,
+	PickupCell,
+	PickupType,
 	Position,
 	RobotColor,
 	Rotation,
@@ -306,8 +308,10 @@ function getPerimeterSpawnPositions(
 	const spawns: Array<{ position: Position; rotation: Rotation }> = [];
 	const { width, height } = gridSize;
 
-	// Calculate perimeter length (excluding corners counted twice)
-	const perimeter = 2 * (width + height) - 4;
+	// Calculate inner perimeter length (1 cell inside the walls)
+	const innerWidth = width - 2;
+	const innerHeight = height - 2;
+	const perimeter = 2 * (innerWidth + innerHeight) - 4;
 	const spacing = perimeter / playerCount;
 
 	for (let i = 0; i < playerCount; i++) {
@@ -325,44 +329,129 @@ function getPerimeterSpawnPositions(
 
 /**
  * Convert perimeter index to grid position and rotation facing center.
+ * Spawns 1 cell inside the walls so robots aren't stuck on obstacle perimeter.
  */
 function perimeterToPositionAndRotation(
 	index: number,
 	width: number,
 	height: number
 ): { position: Position; rotation: Rotation } {
+	// Inner perimeter dimensions (1 cell inside the walls)
+	const innerWidth = width - 2;
+	const innerHeight = height - 2;
+
 	// Top edge (left to right)
-	if (index < width) {
+	if (index < innerWidth) {
 		return {
-			position: { x: index, y: 0 },
+			position: { x: index + 1, y: 1 },
 			rotation: 180 // Face down
 		};
 	}
-	index -= width;
+	index -= innerWidth;
 
 	// Right edge (top to bottom, excluding top-right corner)
-	if (index < height - 1) {
+	if (index < innerHeight - 1) {
 		return {
-			position: { x: width - 1, y: index + 1 },
+			position: { x: width - 2, y: index + 2 },
 			rotation: 270 // Face left
 		};
 	}
-	index -= height - 1;
+	index -= innerHeight - 1;
 
 	// Bottom edge (right to left, excluding bottom-right corner)
-	if (index < width - 1) {
+	if (index < innerWidth - 1) {
 		return {
-			position: { x: width - 2 - index, y: height - 1 },
+			position: { x: width - 3 - index, y: height - 2 },
 			rotation: 0 // Face up
 		};
 	}
-	index -= width - 1;
+	index -= innerWidth - 1;
 
 	// Left edge (bottom to top, excluding corners)
 	return {
-		position: { x: 0, y: height - 2 - index },
+		position: { x: 1, y: height - 3 - index },
 		rotation: 90 // Face right
 	};
+}
+
+/** Available pickup types for spawning */
+const PICKUP_TYPES: PickupType[] = ['health-pack', 'shield', 'power-cell'];
+
+/**
+ * Generate pickups for the arena, avoiding obstacles, terrain, and robot positions.
+ * Spawns 1-3 pickups based on arena size.
+ */
+export function generatePickups(
+	gridSize: { width: number; height: number },
+	obstacles: Record<string, Position>,
+	terrain: Record<string, TerrainCell>,
+	robotPositions: Position[]
+): Record<string, PickupCell> {
+	const pickups: Record<string, PickupCell> = {};
+	const { width, height } = gridSize;
+
+	// Calculate number of pickups based on arena size (1-3)
+	const totalCells = width * height;
+	const pickupCount = totalCells < 150 ? 1 : totalCells < 300 ? 2 : 3;
+
+	// Create exclusion set for positions we can't use
+	const excluded = new Set<string>();
+
+	// Exclude obstacles
+	for (const key of Object.keys(obstacles)) {
+		excluded.add(key);
+	}
+
+	// Exclude terrain (pits, conveyors)
+	for (const key of Object.keys(terrain)) {
+		excluded.add(key);
+	}
+
+	// Exclude robot positions and 1-cell buffer around them
+	for (const pos of robotPositions) {
+		for (let dx = -1; dx <= 1; dx++) {
+			for (let dy = -1; dy <= 1; dy++) {
+				excluded.add(`${pos.x + dx},${pos.y + dy}`);
+			}
+		}
+	}
+
+	// Exclude edges (wall perimeter)
+	for (let x = 0; x < width; x++) {
+		excluded.add(`${x},0`);
+		excluded.add(`${x},${height - 1}`);
+	}
+	for (let y = 0; y < height; y++) {
+		excluded.add(`0,${y}`);
+		excluded.add(`${width - 1},${y}`);
+	}
+
+	// Try to place pickups
+	let placed = 0;
+	let attempts = 0;
+	const maxAttempts = pickupCount * 50;
+
+	while (placed < pickupCount && attempts < maxAttempts) {
+		// Prefer center region for pickups
+		const margin = Math.floor(Math.min(width, height) * 0.2);
+		const x = margin + Math.floor(Math.random() * (width - 2 * margin));
+		const y = margin + Math.floor(Math.random() * (height - 2 * margin));
+		const key = `${x},${y}`;
+
+		if (!excluded.has(key) && !pickups[key]) {
+			const type =
+				PICKUP_TYPES[Math.floor(Math.random() * PICKUP_TYPES.length)];
+			pickups[key] = {
+				position: { x, y },
+				type
+			};
+			excluded.add(key);
+			placed++;
+		}
+		attempts++;
+	}
+
+	return pickups;
 }
 
 /**
@@ -432,12 +521,25 @@ export const arenaActions = {
 						rotation: spawn.rotation,
 						lives: 3,
 						color,
-						name: playerName
+						name: playerName,
+						shield: 0,
+						powerBoost: false
 					};
 				});
 
 				// Reset eliminated players
 				matchState.eliminatedPlayers = {};
+
+				// Spawn initial pickups
+				const robotPositions = Object.values(arenaState.robots).map(
+					(r) => r.position
+				);
+				arenaState.pickups = generatePickups(
+					mapConfig.gridSize,
+					arenaState.obstacles,
+					arenaState.terrain,
+					robotPositions
+				);
 			}
 		);
 	},
@@ -465,6 +567,7 @@ export const arenaActions = {
 		await kmClient.transact([arenaStore], ([arenaState]) => {
 			arenaState.robots = {};
 			arenaState.terrain = {};
+			arenaState.pickups = {};
 		});
 	}
 };

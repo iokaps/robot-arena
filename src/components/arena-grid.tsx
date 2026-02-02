@@ -1,5 +1,7 @@
 import { arenaStore } from '@/state/stores/arena-store';
 import type {
+	PickupCell,
+	PickupType,
 	Position,
 	RobotColor,
 	RobotState,
@@ -8,7 +10,7 @@ import type {
 } from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
-import { ChevronUp, Heart, Skull } from 'lucide-react';
+import { ChevronUp, Heart, Shield, Skull, Zap } from 'lucide-react';
 import * as React from 'react';
 
 interface ArenaGridProps {
@@ -149,6 +151,68 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 	return null;
 };
 
+/** Pickup color and icon mapping */
+const PICKUP_STYLES: Record<
+	PickupType,
+	{ bg: string; icon: typeof Heart; iconColor: string; glow: string }
+> = {
+	'health-pack': {
+		bg: 'bg-red-900/60',
+		icon: Heart,
+		iconColor: 'text-red-400',
+		glow: 'shadow-[0_0_10px_rgba(248,113,113,0.6)]'
+	},
+	shield: {
+		bg: 'bg-blue-900/60',
+		icon: Shield,
+		iconColor: 'text-blue-400',
+		glow: 'shadow-[0_0_10px_rgba(96,165,250,0.6)]'
+	},
+	'power-cell': {
+		bg: 'bg-yellow-900/60',
+		icon: Zap,
+		iconColor: 'text-yellow-400',
+		glow: 'shadow-[0_0_10px_rgba(250,204,21,0.6)]'
+	}
+};
+
+/** Pickup sprite component */
+interface PickupSpriteProps {
+	pickup: PickupCell;
+	cellSize: number;
+}
+
+const PickupSprite: React.FC<PickupSpriteProps> = ({ pickup, cellSize }) => {
+	const style = PICKUP_STYLES[pickup.type];
+	const Icon = style.icon;
+
+	return (
+		<div
+			className={cn(
+				'absolute flex items-center justify-center rounded-lg border border-white/20',
+				style.bg,
+				style.glow,
+				'animate-pulse'
+			)}
+			style={{
+				left: pickup.position.x * cellSize + 4,
+				top: pickup.position.y * cellSize + 4,
+				width: cellSize - 8,
+				height: cellSize - 8
+			}}
+		>
+			<Icon
+				className={style.iconColor}
+				style={{
+					width: cellSize * 0.45,
+					height: cellSize * 0.45
+				}}
+				fill="currentColor"
+			/>
+		</div>
+	);
+};
+
 interface RobotSpriteProps {
 	robot: RobotState;
 	isHighlighted?: boolean;
@@ -195,6 +259,20 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 			>
 				{/* Direction indicator (triangle pointing up) */}
 				<div className="absolute -top-1 left-1/2 -translate-x-1/2 border-r-[6px] border-b-[10px] border-l-[6px] border-r-transparent border-b-slate-900 border-l-transparent" />
+			</div>
+
+			{/* Buff indicators */}
+			<div className="absolute top-0 -right-1 flex flex-col gap-0.5">
+				{robot.shield > 0 && (
+					<div className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500/80 shadow-[0_0_6px_rgba(96,165,250,0.8)]">
+						<Shield className="h-3 w-3 text-white" />
+					</div>
+				)}
+				{robot.powerBoost && (
+					<div className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(250,204,21,0.8)]">
+						<Zap className="h-3 w-3 text-white" />
+					</div>
+				)}
 			</div>
 
 			{/* Lives display */}
@@ -337,7 +415,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	activeShots = [],
 	className
 }) => {
-	const { gridSize, robots, obstacles, terrain } = useSnapshot(
+	const { gridSize, robots, obstacles, terrain, pickups } = useSnapshot(
 		arenaStore.proxy
 	);
 
@@ -412,6 +490,15 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 						width: cellSize - 4,
 						height: cellSize - 4
 					}}
+				/>
+			))}
+
+			{/* Pickups */}
+			{Object.values(pickups).map((pickup) => (
+				<PickupSprite
+					key={`pickup-${pickup.position.x}-${pickup.position.y}`}
+					pickup={pickup}
+					cellSize={cellSize}
 				/>
 			))}
 

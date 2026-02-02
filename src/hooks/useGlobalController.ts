@@ -1,4 +1,5 @@
 import { kmClient } from '@/services/km-client';
+import { generatePickups } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { gameSessionStore } from '@/state/stores/game-session-store';
 import { matchStore } from '@/state/stores/match-store';
@@ -303,8 +304,37 @@ export function useGlobalController(): boolean {
 					}
 				}
 
-				// 4. Process shooting
-				const hits: Array<{ targetId: string; damage: number }> = [];
+				// 4. Pickup collection - check robots standing on pickups
+				for (const clientId of robotIds) {
+					const robot = arenaState.robots[clientId];
+					if (!robot || robot.lives <= 0) continue;
+
+					const pickupKey = `${robot.position.x},${robot.position.y}`;
+					const pickup = arenaState.pickups[pickupKey];
+					if (pickup) {
+						// Apply pickup effect
+						switch (pickup.type) {
+							case 'health-pack':
+								robot.lives = Math.min(3, robot.lives + 1);
+								break;
+							case 'shield':
+								robot.shield = 1;
+								break;
+							case 'power-cell':
+								robot.powerBoost = true;
+								break;
+						}
+						// Remove collected pickup
+						delete arenaState.pickups[pickupKey];
+					}
+				}
+
+				// 5. Process shooting
+				const hits: Array<{
+					targetId: string;
+					damage: number;
+					shooterId: string;
+				}> = [];
 
 				for (const clientId of robotIds) {
 					const robot = arenaState.robots[clientId];
@@ -324,24 +354,42 @@ export function useGlobalController(): boolean {
 						);
 
 						if (target) {
-							hits.push({ targetId: target, damage: 1 });
+							// Power boost deals 2 damage, otherwise 1
+							const damage = robot.powerBoost ? 2 : 1;
+							hits.push({ targetId: target, damage, shooterId: clientId });
+						}
+
+						// Consume power boost after shooting (whether hit or not)
+						if (robot.powerBoost) {
+							robot.powerBoost = false;
 						}
 					}
 				}
 
-				// Apply damage
+				// Apply damage (shields absorb first)
 				for (const hit of hits) {
 					const robot = arenaState.robots[hit.targetId];
 					if (robot && robot.lives > 0) {
-						robot.lives -= hit.damage;
-						if (robot.lives <= 0) {
-							robot.lives = 0;
-							matchState.eliminatedPlayers[hit.targetId] = true;
+						let remainingDamage = hit.damage;
+
+						// Shield absorbs 1 damage then breaks
+						if (robot.shield > 0) {
+							robot.shield = 0;
+							remainingDamage -= 1;
+						}
+
+						// Apply remaining damage to lives
+						if (remainingDamage > 0) {
+							robot.lives -= remainingDamage;
+							if (robot.lives <= 0) {
+								robot.lives = 0;
+								matchState.eliminatedPlayers[hit.targetId] = true;
+							}
 						}
 					}
 				}
 
-				// 5. Check for pit deaths (robots standing on pits after movement)
+				// 6. Check for pit deaths (robots standing on pits after movement)
 				for (const clientId of robotIds) {
 					const robot = arenaState.robots[clientId];
 					if (!robot || robot.lives <= 0) continue;
@@ -355,7 +403,7 @@ export function useGlobalController(): boolean {
 					}
 				}
 
-				// 6. Apply conveyor belt movements (end of tick)
+				// 7. Apply conveyor belt movements (end of tick)
 				const conveyorMoves: Record<string, Position> = {};
 				for (const clientId of robotIds) {
 					const robot = arenaState.robots[clientId];
@@ -462,6 +510,17 @@ export function useGlobalController(): boolean {
 					matchState.submittedPlayers = {};
 					matchState.currentTick = -1;
 					programsState.programs = {};
+
+					// Spawn new pickups for the round
+					const robotPositions = Object.values(arenaState.robots)
+						.filter((r) => r.lives > 0)
+						.map((r) => r.position);
+					arenaState.pickups = generatePickups(
+						arenaState.gridSize,
+						arenaState.obstacles,
+						arenaState.terrain,
+						robotPositions
+					);
 				}
 			}
 		);

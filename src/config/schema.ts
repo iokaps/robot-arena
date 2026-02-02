@@ -74,6 +74,12 @@ export const schema = z.object({
 	hostTerrainWall: z.string().default('Wall - Blocks movement & lasers'),
 	hostTerrainPit: z.string().default('Pit - Instant elimination'),
 	hostTerrainConveyor: z.string().default('Conveyor - Pushes robots each tick'),
+	hostPickupsTitle: z.string().default('Pickups'),
+	hostPickupHealthPack: z.string().default('Health Pack - Restores 1 life'),
+	hostPickupShield: z.string().default('Shield - Blocks next hit'),
+	hostPickupPowerCell: z
+		.string()
+		.default('Power Cell - Next shot deals 2 damage'),
 	hostRulesTitle: z.string().default('Quick Rules'),
 	hostRule1: z.string().default('Each robot has 3 lives'),
 	hostRule2: z.string().default('60 seconds to program 5 moves'),
