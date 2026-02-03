@@ -48,7 +48,6 @@ playerNameButton: 'Join Arena'
 playerLinkLabel: 'Player Link'
 presenterLinkLabel: 'Presenter Link'
 togglePresenterQrButton: 'Toggle QR Code'
-menuAriaLabel: 'Open menu'
 menuHelpAriaLabel: 'Help'
 
 # Help
@@ -113,8 +112,6 @@ forPlayersLabel: 'for'
 robotStatusLabel: 'Robots'
 startMatchButton: 'Start Match'
 resetMatchButton: 'Reset Match'
-startButton: 'Start Match'
-stopButton: 'End Match'
 
 # Host How to Play
 hostHowToPlayTitle: 'How to Play'
@@ -127,10 +124,6 @@ hostTerrainTitle: 'Terrain Types'
 hostTerrainWall: 'Wall - Blocks movement & lasers'
 hostTerrainPit: 'Pit - Instant elimination'
 hostTerrainConveyor: 'Conveyor - Pushes robots each tick'
-hostPickupsTitle: 'Pickups'
-hostPickupHealthPack: 'Health Pack - Restores 1 life'
-hostPickupShield: 'Shield - Blocks next hit'
-hostPickupPowerCell: 'Power Cell - Next shot deals 2 damage'
 hostRulesTitle: 'Quick Rules'
 hostRule1: 'Each robot has 3 lives'
 hostRule2: '60 seconds to program 5 moves'
@@ -168,6 +161,5 @@ matchCompleteMessage: 'The match has ended. Waiting for host to start a new matc
 
 # Misc
 loading: 'Loading...'
-players: 'Players'
 online: 'Online'
-offline: 'Offline'
+logoText: 'Code-A-Bot'

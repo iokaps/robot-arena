@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import { cn } from '@/utils/cn';
 
 interface LogoProps {
@@ -16,7 +17,7 @@ export function Logo({ className }: LogoProps) {
 			)}
 		>
 			<span className="text-slate-500">[</span>
-			<span>Code-A-Bot</span>
+			<span>{config.logoText}</span>
 			<span className="text-slate-500">]</span>
 		</div>
 	);

@@ -27,7 +27,6 @@ export const schema = z.object({
 	playerLinkLabel: z.string().default('Player Link'),
 	presenterLinkLabel: z.string().default('Presenter Link'),
 	togglePresenterQrButton: z.string().default('Toggle QR Code'),
-	menuAriaLabel: z.string().default('Open menu'),
 	menuHelpAriaLabel: z.string().default('Help'),
 
 	// Help
@@ -60,8 +59,6 @@ export const schema = z.object({
 	robotStatusLabel: z.string().default('Robots'),
 	startMatchButton: z.string().default('Start Match'),
 	resetMatchButton: z.string().default('Reset Match'),
-	startButton: z.string().default('Start Match'),
-	stopButton: z.string().default('End Match'),
 
 	// Host How to Play
 	hostHowToPlayTitle: z.string().default('How to Play'),
@@ -74,12 +71,6 @@ export const schema = z.object({
 	hostTerrainWall: z.string().default('Wall - Blocks movement & lasers'),
 	hostTerrainPit: z.string().default('Pit - Instant elimination'),
 	hostTerrainConveyor: z.string().default('Conveyor - Pushes robots each tick'),
-	hostPickupsTitle: z.string().default('Pickups'),
-	hostPickupHealthPack: z.string().default('Health Pack - Restores 1 life'),
-	hostPickupShield: z.string().default('Shield - Blocks next hit'),
-	hostPickupPowerCell: z
-		.string()
-		.default('Power Cell - Next shot deals 2 damage'),
 	hostRulesTitle: z.string().default('Quick Rules'),
 	hostRule1: z.string().default('Each robot has 3 lives'),
 	hostRule2: z.string().default('60 seconds to program 5 moves'),
@@ -121,9 +112,8 @@ export const schema = z.object({
 
 	// Misc
 	loading: z.string().default('Loading...'),
-	players: z.string().default('Players'),
 	online: z.string().default('Online'),
-	offline: z.string().default('Offline')
+	logoText: z.string().default('Code-A-Bot')
 });
 
 export type Config = z.infer<typeof schema>;
