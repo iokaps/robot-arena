@@ -353,13 +353,17 @@ export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 	className
 }) => {
 	const colors = COLOR_VALUES[color];
-	const viewBoxSize = 100;
+	// Extended viewBox to accommodate direction arrow above robot
+	// viewBox starts at y=-20 to give space for the arrow indicator
+	const viewBoxMinY = -20;
+	const viewBoxHeight = 120;
+	const viewBoxWidth = 100;
 
 	return (
 		<svg
 			width={size}
 			height={size}
-			viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+			viewBox={`0 ${viewBoxMinY} ${viewBoxWidth} ${viewBoxHeight}`}
 			className={cn(
 				'will-change-transform',
 				isBroken && 'animate-chibi-broken',
@@ -391,7 +395,43 @@ export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 					<stop offset="70%" stopColor={colors.primary} stopOpacity="0.15" />
 					<stop offset="100%" stopColor={colors.primary} stopOpacity="0.4" />
 				</radialGradient>
+
+				{/* Arrow glow filter */}
+				<filter
+					id={`arrowGlow-${color}`}
+					x="-50%"
+					y="-50%"
+					width="200%"
+					height="200%"
+				>
+					<feDropShadow
+						dx="0"
+						dy="0"
+						stdDeviation="2"
+						floodColor={colors.glow}
+						floodOpacity="0.8"
+					/>
+				</filter>
 			</defs>
+
+			{/* Direction arrow indicator (above robot) */}
+			{!isBroken && (
+				<g className="animate-arrow-pulse">
+					<polygon
+						points="50,-15 36,6 43,6 43,16 57,16 57,6 64,6"
+						fill={colors.glow}
+						filter={`url(#arrowGlow-${color})`}
+					/>
+					{/* Arrow outline for definition */}
+					<polygon
+						points="50,-15 36,6 43,6 43,16 57,16 57,6 64,6"
+						fill="none"
+						stroke={colors.secondary}
+						strokeWidth="1.5"
+						strokeOpacity="0.6"
+					/>
+				</g>
+			)}
 
 			{/* Shield bubble dome (behind robot) */}
 			{hasShield && (
@@ -585,13 +625,6 @@ export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 				height="10"
 				fill="oklch(0.35 0.01 240)"
 				rx="1"
-			/>
-
-			{/* Direction indicator (chevron on chest) */}
-			<polygon
-				points="50,60 42,68 44,70 50,64 56,70 58,68"
-				fill={colors.glow}
-				opacity="0.8"
 			/>
 
 			{/* Broken state extras */}

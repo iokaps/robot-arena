@@ -212,6 +212,25 @@ body {
 	will-change: opacity, transform;
 }
 
+/* Direction arrow pulse animation */
+@keyframes arrow-pulse {
+	0%,
+	100% {
+		opacity: 0.75;
+		transform: translateY(0) scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(-1px) scale(1.05);
+	}
+}
+
+.animate-arrow-pulse {
+	animation: arrow-pulse 1.5s ease-in-out infinite;
+	will-change: opacity, transform;
+	transform-origin: center bottom;
+}
+
 /* Robot mechanical indicator */
 .robot-indicator {
 	@apply relative;
