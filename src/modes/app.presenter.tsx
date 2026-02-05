@@ -89,7 +89,10 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	const remainingMs = Math.max(0, totalMs - elapsedMs);
 	const isUrgent = remainingMs < 10000 && phase === 'programming';
 
-	const robotCount = Object.keys(robots).length;
+	// Count only alive robots for submission status
+	const aliveRobotCount = Object.values(robots).filter(
+		(robot) => robot.lives > 0
+	).length;
 	const submittedCount = Object.keys(submittedPlayers).length;
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
 
@@ -204,7 +207,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					{phase === 'programming' && (
 						<div className="flex items-center gap-2 font-mono text-slate-400">
 							<span>
-								{submittedCount}/{robotCount} {config.submittedLabel}
+								{submittedCount}/{aliveRobotCount} {config.submittedLabel}
 							</span>
 						</div>
 					)}

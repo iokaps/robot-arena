@@ -56,18 +56,27 @@ export function useGlobalController(): boolean {
 
 	// Track if we're currently executing to prevent duplicate ticks
 	const isExecutingRef = useRef(false);
-	const lastTickRef = useRef(-1);
 
 	// Maintain connection that is assigned to be the global controller
+	// Any connected client can become controller - works across all modes (host, player, presenter)
 	useEffect(() => {
+		// Skip if no connections yet
+		if (connectionIds.size === 0) {
+			return;
+		}
+
 		// Check if global controller is online
 		if (connectionIds.has(controllerConnectionId)) {
 			return;
 		}
 
-		// Select new host, sorting by connection id
+		// Select new controller, sorting by connection id for deterministic selection
 		kmClient
 			.transact([gameSessionStore], ([gameSessionState]) => {
+				// Double-check inside transaction to prevent race conditions
+				if (connectionIds.has(gameSessionState.controllerConnectionId)) {
+					return;
+				}
 				const connectionIdsArray = Array.from(connectionIds);
 				connectionIdsArray.sort();
 				gameSessionState.controllerConnectionId = connectionIdsArray[0] || '';
@@ -114,10 +123,9 @@ export function useGlobalController(): boolean {
 
 						matchState.phase = 'executing';
 						matchState.phaseStartTimestamp = kmClient.serverTimestamp();
-						matchState.currentTick = 0;
+						matchState.currentTick = -1; // Will increment to 0 on first tick
 					}
 				);
-				lastTickRef.current = -1;
 			}
 		};
 
@@ -146,10 +154,11 @@ export function useGlobalController(): boolean {
 			const tickDuration = 1200; // 1.2 seconds per tick for animations
 			const expectedTick = Math.floor(elapsedMs / tickDuration);
 
-			// Don't re-execute the same tick
-			if (expectedTick <= lastTickRef.current || expectedTick > 4) {
+			// Use currentTick from store as source of truth for what's been executed
+			// This ensures new controllers can correctly resume from where the previous left off
+			if (expectedTick <= currentTick || expectedTick > 4) {
 				// Check if execution is complete
-				if (expectedTick > 4 && lastTickRef.current >= 4) {
+				if (expectedTick > 4 && currentTick >= 4) {
 					// Execution complete, check for winner or start next round
 					await handleExecutionComplete();
 				}
@@ -157,7 +166,6 @@ export function useGlobalController(): boolean {
 			}
 
 			isExecutingRef.current = true;
-			lastTickRef.current = expectedTick;
 
 			try {
 				// Execute the current tick
@@ -524,7 +532,6 @@ export function useGlobalController(): boolean {
 				}
 			}
 		);
-		lastTickRef.current = -1;
 	};
 
 	return isGlobalController;
