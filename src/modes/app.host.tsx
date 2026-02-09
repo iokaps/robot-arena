@@ -73,8 +73,11 @@ function App({ clientContext }: ModeGuardProps<'host'>) {
 		<HostPresenterLayout.Root>
 			<HostPresenterLayout.Header>
 				<div className="flex items-center gap-3 text-slate-400">
-					<Users className="h-5 w-5" />
-					<span>
+					<div className="relative">
+						<Users className="h-5 w-5" />
+						<div className="bg-neon-lime absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full shadow-[0_0_4px_var(--color-neon-lime)]" />
+					</div>
+					<span className="font-mono text-sm">
 						{onlinePlayersCount} {config.online.toLowerCase()}
 					</span>
 				</div>

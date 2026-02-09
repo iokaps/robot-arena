@@ -84,14 +84,15 @@ export function HostControls() {
 				</span>
 				<div
 					className={cn(
-						'font-display border-2 px-4 py-2 text-sm tracking-wide uppercase',
-						phase === 'lobby' && 'border-slate-600 bg-slate-800 text-slate-300',
+						'font-display rounded-sm border-2 px-4 py-2 text-sm tracking-wider uppercase',
+						phase === 'lobby' &&
+							'border-slate-700 bg-slate-800/60 text-slate-400',
 						phase === 'programming' &&
-							'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan',
+							'border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan shadow-[0_0_10px_var(--color-neon-cyan)/0.15]',
 						phase === 'executing' &&
-							'border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia',
+							'border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia shadow-[0_0_10px_var(--color-neon-fuchsia)/0.15]',
 						phase === 'results' &&
-							'border-neon-lime/60 bg-neon-lime/10 text-neon-lime'
+							'border-neon-lime/50 bg-neon-lime/10 text-neon-lime shadow-[0_0_10px_var(--color-neon-lime)/0.15]'
 					)}
 				>
 					{phase === 'lobby' && config.phaseLobby}
@@ -107,7 +108,7 @@ export function HostControls() {
 			{phase === 'lobby' && (
 				<div className="space-y-4">
 					{/* How to Play - Collapsible */}
-					<div className="border-2 border-slate-600 bg-slate-800/50">
+					<div className="rounded-sm border-2 border-slate-700 bg-slate-800/40 backdrop-blur-sm">
 						<button
 							type="button"
 							onClick={() => setShowHowToPlay(!showHowToPlay)}
@@ -202,8 +203,8 @@ export function HostControls() {
 									className={cn(
 										'border-2 px-3 py-2 font-mono text-sm uppercase transition-all',
 										selectedSizeId === sizeId
-											? 'border-neon-cyan bg-neon-cyan/20 text-neon-cyan'
-											: 'hover:border-neon-cyan/60 border-slate-600 bg-slate-800 text-slate-300'
+											? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
+											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
 									)}
 								>
 									{ARENA_SIZE_LABELS[sizeId]}
@@ -227,8 +228,8 @@ export function HostControls() {
 									className={cn(
 										'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
 										mapLayoutId === layout.id
-											? 'border-neon-cyan bg-neon-cyan/20 text-neon-cyan'
-											: 'hover:border-neon-cyan/60 border-slate-600 bg-slate-800 text-slate-300'
+											? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
+											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
 									)}
 								>
 									{layout.name}
@@ -263,8 +264,8 @@ export function HostControls() {
 			)}
 
 			{/* Player count */}
-			<div className="flex items-center gap-4 border-2 border-slate-600 bg-slate-800/50 px-4 py-3">
-				<Users className="text-neon-cyan h-5 w-5" />
+			<div className="flex items-center gap-4 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-4 py-3 backdrop-blur-sm">
+				<Users className="text-neon-cyan h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
 				<span className="font-mono text-slate-300">
 					{playerCount} {config.playersJoinedLabel}
 				</span>
@@ -285,7 +286,7 @@ export function HostControls() {
 						{Object.entries(robots).map(([clientId, robot]) => (
 							<div
 								key={clientId}
-								className="flex items-center gap-2 border-2 border-slate-600 bg-slate-800 px-3 py-2"
+								className="flex items-center gap-2 rounded-sm border-2 border-slate-700 bg-slate-800/60 px-3 py-2"
 							>
 								<span
 									className={cn(

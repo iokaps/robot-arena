@@ -7,7 +7,7 @@ import Markdown from 'react-markdown';
  */
 export function GameLobbyView() {
 	return (
-		<article className="prose">
+		<article className="animate-fade-in-up prose">
 			<Markdown>{config.gameLobbyMd}</Markdown>
 		</article>
 	);

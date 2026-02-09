@@ -112,15 +112,16 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 	if (terrain.type === 'pit') {
 		return (
 			<div
-				className="border-neon-rose/50 absolute flex items-center justify-center border-2 bg-slate-950"
+				className="border-neon-rose/40 absolute flex items-center justify-center rounded-sm border-2 bg-slate-950/90"
 				style={{
 					left: terrain.position.x * cellSize + 2,
 					top: terrain.position.y * cellSize + 2,
 					width: cellSize - 4,
-					height: cellSize - 4
+					height: cellSize - 4,
+					boxShadow: 'inset 0 0 8px oklch(0.65 0.2 20 / 0.2)'
 				}}
 			>
-				<Skull className="text-neon-rose/70 h-1/2 w-1/2" />
+				<Skull className="text-neon-rose/60 h-1/2 w-1/2" />
 			</div>
 		);
 	}
@@ -129,12 +130,13 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 		const rotation = terrain.direction ?? 0;
 		return (
 			<div
-				className="border-neon-fuchsia/40 absolute flex items-center justify-center border-2 bg-slate-900/80"
+				className="border-neon-fuchsia/30 absolute flex items-center justify-center rounded-sm border-2 bg-slate-900/80"
 				style={{
 					left: terrain.position.x * cellSize + 2,
 					top: terrain.position.y * cellSize + 2,
 					width: cellSize - 4,
-					height: cellSize - 4
+					height: cellSize - 4,
+					boxShadow: 'inset 0 0 6px oklch(0.68 0.18 340 / 0.15)'
 				}}
 			>
 				<ChevronUp
@@ -190,7 +192,7 @@ const PickupSprite: React.FC<PickupSpriteProps> = ({ pickup, cellSize }) => {
 	return (
 		<div
 			className={cn(
-				'absolute flex items-center justify-center border-2',
+				'animate-pickup-bob absolute flex items-center justify-center rounded-sm border-2',
 				style.bg,
 				style.border
 			)}
@@ -290,9 +292,10 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 			{showName && !isBroken && (
 				<div
 					className={cn(
-						'absolute -top-5 left-1/2 -translate-x-1/2 border border-slate-600 bg-slate-900/90 px-1 font-mono text-xs font-medium tracking-wide whitespace-nowrap uppercase',
+						'absolute -top-5 left-1/2 -translate-x-1/2 rounded-sm border border-slate-700 bg-slate-900/95 px-1.5 py-0.5 font-mono text-xs font-medium tracking-wide whitespace-nowrap uppercase',
 						colors.text
 					)}
+					style={{ textShadow: '0 0 6px currentColor' }}
 				>
 					{robot.name}
 				</div>
@@ -385,12 +388,17 @@ const LaserBeam: React.FC<LaserBeamProps> = ({
 
 	return (
 		<div
-			className={cn('absolute h-1 origin-left', colors.bg, 'opacity-90')}
+			className={cn(
+				'laser-beam absolute h-0.5 origin-left',
+				colors.bg,
+				'opacity-95'
+			)}
 			style={{
 				left: startCenterX,
-				top: startCenterY - 2,
+				top: startCenterY - 1,
 				width: length,
-				transform: `rotate(${angle}deg)`
+				transform: `rotate(${angle}deg)`,
+				filter: `drop-shadow(0 0 6px currentColor)`
 			}}
 		/>
 	);
@@ -464,7 +472,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	return (
 		<div
 			className={cn(
-				'bg-arena-bg relative overflow-hidden border-2 border-slate-500',
+				'bg-arena-bg arena-border-glow relative overflow-hidden rounded-sm border-2 border-slate-600',
 				className
 			)}
 			style={{ width: gridWidth, height: gridHeight }}
@@ -514,7 +522,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 			{Object.values(obstacles).map((pos) => (
 				<div
 					key={`obstacle-${pos.x}-${pos.y}`}
-					className="bg-arena-obstacle absolute border-2 border-slate-500"
+					className="bg-arena-obstacle obstacle-cell absolute rounded-sm border-2 border-slate-600"
 					style={{
 						left: pos.x * cellSize + 2,
 						top: pos.y * cellSize + 2,

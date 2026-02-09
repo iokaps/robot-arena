@@ -75,13 +75,13 @@ export const SpectatingView: React.FC = () => {
 	}, [currentTick, phase, programs, robots]);
 
 	return (
-		<div className="flex w-full flex-col items-center gap-6">
+		<div className="animate-fade-in-up flex w-full flex-col items-center gap-6">
 			{/* Header with status */}
 			<div className="flex w-full items-center justify-between">
 				{/* My robot status */}
 				{myRobot && (
-					<div className="flex items-center gap-2">
-						<span className="font-mono text-sm text-slate-400 uppercase">
+					<div className="flex items-center gap-2 rounded-sm border border-slate-700 bg-slate-800/60 px-3 py-2">
+						<span className="font-mono text-sm text-slate-500 uppercase">
 							{config.livesLabel}
 						</span>
 						<div className="flex gap-1">
@@ -89,8 +89,10 @@ export const SpectatingView: React.FC = () => {
 								<Heart
 									key={i}
 									className={cn(
-										'h-5 w-5',
-										i < myRobot.lives ? 'text-neon-rose' : 'text-slate-700'
+										'h-5 w-5 transition-all duration-300',
+										i < myRobot.lives
+											? 'text-neon-rose drop-shadow-[0_0_4px_currentColor]'
+											: 'text-slate-700'
 									)}
 									fill={i < myRobot.lives ? 'currentColor' : 'none'}
 								/>
@@ -100,7 +102,7 @@ export const SpectatingView: React.FC = () => {
 				)}
 
 				{/* Execution tick indicator */}
-				<div className="border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 border-2 px-4 py-2">
+				<div className="border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 rounded-sm border-2 px-4 py-2 shadow-[0_0_10px_var(--color-neon-fuchsia)/0.1]">
 					<span className="font-display text-lg tracking-wide uppercase">
 						{config.tickLabel} {currentTick + 1}/5
 					</span>
@@ -118,7 +120,7 @@ export const SpectatingView: React.FC = () => {
 			{/* My program display */}
 			{myProgram.length > 0 && (
 				<div className="flex w-full max-w-md flex-col items-center gap-2">
-					<span className="font-mono text-sm text-slate-400 uppercase">
+					<span className="font-mono text-sm text-slate-500 uppercase">
 						{config.yourProgramLabel}
 					</span>
 					<div className="flex gap-2">
@@ -126,12 +128,12 @@ export const SpectatingView: React.FC = () => {
 							<div
 								key={index}
 								className={cn(
-									'flex h-12 w-12 items-center justify-center border-2 transition-all',
+									'flex h-12 w-12 items-center justify-center rounded-sm border-2 transition-all duration-300',
 									index === currentTick
-										? 'border-neon-lime bg-neon-lime/20 text-neon-lime scale-110'
+										? 'border-neon-lime bg-neon-lime/20 text-neon-lime scale-110 shadow-[0_0_12px_var(--color-neon-lime)/0.3]'
 										: index < currentTick
-											? 'border-slate-600 bg-slate-800 text-slate-500'
-											: 'border-slate-500 bg-slate-700 text-slate-300'
+											? 'border-slate-700 bg-slate-800/50 text-slate-600'
+											: 'border-slate-600 bg-slate-800/80 text-slate-300'
 								)}
 							>
 								{COMMAND_ICONS[command]}

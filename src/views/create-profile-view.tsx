@@ -27,21 +27,26 @@ export function CreateProfileView() {
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-96 space-y-12">
+		<div className="animate-fade-in-up mx-auto w-full max-w-96 space-y-12">
 			<article className="prose text-center">
 				<Markdown>{config.createProfileMd}</Markdown>
 			</article>
-			<form onSubmit={handleSubmit} className="grid gap-4">
-				<input
-					type="text"
-					placeholder={config.playerNamePlaceholder}
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					disabled={isLoading}
-					autoFocus
-					maxLength={50}
-					className="km-input"
-				/>
+			<form onSubmit={handleSubmit} className="grid gap-5">
+				<div className="relative">
+					<input
+						type="text"
+						placeholder={config.playerNamePlaceholder}
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						disabled={isLoading}
+						autoFocus
+						maxLength={50}
+						className="km-input"
+					/>
+					{name.trim() && (
+						<div className="bg-neon-cyan absolute top-1/2 right-4 h-2 w-2 -translate-y-1/2 rounded-full shadow-[0_0_6px_var(--color-neon-cyan)]" />
+					)}
+				</div>
 
 				<button
 					type="submit"
@@ -50,7 +55,7 @@ export function CreateProfileView() {
 				>
 					{isLoading ? (
 						<>
-							<span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
+							<span className="border-neon-cyan mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></span>
 							{config.loading}
 						</>
 					) : (

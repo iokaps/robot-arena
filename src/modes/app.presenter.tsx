@@ -102,20 +102,20 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			<HostPresenterLayout.Root>
 				<HostPresenterLayout.Header />
 				<HostPresenterLayout.Main>
-					<div className="flex flex-col items-center gap-8">
-						<h1 className="font-display text-neon-cyan neon-text-glow text-4xl tracking-widest uppercase">
+					<div className="animate-fade-in-up flex flex-col items-center gap-10">
+						<h1 className="font-display text-neon-cyan neon-text-glow text-5xl tracking-[0.25em] uppercase">
 							{config.title}
 						</h1>
-						<p className="font-mono text-xl text-slate-300">
+						<p className="font-mono text-xl text-slate-400">
 							{config.presenterLobbyMessage}
 						</p>
 
-						<div className="flex items-center gap-4 border-2 border-slate-600 bg-slate-800/50 px-6 py-4">
-							<Users className="text-neon-cyan h-8 w-8" />
-							<span className="font-display text-3xl text-slate-100">
+						<div className="flex items-center gap-5 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-8 py-5 backdrop-blur-sm">
+							<Users className="text-neon-cyan h-8 w-8 drop-shadow-[0_0_8px_currentColor]" />
+							<span className="font-display text-neon-cyan neon-text-glow-sm text-4xl">
 								{Object.keys(players).length}
 							</span>
-							<span className="font-mono text-slate-400 uppercase">
+							<span className="font-mono text-slate-500 uppercase">
 								{config.playersJoinedLabel}
 							</span>
 						</div>
@@ -126,7 +126,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 							className={cn({ invisible: !showPresenterQr })}
 						/>
 
-						<p className="font-mono text-slate-500">
+						<p className="font-mono text-sm text-slate-600">
 							{config.scanToJoinMessage}
 						</p>
 					</div>
@@ -141,14 +141,14 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			<HostPresenterLayout.Root>
 				<HostPresenterLayout.Header />
 				<HostPresenterLayout.Main>
-					<div className="flex flex-col items-center gap-8">
+					<div className="animate-fade-in-up flex flex-col items-center gap-10">
 						{winnerId ? (
 							<>
-								<Trophy className="text-neon-lime h-32 w-32" />
-								<h1 className="font-display text-neon-lime neon-text-glow text-5xl tracking-wider uppercase">
+								<Trophy className="text-neon-lime animate-shine h-36 w-36" />
+								<h1 className="font-display text-neon-lime neon-text-glow text-6xl tracking-wider uppercase">
 									{config.winnerTitle}
 								</h1>
-								<p className="font-display text-4xl tracking-wide text-slate-100 uppercase">
+								<p className="font-display neon-text-glow-sm text-neon-lime text-5xl tracking-wide uppercase">
 									{winnerName}
 								</p>
 							</>
@@ -174,8 +174,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			<HostPresenterLayout.Header>
 				<div className="flex items-center gap-6">
 					{/* Round indicator */}
-					<div className="flex items-center gap-2 font-mono text-slate-300">
-						<span className="font-display text-lg tracking-wide uppercase">
+					<div className="flex items-center gap-2 font-mono text-slate-400">
+						<span className="font-display text-lg tracking-wider uppercase">
 							{config.roundLabel} {currentRound}
 						</span>
 					</div>
@@ -184,10 +184,10 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					{phase === 'programming' && (
 						<div
 							className={cn(
-								'font-display flex items-center gap-2 border-2 px-4 py-2',
+								'font-display flex items-center gap-2 rounded-sm border-2 px-4 py-2',
 								isUrgent
-									? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose'
-									: 'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan'
+									? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose shadow-[0_0_15px_var(--color-neon-rose)/0.2]'
+									: 'border-neon-cyan/50 bg-neon-cyan/5 text-neon-cyan'
 							)}
 						>
 							<Clock className="h-5 w-5" />
@@ -196,8 +196,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					)}
 
 					{phase === 'executing' && (
-						<div className="border-neon-fuchsia/60 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 border-2 px-4 py-2">
-							<span className="font-display text-lg tracking-wide uppercase">
+						<div className="border-neon-fuchsia/50 bg-neon-fuchsia/10 text-neon-fuchsia flex items-center gap-2 rounded-sm border-2 px-4 py-2 shadow-[0_0_10px_var(--color-neon-fuchsia)/0.1]">
+							<span className="font-display text-lg tracking-wider uppercase">
 								{config.tickLabel} {currentTick + 1}/5
 							</span>
 						</div>

@@ -112,20 +112,22 @@ export const ProgrammingView: React.FC = () => {
 	};
 
 	return (
-		<div className="flex w-full max-w-lg flex-col items-center gap-6">
+		<div className="animate-fade-in-up flex w-full max-w-lg flex-col items-center gap-6">
 			{/* Header with timer and lives */}
 			<div className="flex w-full items-center justify-between">
 				{/* Lives display */}
 				{myRobot && (
-					<div className="flex items-center gap-2">
-						<span className="text-sm text-slate-400">{config.livesLabel}</span>
+					<div className="flex items-center gap-2 rounded-sm border border-slate-700 bg-slate-800/60 px-3 py-2">
+						<span className="text-sm text-slate-500">{config.livesLabel}</span>
 						<div className="flex gap-1">
 							{Array.from({ length: 3 }).map((_, i) => (
 								<Heart
 									key={i}
 									className={cn(
-										'h-5 w-5',
-										i < myRobot.lives ? 'text-neon-rose' : 'text-slate-700'
+										'h-5 w-5 transition-all duration-300',
+										i < myRobot.lives
+											? 'text-neon-rose drop-shadow-[0_0_4px_currentColor]'
+											: 'text-slate-700'
 									)}
 									fill={i < myRobot.lives ? 'currentColor' : 'none'}
 								/>
@@ -137,10 +139,10 @@ export const ProgrammingView: React.FC = () => {
 				{/* Timer */}
 				<div
 					className={cn(
-						'font-display flex items-center gap-2 border-2 px-4 py-2 text-2xl',
+						'font-display flex items-center gap-2 rounded-sm border-2 px-4 py-2 text-2xl',
 						isUrgent
-							? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose'
-							: 'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan'
+							? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose shadow-[0_0_15px_var(--color-neon-rose)/0.2]'
+							: 'border-neon-cyan/50 bg-neon-cyan/5 text-neon-cyan'
 					)}
 				>
 					<Clock className="h-5 w-5" />
@@ -149,7 +151,7 @@ export const ProgrammingView: React.FC = () => {
 			</div>
 
 			{/* Title */}
-			<h2 className="font-display text-xl text-slate-100">
+			<h2 className="font-display neon-text-glow-sm text-neon-cyan text-xl tracking-wider uppercase">
 				{config.programmingPhaseTitle}
 			</h2>
 
@@ -163,28 +165,30 @@ export const ProgrammingView: React.FC = () => {
 						<div
 							key={index}
 							className={cn(
-								'relative flex h-20 flex-1 flex-col items-center justify-center border-2 transition-all',
+								'command-slot relative flex h-20 flex-1 flex-col items-center justify-center rounded-sm border-2 transition-all',
 								commandConfig
-									? commandConfig.color
-									: 'border-dashed border-slate-600 bg-slate-800/50'
+									? cn(commandConfig.color, 'animate-slot-fill')
+									: 'border-dashed border-slate-700 bg-slate-800/30'
 							)}
 						>
 							{commandConfig ? (
 								<>
 									{commandConfig.icon}
-									<span className="mt-1 font-mono text-xs">{index + 1}</span>
+									<span className="mt-1 font-mono text-xs opacity-60">
+										{index + 1}
+									</span>
 									{!hasSubmitted && (
 										<button
 											type="button"
 											onClick={() => handleRemoveCommand(index)}
-											className="absolute -top-2 -right-2 border border-slate-500 bg-slate-700 p-1 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+											className="absolute -top-2 -right-2 rounded-full border border-slate-600 bg-slate-800 p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200"
 										>
 											<X className="h-3 w-3" />
 										</button>
 									)}
 								</>
 							) : (
-								<span className="font-mono text-slate-600">{index + 1}</span>
+								<span className="font-mono text-slate-700">{index + 1}</span>
 							)}
 						</div>
 					);
@@ -201,7 +205,7 @@ export const ProgrammingView: React.FC = () => {
 							onClick={() => handleAddCommand(command.id)}
 							disabled={draftProgram.length >= 5}
 							className={cn(
-								'flex flex-col items-center justify-center border-2 p-3 transition-all',
+								'command-slot flex flex-col items-center justify-center rounded-sm border-2 p-3 transition-all',
 								command.color,
 								'disabled:cursor-not-allowed disabled:opacity-40'
 							)}
@@ -238,9 +242,9 @@ export const ProgrammingView: React.FC = () => {
 						</button>
 					</>
 				) : (
-					<div className="border-neon-lime/60 bg-neon-lime/10 text-neon-lime flex w-full flex-col items-center gap-2 border-2 p-4">
-						<Check className="h-8 w-8" />
-						<span className="font-mono font-medium tracking-wide uppercase">
+					<div className="border-neon-lime/50 bg-neon-lime/10 text-neon-lime flex w-full flex-col items-center gap-2 rounded-sm border-2 p-4 shadow-[0_0_15px_var(--color-neon-lime)/0.15]">
+						<Check className="animate-float h-8 w-8" />
+						<span className="font-display neon-text-glow-sm font-medium tracking-widest uppercase">
 							{config.submittedMessage}
 						</span>
 					</div>

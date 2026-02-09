@@ -11,8 +11,10 @@ interface NameLabelProps {
 export function NameLabel({ name }: NameLabelProps) {
 	return (
 		<div className="flex items-center gap-2">
-			<span className="text-slate-500">{config.playerNameLabel}</span>
-			<span className="font-semibold">{name}</span>
+			<span className="text-slate-600">{config.playerNameLabel}</span>
+			<span className="text-neon-cyan neon-text-glow-sm font-display font-semibold tracking-wider uppercase">
+				{name}
+			</span>
 		</div>
 	);
 }

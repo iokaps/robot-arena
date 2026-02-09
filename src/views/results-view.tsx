@@ -16,9 +16,9 @@ export const ResultsView: React.FC = () => {
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
 
 	return (
-		<div className="flex w-full max-w-md flex-col items-center gap-8 text-center">
+		<div className="animate-fade-in-up flex w-full max-w-md flex-col items-center gap-8 text-center">
 			{/* Trophy icon */}
-			<div className="text-neon-lime">
+			<div className={winnerId ? 'text-neon-lime animate-shine' : ''}>
 				{winnerId ? (
 					<Trophy className="h-24 w-24" />
 				) : (
@@ -27,13 +27,13 @@ export const ResultsView: React.FC = () => {
 			</div>
 
 			{/* Winner announcement */}
-			<div className="space-y-2">
+			<div className="space-y-3">
 				{winnerId ? (
 					<>
 						<h1 className="font-display text-neon-lime neon-text-glow text-4xl tracking-wider uppercase">
 							{config.winnerTitle}
 						</h1>
-						<p className="font-display text-2xl tracking-wide text-slate-100 uppercase">
+						<p className="font-display neon-text-glow-sm text-neon-lime text-2xl tracking-wide uppercase">
 							{winnerName}
 						</p>
 					</>
@@ -52,13 +52,13 @@ export const ResultsView: React.FC = () => {
 			{/* Match complete message */}
 			<div
 				className={cn(
-					'border-2 px-6 py-4',
+					'rounded-sm border-2 px-6 py-4 backdrop-blur-sm',
 					winnerId
-						? 'border-neon-lime/40 bg-neon-lime/10'
-						: 'border-slate-600 bg-slate-800/50'
+						? 'border-neon-lime/30 bg-neon-lime/5 shadow-[0_0_20px_var(--color-neon-lime)/0.1]'
+						: 'border-slate-700 bg-slate-800/40'
 				)}
 			>
-				<p className="font-mono text-slate-300">
+				<p className="font-mono text-slate-400">
 					{config.matchCompleteMessage}
 				</p>
 			</div>

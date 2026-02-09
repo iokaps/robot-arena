@@ -8,34 +8,34 @@ const COLOR_VALUES: Record<
 	{ primary: string; secondary: string; glow: string }
 > = {
 	cyan: {
-		primary: 'oklch(0.7 0.08 200)',
-		secondary: 'oklch(0.5 0.06 200)',
-		glow: 'oklch(0.8 0.1 200)'
+		primary: 'oklch(0.78 0.14 200)',
+		secondary: 'oklch(0.55 0.1 200)',
+		glow: 'oklch(0.88 0.16 200)'
 	},
 	fuchsia: {
-		primary: 'oklch(0.6 0.12 45)',
-		secondary: 'oklch(0.4 0.1 45)',
-		glow: 'oklch(0.75 0.15 45)'
+		primary: 'oklch(0.68 0.18 340)',
+		secondary: 'oklch(0.48 0.14 340)',
+		glow: 'oklch(0.8 0.2 340)'
 	},
 	lime: {
-		primary: 'oklch(0.75 0.15 145)',
-		secondary: 'oklch(0.55 0.12 145)',
-		glow: 'oklch(0.85 0.18 145)'
+		primary: 'oklch(0.82 0.2 145)',
+		secondary: 'oklch(0.6 0.16 145)',
+		glow: 'oklch(0.9 0.22 145)'
 	},
 	orange: {
-		primary: 'oklch(0.65 0.15 55)',
-		secondary: 'oklch(0.45 0.12 55)',
-		glow: 'oklch(0.8 0.18 55)'
+		primary: 'oklch(0.72 0.18 55)',
+		secondary: 'oklch(0.5 0.14 55)',
+		glow: 'oklch(0.85 0.2 55)'
 	},
 	rose: {
-		primary: 'oklch(0.6 0.15 25)',
-		secondary: 'oklch(0.4 0.12 25)',
-		glow: 'oklch(0.75 0.18 25)'
+		primary: 'oklch(0.65 0.2 20)',
+		secondary: 'oklch(0.45 0.16 20)',
+		glow: 'oklch(0.78 0.22 20)'
 	},
 	violet: {
-		primary: 'oklch(0.55 0.08 280)',
-		secondary: 'oklch(0.35 0.06 280)',
-		glow: 'oklch(0.7 0.12 280)'
+		primary: 'oklch(0.6 0.15 280)',
+		secondary: 'oklch(0.4 0.12 280)',
+		glow: 'oklch(0.75 0.18 280)'
 	}
 };
 
