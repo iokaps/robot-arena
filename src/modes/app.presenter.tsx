@@ -1,4 +1,5 @@
 import { ArenaGrid } from '@/components/arena-grid';
+import { withKmProviders } from '@/components/with-km-providers';
 import {
 	withModeGuard,
 	type ModeGuardProps
@@ -17,13 +18,19 @@ import { robotProgramsStore } from '@/state/stores/robot-programs-store';
 import type { Position, Rotation } from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
-import { KmQrCode, KmTimeCountdown } from '@kokimoki/shared';
+import {
+	KmQrCode,
+	KmTimeCountdown,
+	useKmConfettiContext
+} from '@kokimoki/shared';
 import { Clock, Trophy, Users } from 'lucide-react';
 import * as React from 'react';
 
 function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	useGlobalController();
 	useDocumentTitle(config.title);
+
+	const { triggerConfetti, stopConfetti } = useKmConfettiContext();
 
 	const { showPresenterQr } = useSnapshot(gameConfigStore.proxy);
 	const {
@@ -96,6 +103,16 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	const submittedCount = Object.keys(submittedPlayers).length;
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
 
+	// Trigger confetti on results phase with a winner
+	React.useEffect(() => {
+		if (phase === 'results' && winnerId) {
+			triggerConfetti({ preset: 'massive' });
+		}
+		return () => {
+			stopConfetti();
+		};
+	}, [phase, winnerId, triggerConfetti, stopConfetti]);
+
 	// Lobby view
 	if (phase === 'lobby') {
 		return (
@@ -119,6 +136,26 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 								{config.playersJoinedLabel}
 							</span>
 						</div>
+
+						{/* Animated player roster */}
+						{Object.keys(players).length > 0 && (
+							<div className="flex flex-wrap justify-center gap-3">
+								{Object.values(players).map((player, index) => (
+									<div
+										key={player.name}
+										className="animate-fade-in-up border-neon-cyan/30 bg-neon-cyan/5 rounded-sm border-2 px-5 py-2.5 backdrop-blur-sm"
+										style={{
+											animationDelay: `${index * 80}ms`,
+											animationFillMode: 'backwards'
+										}}
+									>
+										<span className="font-display text-neon-cyan neon-text-glow-sm text-lg tracking-wider uppercase">
+											{player.name}
+										</span>
+									</div>
+								))}
+							</div>
+						)}
 
 						<KmQrCode
 							data={playerLink}
@@ -221,4 +258,4 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	);
 }
 
-export default withModeGuard(App, 'presenter');
+export default withKmProviders(withModeGuard(App, 'presenter'));

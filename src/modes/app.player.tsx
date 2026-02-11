@@ -8,6 +8,7 @@ import { useGlobalController } from '@/hooks/useGlobalController';
 import { PlayerLayout } from '@/layouts/player';
 import { kmClient } from '@/services/km-client';
 import { localPlayerActions } from '@/state/actions/local-player-actions';
+import { arenaStore } from '@/state/stores/arena-store';
 import { localPlayerStore } from '@/state/stores/local-player-store';
 import { matchStore } from '@/state/stores/match-store';
 import { CreateProfileView } from '@/views/create-profile-view';
@@ -25,6 +26,9 @@ const App: React.FC = () => {
 
 	const { name, currentView } = useSnapshot(localPlayerStore.proxy);
 	const { phase, eliminatedPlayers } = useSnapshot(matchStore.proxy);
+	const { robots } = useSnapshot(arenaStore.proxy);
+
+	const myRobotColor = robots[kmClient.id]?.color;
 
 	const isEliminated = eliminatedPlayers[kmClient.id] === true;
 
@@ -84,7 +88,7 @@ const App: React.FC = () => {
 			</PlayerLayout.Main>
 
 			<PlayerLayout.Footer>
-				<NameLabel name={name} />
+				<NameLabel name={name} robotColor={myRobotColor} />
 			</PlayerLayout.Footer>
 		</PlayerLayout.Root>
 	);

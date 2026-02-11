@@ -130,6 +130,11 @@ Collectible items that spawn on the arena and provide bonuses.
 
 ## Player Interface
 
+### Player Footer
+
+- Player name displayed with assigned robot color indicator (colored dot + colored name text)
+- Color matches the robot on the presenter arena so players can identify themselves
+
 ### Lobby View (How It Works)
 
 Displayed to players before the match starts:
@@ -221,6 +226,7 @@ Detailed instructions available in player menu:
 
 - Full-screen arena view
 - QR code overlay during lobby
+- **Animated player roster**: Player names appear with staggered fade-in animation as they join during lobby
 - Robot labels with player names
 - Life counters for all robots
 - Execution: ~1 second per tick with animations
@@ -228,6 +234,7 @@ Detailed instructions available in player menu:
 - Hit effects (flash on damaged robot)
 - Elimination explosion animation
 - Winner announcement overlay
+- **Confetti celebration**: Massive confetti animation on winner screens (player + presenter), no confetti on draws
 
 ## Timing
 

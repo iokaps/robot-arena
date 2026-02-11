@@ -24,6 +24,7 @@
 	--color-neon-fuchsia: oklch(0.68 0.18 340); /* Hot magenta */
 	--color-neon-lime: oklch(0.82 0.2 145); /* Acid green */
 	--color-neon-orange: oklch(0.72 0.18 55); /* Fire orange */
+	--color-neon-amber: oklch(0.78 0.16 85); /* Conveyor amber */
 	--color-neon-rose: oklch(0.65 0.2 20); /* Danger red */
 	--color-neon-violet: oklch(0.6 0.15 280); /* Ultraviolet */
 

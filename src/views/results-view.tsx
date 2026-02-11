@@ -3,6 +3,7 @@ import { matchStore } from '@/state/stores/match-store';
 import { playersStore } from '@/state/stores/players-store';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
+import { useKmConfettiContext } from '@kokimoki/shared';
 import { Medal, Trophy } from 'lucide-react';
 import * as React from 'react';
 
@@ -12,8 +13,19 @@ import * as React from 'react';
 export const ResultsView: React.FC = () => {
 	const { winnerId } = useSnapshot(matchStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
+	const { triggerConfetti, stopConfetti } = useKmConfettiContext();
 
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
+
+	// Trigger confetti celebration when there's a winner
+	React.useEffect(() => {
+		if (winnerId) {
+			triggerConfetti({ preset: 'massive' });
+		}
+		return () => {
+			stopConfetti();
+		};
+	}, [winnerId, triggerConfetti, stopConfetti]);
 
 	return (
 		<div className="animate-fade-in-up flex w-full max-w-md flex-col items-center gap-8 text-center">

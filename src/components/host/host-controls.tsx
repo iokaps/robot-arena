@@ -157,8 +157,8 @@ export function HostControls() {
 											<span>{config.hostTerrainPit}</span>
 										</div>
 										<div className="flex items-center gap-2">
-											<div className="border-neon-fuchsia/40 flex h-4 w-4 items-center justify-center border-2 bg-slate-900/80">
-												<ChevronUp className="text-neon-fuchsia/80 h-3 w-3" />
+											<div className="border-neon-amber/40 flex h-4 w-4 items-center justify-center border-2 bg-slate-900/80">
+												<ChevronUp className="text-neon-amber/80 h-3 w-3" />
 											</div>
 											<span>{config.hostTerrainConveyor}</span>
 										</div>

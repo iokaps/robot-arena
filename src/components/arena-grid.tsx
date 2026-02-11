@@ -130,7 +130,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 		const rotation = terrain.direction ?? 0;
 		return (
 			<div
-				className="border-neon-fuchsia/30 absolute flex items-center justify-center rounded-sm border-2 bg-slate-900/80"
+				className="border-neon-amber/30 absolute flex items-center justify-center rounded-sm border-2 bg-slate-900/80"
 				style={{
 					left: terrain.position.x * cellSize + 2,
 					top: terrain.position.y * cellSize + 2,
@@ -140,7 +140,7 @@ const TerrainCellSprite: React.FC<TerrainCellProps> = ({
 				}}
 			>
 				<ChevronUp
-					className="text-neon-fuchsia/80"
+					className="text-neon-amber/80"
 					style={{
 						width: cellSize * 0.5,
 						height: cellSize * 0.5,
