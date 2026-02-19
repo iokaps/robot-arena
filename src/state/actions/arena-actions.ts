@@ -13,8 +13,11 @@ import type {
 	TerrainCell,
 	TerrainType
 } from '@/types/arena';
+import type { ArenaState } from '../stores/arena-store';
 import { arenaStore } from '../stores/arena-store';
+import type { MatchState } from '../stores/match-store';
 import { matchStore } from '../stores/match-store';
+import type { PlayersState } from '../stores/players-store';
 import { playersStore } from '../stores/players-store';
 
 /** Available robot colors in assignment order */
@@ -454,6 +457,70 @@ export function generatePickups(
 	return pickups;
 }
 
+function spawnRobotsForClientIds(
+	arenaState: ArenaState,
+	playersState: PlayersState,
+	matchState: MatchState,
+	clientIds: string[]
+) {
+	const uniqueClientIds = Array.from(new Set(clientIds)).filter((clientId) =>
+		Boolean(playersState.players[clientId])
+	);
+	const playerCount = uniqueClientIds.length;
+
+	if (playerCount < 2) {
+		arenaState.robots = {};
+		return;
+	}
+
+	const mapConfig = resolveArenaMap(arenaState.selectedSizeId, playerCount);
+
+	arenaState.gridSize = { ...mapConfig.gridSize };
+
+	const spawns = getPerimeterSpawnPositions(mapConfig.gridSize, playerCount);
+	const spawnPositions = spawns.map((s) => s.position);
+	const { obstacles, terrain } = generateLayoutTerrain(
+		arenaState.mapLayoutId,
+		mapConfig.gridSize,
+		mapConfig.obstacleDensity,
+		spawnPositions
+	);
+	arenaState.obstacles = obstacles;
+	arenaState.terrain = terrain;
+
+	arenaState.robots = {};
+
+	uniqueClientIds.forEach((clientId, index) => {
+		const spawn = spawns[index];
+		const color = ROBOT_COLORS[index % ROBOT_COLORS.length];
+		const playerName = playersState.players[clientId]?.name || 'Bot';
+
+		arenaState.robots[clientId] = {
+			position: { ...spawn.position },
+			rotation: spawn.rotation,
+			lives: 3,
+			color,
+			name: playerName,
+			shield: 0,
+			powerBoost: false
+		};
+	});
+
+	matchState.eliminatedPlayers = {};
+
+	const robotPositions = Object.values(arenaState.robots).map(
+		(r) => r.position
+	);
+	arenaState.pickups = generatePickups(
+		mapConfig.gridSize,
+		arenaState.obstacles,
+		arenaState.terrain,
+		robotPositions
+	);
+
+	arenaState.mapVotes = {};
+}
+
 /**
  * Actions for arena state mutations
  */
@@ -472,73 +539,42 @@ export const arenaActions = {
 		});
 	},
 
+	/** Set current player's map vote in lobby */
+	async setMapVote(layoutId: MapLayoutId) {
+		await kmClient.transact(
+			[arenaStore, matchStore],
+			([arenaState, matchState]) => {
+				if (matchState.phase !== 'lobby') return;
+				arenaState.mapVotes[kmClient.id] = layoutId;
+			}
+		);
+	},
+
 	/** Spawn robots for all registered players */
 	async spawnRobots() {
 		await kmClient.transact(
 			[arenaStore, playersStore, matchStore],
 			([arenaState, playersState, matchState]) => {
-				const playerIds = Object.keys(playersState.players);
-				const playerCount = playerIds.length;
-
-				if (playerCount < 2) return;
-
-				// Resolve arena map based on selection (auto or manual)
-				const mapConfig = resolveArenaMap(
-					arenaState.selectedSizeId,
-					playerCount
+				spawnRobotsForClientIds(
+					arenaState,
+					playersState,
+					matchState,
+					Object.keys(playersState.players)
 				);
+			}
+		);
+	},
 
-				// Update grid size
-				arenaState.gridSize = { ...mapConfig.gridSize };
-
-				// Get spawn positions for players
-				const spawns = getPerimeterSpawnPositions(
-					mapConfig.gridSize,
-					playerCount
-				);
-
-				// Generate obstacles and terrain avoiding spawn positions
-				const spawnPositions = spawns.map((s) => s.position);
-				const { obstacles, terrain } = generateLayoutTerrain(
-					arenaState.mapLayoutId,
-					mapConfig.gridSize,
-					mapConfig.obstacleDensity,
-					spawnPositions
-				);
-				arenaState.obstacles = obstacles;
-				arenaState.terrain = terrain;
-
-				// Clear existing robots and spawn new ones
-				arenaState.robots = {};
-
-				playerIds.forEach((clientId, index) => {
-					const spawn = spawns[index];
-					const color = ROBOT_COLORS[index % ROBOT_COLORS.length];
-					const playerName = playersState.players[clientId]?.name || 'Bot';
-
-					arenaState.robots[clientId] = {
-						position: { ...spawn.position },
-						rotation: spawn.rotation,
-						lives: 3,
-						color,
-						name: playerName,
-						shield: 0,
-						powerBoost: false
-					};
-				});
-
-				// Reset eliminated players
-				matchState.eliminatedPlayers = {};
-
-				// Spawn initial pickups
-				const robotPositions = Object.values(arenaState.robots).map(
-					(r) => r.position
-				);
-				arenaState.pickups = generatePickups(
-					mapConfig.gridSize,
-					arenaState.obstacles,
-					arenaState.terrain,
-					robotPositions
+	/** Spawn robots for specific player IDs (used for rematch with locked roster) */
+	async spawnRobotsForPlayerIds(clientIds: string[]) {
+		await kmClient.transact(
+			[arenaStore, playersStore, matchStore],
+			([arenaState, playersState, matchState]) => {
+				spawnRobotsForClientIds(
+					arenaState,
+					playersState,
+					matchState,
+					clientIds
 				);
 			}
 		);

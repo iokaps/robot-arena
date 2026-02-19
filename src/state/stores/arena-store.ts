@@ -21,6 +21,8 @@ export interface ArenaState {
 	pickups: Record<string, PickupCell>;
 	/** Current map layout ID (obstacle pattern) */
 	mapLayoutId: MapLayoutId;
+	/** Lobby map votes keyed by clientId */
+	mapVotes: Record<string, MapLayoutId>;
 	/** Selected arena size ID ('auto' for player-count based) */
 	selectedSizeId: ArenaSizeId;
 }
@@ -32,6 +34,7 @@ const initialState: ArenaState = {
 	terrain: {},
 	pickups: {},
 	mapLayoutId: 'open',
+	mapVotes: {},
 	selectedSizeId: 'auto'
 };
 

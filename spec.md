@@ -53,6 +53,8 @@ A turn-based strategy game where players "program" their robot's moves during a 
 - Robots face toward center of arena
 - Minimum spacing ensured by perimeter distribution
 - Spawn positions avoid wall obstacles to ensure robots can move immediately
+- **Roster lock**: Player roster is locked when host starts a match
+- **Late joiners**: Players joining after roster lock become spectators for current match and join next match
 
 ## Robots
 
@@ -147,6 +149,8 @@ Displayed to players before the match starts:
   4. 💥 Last bot standing wins!
 - Command overview (Move, Rotate, Shoot, Wait)
 - "Waiting for host to start" message
+- **Map voting panel**: Players can vote for preferred map layout while in lobby
+- Host can override map vote before match start
 
 ### Programming View
 
@@ -190,6 +194,7 @@ Detailed instructions available in player menu:
 - **Minimap Preview**: Visual preview of selected layout at actual arena size
 - **Player Count**: Shows joined players with minimum requirement (2+)
 - **Match Controls**: Start Match / Reset Match buttons
+- **Results Controls**: Rematch button starts a new match with the same locked roster and settings
 - **QR Toggle**: Show/hide QR code on presenter screen
 - **Phase Indicator**: Current phase with round number
 - **Robot Status** (during match): Player names with life hearts

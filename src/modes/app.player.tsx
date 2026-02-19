@@ -29,8 +29,13 @@ const App: React.FC = () => {
 	const { robots } = useSnapshot(arenaStore.proxy);
 
 	const myRobotColor = robots[kmClient.id]?.color;
+	const isArenaParticipant = Boolean(robots[kmClient.id]);
 
 	const isEliminated = eliminatedPlayers[kmClient.id] === true;
+	const showJoinNextRoundBanner =
+		(phase === 'programming' || phase === 'executing') &&
+		!isArenaParticipant &&
+		!isEliminated;
 
 	// React to phase changes and update local view
 	React.useEffect(() => {
@@ -40,6 +45,8 @@ const App: React.FC = () => {
 		} else if (phase === 'programming') {
 			if (isEliminated) {
 				localPlayerActions.setCurrentView('eliminated');
+			} else if (!isArenaParticipant) {
+				localPlayerActions.setCurrentView('spectating');
 			} else {
 				localPlayerActions.setCurrentView('programming');
 				localPlayerActions.resetForNewRound();
@@ -53,7 +60,7 @@ const App: React.FC = () => {
 		} else if (phase === 'results') {
 			localPlayerActions.setCurrentView('results');
 		}
-	}, [phase, isEliminated]);
+	}, [phase, isEliminated, isArenaParticipant]);
 
 	// Check for elimination during execution
 	React.useEffect(() => {
@@ -80,6 +87,17 @@ const App: React.FC = () => {
 			</PlayerLayout.Header>
 
 			<PlayerLayout.Main>
+				{showJoinNextRoundBanner && (
+					<div className="border-neon-cyan/50 bg-neon-cyan/10 mb-4 rounded-sm border-2 px-4 py-3">
+						<p className="font-display text-neon-cyan text-sm tracking-wide uppercase">
+							{config.joinNextRoundBannerTitle}
+						</p>
+						<p className="font-mono text-sm text-slate-300">
+							{config.joinNextRoundBannerMessage}
+						</p>
+					</div>
+				)}
+
 				{currentView === 'lobby' && <GameLobbyView />}
 				{currentView === 'programming' && <ProgrammingView />}
 				{currentView === 'spectating' && <SpectatingView />}

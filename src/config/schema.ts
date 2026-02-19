@@ -14,6 +14,21 @@ export const schema = z.object({
 	playersJoinedLabel: z.string().default('players joined'),
 	scanToJoinMessage: z.string().default('Scan the QR code to join the battle'),
 	minPlayersMessage: z.string().default('Need at least 2 players'),
+	joinNextRoundBannerTitle: z.string().default('Spectating This Match'),
+	joinNextRoundBannerMessage: z
+		.string()
+		.default(
+			'You joined after the round roster was locked. You will play next match.'
+		),
+	mapVotingTitle: z.string().default('Map Vote'),
+	mapVotingDescription: z
+		.string()
+		.default('Vote for your preferred layout while waiting for the host.'),
+	mapVotesLabel: z.string().default('votes'),
+	mapVoteHostOverrideNote: z
+		.string()
+		.default('Host can override map votes before starting the match.'),
+	applyTopVotedMapButton: z.string().default('Apply Top Vote'),
 
 	// Player profile
 	createProfileMd: z
@@ -58,6 +73,7 @@ export const schema = z.object({
 	forPlayersLabel: z.string().default('for'),
 	robotStatusLabel: z.string().default('Robots'),
 	startMatchButton: z.string().default('Start Match'),
+	rematchButton: z.string().default('Rematch'),
 	resetMatchButton: z.string().default('Reset Match'),
 
 	// Host How to Play

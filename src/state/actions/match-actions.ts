@@ -16,8 +16,18 @@ export const matchActions = {
 
 		// Then start programming phase
 		await kmClient.transact(
-			[matchStore, robotProgramsStore],
-			([matchState, programsState]) => {
+			[matchStore, robotProgramsStore, arenaStore],
+			([matchState, programsState, arenaState]) => {
+				const participantIds = Object.keys(arenaState.robots);
+				if (participantIds.length < 2) {
+					return;
+				}
+
+				matchState.participantIds = {};
+				for (const clientId of participantIds) {
+					matchState.participantIds[clientId] = true;
+				}
+
 				matchState.phase = 'programming';
 				matchState.currentRound = 1;
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
@@ -36,9 +46,15 @@ export const matchActions = {
 		const clientId = kmClient.id;
 
 		await kmClient.transact(
-			[matchStore, robotProgramsStore],
-			([matchState, programsState]) => {
+			[matchStore, robotProgramsStore, arenaStore],
+			([matchState, programsState, arenaState]) => {
 				if (matchState.phase !== 'programming') return;
+				if (!matchState.participantIds[clientId]) return;
+				if (
+					!arenaState.robots[clientId] ||
+					arenaState.robots[clientId].lives <= 0
+				)
+					return;
 				if (matchState.submittedPlayers[clientId]) return;
 
 				// Pad program to 5 moves with 'wait' if needed
@@ -131,12 +147,48 @@ export const matchActions = {
 		});
 	},
 
+	/** Start a rematch from results using the locked roster and current arena settings */
+	async startRematch() {
+		const participantIds = Object.keys(matchStore.proxy.participantIds);
+		if (participantIds.length < 2) {
+			return;
+		}
+
+		await arenaActions.spawnRobotsForPlayerIds(participantIds);
+
+		await kmClient.transact(
+			[matchStore, robotProgramsStore, arenaStore],
+			([matchState, programsState, arenaState]) => {
+				const spawnedParticipantIds = Object.keys(arenaState.robots);
+				if (spawnedParticipantIds.length < 2) {
+					return;
+				}
+
+				matchState.participantIds = {};
+				for (const clientId of spawnedParticipantIds) {
+					matchState.participantIds[clientId] = true;
+				}
+
+				matchState.phase = 'programming';
+				matchState.currentRound = 1;
+				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+				matchState.submittedPlayers = {};
+				matchState.eliminatedPlayers = {};
+				matchState.currentTick = -1;
+				matchState.executionEvents = {};
+				matchState.winnerId = '';
+				programsState.programs = {};
+			}
+		);
+	},
+
 	/** Reset match to lobby state */
 	async resetMatch() {
 		await kmClient.transact(
 			[matchStore, robotProgramsStore, arenaStore],
 			([matchState, programsState, arenaState]) => {
 				matchState.phase = 'lobby';
+				matchState.participantIds = {};
 				matchState.currentRound = 0;
 				matchState.phaseStartTimestamp = 0;
 				matchState.submittedPlayers = {};

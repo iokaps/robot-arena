@@ -1,4 +1,10 @@
 import { config } from '@/config';
+import { kmClient } from '@/services/km-client';
+import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
+import { arenaStore } from '@/state/stores/arena-store';
+import { matchStore } from '@/state/stores/match-store';
+import { cn } from '@/utils/cn';
+import { useSnapshot } from '@kokimoki/app';
 import Markdown from 'react-markdown';
 
 /**
@@ -6,9 +12,62 @@ import Markdown from 'react-markdown';
  * Modify or replace with your own implementation.
  */
 export function GameLobbyView() {
+	const { mapVotes, mapLayoutId } = useSnapshot(arenaStore.proxy);
+	const { phase } = useSnapshot(matchStore.proxy);
+
+	const myVote = mapVotes[kmClient.id];
+	const voteEntries = Object.values(MAP_LAYOUTS).map((layout) => ({
+		layout,
+		count: Object.values(mapVotes).filter((vote) => vote === layout.id).length
+	}));
+
 	return (
-		<article className="animate-fade-in-up prose">
-			<Markdown>{config.gameLobbyMd}</Markdown>
-		</article>
+		<div className="animate-fade-in-up flex w-full max-w-2xl flex-col gap-6">
+			<article className="prose">
+				<Markdown>{config.gameLobbyMd}</Markdown>
+			</article>
+
+			{phase === 'lobby' && (
+				<section className="space-y-3 rounded-sm border-2 border-slate-700 bg-slate-800/40 p-4 backdrop-blur-sm">
+					<div className="space-y-1">
+						<h3 className="font-display text-neon-cyan text-lg tracking-wide uppercase">
+							{config.mapVotingTitle}
+						</h3>
+						<p className="font-mono text-sm text-slate-400">
+							{config.mapVotingDescription}
+						</p>
+					</div>
+
+					<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+						{voteEntries.map(({ layout, count }) => (
+							<button
+								key={layout.id}
+								type="button"
+								onClick={() => arenaActions.setMapVote(layout.id)}
+								className={cn(
+									'border-2 px-3 py-2 text-left font-mono text-sm transition-all',
+									myVote === layout.id
+										? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan'
+										: mapLayoutId === layout.id
+											? 'border-neon-lime/60 bg-neon-lime/10 text-neon-lime'
+											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-300'
+								)}
+							>
+								<div className="flex items-center justify-between gap-2">
+									<span className="uppercase">{layout.name}</span>
+									<span className="text-xs text-slate-400">
+										{count} {config.mapVotesLabel}
+									</span>
+								</div>
+							</button>
+						))}
+					</div>
+
+					<p className="font-mono text-xs text-slate-500">
+						{config.mapVoteHostOverrideNote}
+					</p>
+				</section>
+			)}
+		</div>
 	);
 }

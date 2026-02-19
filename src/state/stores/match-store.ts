@@ -4,6 +4,8 @@ import type { ExecutionEvent, GamePhase } from '@/types/arena';
 export interface MatchState {
 	/** Current game phase */
 	phase: GamePhase;
+	/** Locked participant roster for the current/last match */
+	participantIds: Record<string, boolean>;
 	/** Current round number (1-based) */
 	currentRound: number;
 	/** Maximum rounds before timeout */
@@ -26,6 +28,7 @@ export interface MatchState {
 
 const initialState: MatchState = {
 	phase: 'lobby',
+	participantIds: {},
 	currentRound: 0,
 	maxRounds: 10,
 	phaseStartTimestamp: 0,

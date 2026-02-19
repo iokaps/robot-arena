@@ -91,22 +91,22 @@ export const ProgrammingView: React.FC = () => {
 	const isUrgent = remainingMs < 10000;
 
 	const handleAddCommand = async (command: MoveCommand) => {
-		if (hasSubmitted || draftProgram.length >= 5) return;
+		if (!myRobot || hasSubmitted || draftProgram.length >= 5) return;
 		await localPlayerActions.addCommand(command);
 	};
 
 	const handleRemoveCommand = async (index: number) => {
-		if (hasSubmitted) return;
+		if (!myRobot || hasSubmitted) return;
 		await localPlayerActions.removeCommand(index);
 	};
 
 	const handleClearProgram = async () => {
-		if (hasSubmitted) return;
+		if (!myRobot || hasSubmitted) return;
 		await localPlayerActions.clearProgram();
 	};
 
 	const handleSubmit = async () => {
-		if (hasSubmitted) return;
+		if (!myRobot || hasSubmitted) return;
 		await matchActions.submitProgram(draftProgram);
 		await localPlayerActions.setSubmitted(true);
 	};

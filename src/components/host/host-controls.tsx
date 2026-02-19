@@ -19,6 +19,7 @@ import {
 	Map,
 	Maximize2,
 	Play,
+	RefreshCw,
 	RotateCcw,
 	Skull,
 	Users
@@ -41,9 +42,8 @@ const ARENA_SIZE_LABELS: Record<ArenaSizeId, string> = {
 export function HostControls() {
 	const [showHowToPlay, setShowHowToPlay] = React.useState(false);
 	const { phase, currentRound } = useSnapshot(matchStore.proxy);
-	const { mapLayoutId, robots, selectedSizeId, gridSize } = useSnapshot(
-		arenaStore.proxy
-	);
+	const { mapLayoutId, mapVotes, robots, selectedSizeId, gridSize } =
+		useSnapshot(arenaStore.proxy);
 	const { showPresenterQr } = useSnapshot(gameConfigStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
 
@@ -63,6 +63,10 @@ export function HostControls() {
 		await matchActions.startMatch();
 	};
 
+	const handleStartRematch = async () => {
+		await matchActions.startRematch();
+	};
+
 	const handleResetMatch = async () => {
 		await matchActions.resetMatch();
 	};
@@ -74,6 +78,23 @@ export function HostControls() {
 		);
 		return map ? `${map.gridSize.width}×${map.gridSize.height}` : '22×22';
 	};
+
+	const mapVoteCounts = Object.values(MAP_LAYOUTS).map((layout) => ({
+		layoutId: layout.id,
+		votes: Object.values(mapVotes).filter((vote) => vote === layout.id).length
+	}));
+
+	const topVotedMap = mapVoteCounts.reduce(
+		(best, current) =>
+			current.votes > best.votes ||
+			(current.votes === best.votes && current.layoutId < best.layoutId)
+				? current
+				: best,
+		{ layoutId: mapLayoutId, votes: 0 }
+	);
+
+	const canApplyTopVotedMap =
+		topVotedMap.votes > 0 && topVotedMap.layoutId !== mapLayoutId;
 
 	return (
 		<div className="space-y-6">
@@ -220,21 +241,40 @@ export function HostControls() {
 							{config.mapSelectLabel}:
 						</label>
 						<div className="flex flex-wrap gap-2">
-							{Object.values(MAP_LAYOUTS).map((layout) => (
+							{Object.values(MAP_LAYOUTS).map((layout) => {
+								const voteCount =
+									mapVoteCounts.find((entry) => entry.layoutId === layout.id)
+										?.votes || 0;
+
+								return (
+									<button
+										key={layout.id}
+										type="button"
+										onClick={() => handleMapLayoutChange(layout.id)}
+										className={cn(
+											'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
+											mapLayoutId === layout.id
+												? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
+												: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
+										)}
+									>
+										{layout.name} ({voteCount})
+									</button>
+								);
+							})}
+						</div>
+
+						<div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+							<span>{config.mapVoteHostOverrideNote}</span>
+							{canApplyTopVotedMap && (
 								<button
-									key={layout.id}
 									type="button"
-									onClick={() => handleMapLayoutChange(layout.id)}
-									className={cn(
-										'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
-										mapLayoutId === layout.id
-											? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
-											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
-									)}
+									onClick={() => handleMapLayoutChange(topVotedMap.layoutId)}
+									className="km-btn-secondary"
 								>
-									{layout.name}
+									{config.applyTopVotedMapButton}
 								</button>
-							))}
+							)}
 						</div>
 
 						{/* Minimap Preview */}
@@ -340,6 +380,17 @@ export function HostControls() {
 					>
 						<Play className="h-5 w-5" />
 						{config.startMatchButton}
+					</button>
+				)}
+
+				{phase === 'results' && (
+					<button
+						type="button"
+						className="km-btn-primary"
+						onClick={handleStartRematch}
+					>
+						<RefreshCw className="h-5 w-5" />
+						{config.rematchButton}
 					</button>
 				)}
 

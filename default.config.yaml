@@ -33,6 +33,13 @@ presenterLobbyMessage: 'Waiting for players to join...'
 playersJoinedLabel: 'players joined'
 scanToJoinMessage: 'Scan the QR code to join the battle'
 minPlayersMessage: 'Need at least 2 players'
+joinNextRoundBannerTitle: 'Spectating This Match'
+joinNextRoundBannerMessage: 'You joined after the round roster was locked. You will play next match.'
+mapVotingTitle: 'Map Vote'
+mapVotingDescription: 'Vote for your preferred layout while waiting for the host.'
+mapVotesLabel: 'votes'
+mapVoteHostOverrideNote: 'Host can override map votes before starting the match.'
+applyTopVotedMapButton: 'Apply Top Vote'
 
 # Player profile
 createProfileMd: |
@@ -111,6 +118,7 @@ mapMegaLabel: 'Mega (22×22)'
 forPlayersLabel: 'for'
 robotStatusLabel: 'Robots'
 startMatchButton: 'Start Match'
+rematchButton: 'Rematch'
 resetMatchButton: 'Reset Match'
 
 # Host How to Play
