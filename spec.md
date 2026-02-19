@@ -231,6 +231,7 @@ Detailed instructions available in player menu:
 
 - Full-screen arena view
 - QR code overlay during lobby
+- **Live map vote totals**: Lobby shows current votes per layout and highlights host-selected map
 - **Animated player roster**: Player names appear with staggered fade-in animation as they join during lobby
 - Robot labels with player names
 - Life counters for all robots
