@@ -1,5 +1,8 @@
 import { kmClient } from '@/services/km-client';
-import { generatePickups } from '@/state/actions/arena-actions';
+import {
+	applyHazardEscalation,
+	generatePickups
+} from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { gameSessionStore } from '@/state/stores/game-session-store';
 import { matchStore } from '@/state/stores/match-store';
@@ -518,6 +521,14 @@ export function useGlobalController(): boolean {
 					matchState.submittedPlayers = {};
 					matchState.currentTick = -1;
 					programsState.programs = {};
+
+					// Escalate hazards each round by shrinking safe area inward
+					arenaState.terrain = applyHazardEscalation(
+						arenaState.terrain,
+						arenaState.obstacles,
+						arenaState.gridSize,
+						matchState.currentRound
+					);
 
 					// Spawn new pickups for the round
 					const robotPositions = Object.values(arenaState.robots)

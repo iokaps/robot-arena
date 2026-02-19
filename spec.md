@@ -38,6 +38,13 @@ A turn-based strategy game where players "program" their robot's moves during a 
 | Pit      | Red + skull | Instant death when standing on it                     |
 | Conveyor | Amber arrow | Pushes robot 1 cell in arrow direction at end of tick |
 
+### Hazard Escalation
+
+- Safe area begins shrinking after Round 1
+- A new hazard ring is added every N rounds (default: every 2 rounds), one cell further inward
+- Hazard rings are mostly pits with conveyors at side midpoints
+- Conveyors on hazard rings push robots toward the center
+
 ### Map Layouts
 
 - **Open Arena**: Scattered corner obstacles, center cover on larger maps

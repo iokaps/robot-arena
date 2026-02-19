@@ -125,6 +125,7 @@ export const schema = z.object({
 	matchCompleteMessage: z
 		.string()
 		.default('The match has ended. Waiting for host to start a new match.'),
+	hazardEscalationEveryNRounds: z.number().int().min(1).default(2),
 
 	// Misc
 	loading: z.string().default('Loading...'),

@@ -457,6 +457,84 @@ export function generatePickups(
 	return pickups;
 }
 
+/**
+ * Apply round-based hazard escalation by shrinking the safe area inward.
+ *
+ * Round 1: base map terrain only.
+ * Round 2+: every N rounds adds one hazard ring from the outside inward.
+ * Ring cells become pits, with conveyors at side midpoints pushing toward center.
+ */
+export function applyHazardEscalation(
+	baseTerrain: Record<string, TerrainCell>,
+	obstacles: Record<string, Position>,
+	gridSize: { width: number; height: number },
+	currentRound: number
+): Record<string, TerrainCell> {
+	const escalatedTerrain: Record<string, TerrainCell> = { ...baseTerrain };
+	const { width, height } = gridSize;
+	const roundsPerRing = Math.max(1, config.hazardEscalationEveryNRounds);
+
+	const maxShrink = Math.max(0, Math.floor((Math.min(width, height) - 4) / 2));
+	const shrinkLevel = Math.min(
+		Math.max(0, Math.floor((currentRound - 1) / roundsPerRing)),
+		maxShrink
+	);
+
+	if (shrinkLevel <= 0) {
+		return escalatedTerrain;
+	}
+
+	const setPit = (x: number, y: number) => {
+		const key = `${x},${y}`;
+		if (obstacles[key]) return;
+		escalatedTerrain[key] = {
+			position: { x, y },
+			type: 'pit'
+		};
+	};
+
+	const setConveyor = (x: number, y: number, direction: Rotation) => {
+		const key = `${x},${y}`;
+		if (obstacles[key]) return;
+		escalatedTerrain[key] = {
+			position: { x, y },
+			type: 'conveyor',
+			direction
+		};
+	};
+
+	for (let level = 1; level <= shrinkLevel; level++) {
+		const minX = level;
+		const maxX = width - 1 - level;
+		const minY = level;
+		const maxY = height - 1 - level;
+
+		if (minX >= maxX || minY >= maxY) {
+			break;
+		}
+
+		for (let x = minX; x <= maxX; x++) {
+			setPit(x, minY);
+			setPit(x, maxY);
+		}
+
+		for (let y = minY; y <= maxY; y++) {
+			setPit(minX, y);
+			setPit(maxX, y);
+		}
+
+		const centerX = Math.floor((minX + maxX) / 2);
+		const centerY = Math.floor((minY + maxY) / 2);
+
+		setConveyor(centerX, minY, 180);
+		setConveyor(centerX, maxY, 0);
+		setConveyor(minX, centerY, 90);
+		setConveyor(maxX, centerY, 270);
+	}
+
+	return escalatedTerrain;
+}
+
 function spawnRobotsForClientIds(
 	arenaState: ArenaState,
 	playersState: PlayersState,

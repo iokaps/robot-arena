@@ -166,6 +166,7 @@ winnerTitle: 'Victory!'
 drawTitle: 'Draw!'
 drawMessage: 'All robots were destroyed simultaneously.'
 matchCompleteMessage: 'The match has ended. Waiting for host to start a new match.'
+hazardEscalationEveryNRounds: 2
 
 # Misc
 loading: 'Loading...'
