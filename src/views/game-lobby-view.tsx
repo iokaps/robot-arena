@@ -1,21 +1,32 @@
+import { MinimapPreview } from '@/components/minimap-preview';
 import { config } from '@/config';
+import { resolveArenaMap } from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
 import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
+import { playersStore } from '@/state/stores/players-store';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /**
  * Example view demonstrating how to display lobby content before game starts.
  * Modify or replace with your own implementation.
  */
 export function GameLobbyView() {
-	const { mapVotes, mapLayoutId } = useSnapshot(arenaStore.proxy);
+	const { mapVotes, mapLayoutId, selectedSizeId } = useSnapshot(
+		arenaStore.proxy
+	);
 	const { phase } = useSnapshot(matchStore.proxy);
+	const { players } = useSnapshot(playersStore.proxy);
+
+	const playerCount = Object.keys(players).length;
+	const previewMap = resolveArenaMap(selectedSizeId, Math.max(2, playerCount));
 
 	const myVote = mapVotes[kmClient.id];
+	const previewLayoutId = myVote ?? mapLayoutId;
 	const voteEntries = Object.values(MAP_LAYOUTS).map((layout) => ({
 		layout,
 		count: Object.values(mapVotes).filter((vote) => vote === layout.id).length
@@ -24,7 +35,7 @@ export function GameLobbyView() {
 	return (
 		<div className="animate-fade-in-up flex w-full max-w-2xl flex-col gap-6">
 			<article className="prose">
-				<Markdown>{config.gameLobbyMd}</Markdown>
+				<Markdown remarkPlugins={[remarkGfm]}>{config.gameLobbyMd}</Markdown>
 			</article>
 
 			{phase === 'lobby' && (
@@ -61,6 +72,23 @@ export function GameLobbyView() {
 								</div>
 							</button>
 						))}
+					</div>
+
+					<div className="space-y-2 rounded-sm border border-slate-700 bg-slate-900/40 p-3">
+						<p className="font-mono text-xs text-slate-400 uppercase">
+							{config.mapSelectLabel}: {MAP_LAYOUTS[previewLayoutId].name}
+						</p>
+						<div className="flex items-center gap-3">
+							<MinimapPreview
+								layoutId={previewLayoutId}
+								gridSize={previewMap.gridSize}
+								cellSize={8}
+								maxWidth={160}
+							/>
+							<span className="font-mono text-xs text-slate-500">
+								{previewMap.gridSize.width}×{previewMap.gridSize.height}
+							</span>
+						</div>
 					</div>
 
 					<p className="font-mono text-xs text-slate-500">

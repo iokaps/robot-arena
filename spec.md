@@ -157,6 +157,7 @@ Displayed to players before the match starts:
 - Command overview (Move, Rotate, Shoot, Wait)
 - "Waiting for host to start" message
 - **Map voting panel**: Players can vote for preferred map layout while in lobby
+- **Map layout preview**: Players see a minimap preview of the map they tapped to vote; before voting, it falls back to the currently selected layout
 - Host can override map vote before match start
 
 ### Programming View

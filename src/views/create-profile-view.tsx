@@ -2,6 +2,7 @@ import { config } from '@/config';
 import { localPlayerActions } from '@/state/actions/local-player-actions';
 import * as React from 'react';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /**
  * Example view demonstrating how to create a player profile form.
@@ -29,7 +30,9 @@ export function CreateProfileView() {
 	return (
 		<div className="animate-fade-in-up mx-auto w-full max-w-96 space-y-12">
 			<article className="prose text-center">
-				<Markdown>{config.createProfileMd}</Markdown>
+				<Markdown remarkPlugins={[remarkGfm]}>
+					{config.createProfileMd}
+				</Markdown>
 			</article>
 			<form onSubmit={handleSubmit} className="grid gap-5">
 				<div className="relative">
