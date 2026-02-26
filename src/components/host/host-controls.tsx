@@ -1,6 +1,6 @@
 import { MinimapPreview } from '@/components/minimap-preview';
 import { config } from '@/config';
-import { ARENA_MAPS } from '@/config/arena-maps';
+import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
 import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
 import { gameConfigActions } from '@/state/actions/game-config-actions';
 import { matchActions } from '@/state/actions/match-actions';
@@ -8,7 +8,7 @@ import { arenaStore } from '@/state/stores/arena-store';
 import { gameConfigStore } from '@/state/stores/game-config-store';
 import { matchStore } from '@/state/stores/match-store';
 import { playersStore } from '@/state/stores/players-store';
-import type { ArenaSizeId, MapLayoutId } from '@/types/arena';
+import type { MapLayoutId } from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
 import {
@@ -17,7 +17,6 @@ import {
 	Heart,
 	HelpCircle,
 	Map,
-	Maximize2,
 	Play,
 	RefreshCw,
 	RotateCcw,
@@ -26,15 +25,6 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-/** Labels for arena sizes */
-const ARENA_SIZE_LABELS: Record<ArenaSizeId, string> = {
-	auto: config.mapAutoSelectLabel,
-	small: config.mapSmallLabel,
-	medium: config.mapMediumLabel,
-	large: config.mapLargeLabel,
-	mega: config.mapMegaLabel
-};
-
 /**
  * Host controls for Code-A-Bot Arena.
  * Map selection, match controls, player status.
@@ -42,24 +32,23 @@ const ARENA_SIZE_LABELS: Record<ArenaSizeId, string> = {
 export function HostControls() {
 	const [showHowToPlay, setShowHowToPlay] = React.useState(false);
 	const { phase, currentRound } = useSnapshot(matchStore.proxy);
-	const { mapLayoutId, mapVotes, robots, selectedSizeId, gridSize } =
-		useSnapshot(arenaStore.proxy);
+	const { mapLayoutId, mapVotes, robots, gridSize } = useSnapshot(
+		arenaStore.proxy
+	);
 	const { showPresenterQr } = useSnapshot(gameConfigStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
 
 	const playerCount = Object.keys(players).length;
 	const isInMatch = phase !== 'lobby' && phase !== 'results';
+	const canStartMatch =
+		playerCount >= MIN_ARENA_PLAYERS && playerCount <= MAX_ARENA_PLAYERS;
 
 	const handleMapLayoutChange = async (layoutId: MapLayoutId) => {
 		await arenaActions.setMapLayout(layoutId);
 	};
 
-	const handleArenaSizeChange = async (sizeId: ArenaSizeId) => {
-		await arenaActions.setArenaSize(sizeId);
-	};
-
 	const handleStartMatch = async () => {
-		if (playerCount < 2) return;
+		if (!canStartMatch) return;
 		await matchActions.startMatch();
 	};
 
@@ -69,14 +58,6 @@ export function HostControls() {
 
 	const handleResetMatch = async () => {
 		await matchActions.resetMatch();
-	};
-
-	// Get recommended map size for current player count
-	const getRecommendedSize = (): string => {
-		const map = ARENA_MAPS.find(
-			(m) => playerCount >= m.minPlayers && playerCount <= m.maxPlayers
-		);
-		return map ? `${map.gridSize.width}×${map.gridSize.height}` : '22×22';
 	};
 
 	const mapVoteCounts = Object.values(MAP_LAYOUTS).map((layout) => ({
@@ -201,39 +182,6 @@ export function HostControls() {
 						)}
 					</div>
 
-					{/* Arena Size Selection */}
-					<div className="space-y-2">
-						<label className="flex items-center gap-2 font-mono text-sm text-slate-400 uppercase">
-							<Maximize2 className="h-4 w-4" />
-							{config.arenaSizeLabel}:
-							{selectedSizeId === 'auto' && (
-								<span className="text-neon-cyan text-xs">
-									({getRecommendedSize()} {config.forPlayersLabel} {playerCount}
-									)
-								</span>
-							)}
-						</label>
-						<div className="flex flex-wrap gap-2">
-							{(
-								['auto', 'small', 'medium', 'large', 'mega'] as ArenaSizeId[]
-							).map((sizeId) => (
-								<button
-									key={sizeId}
-									type="button"
-									onClick={() => handleArenaSizeChange(sizeId)}
-									className={cn(
-										'border-2 px-3 py-2 font-mono text-sm uppercase transition-all',
-										selectedSizeId === sizeId
-											? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
-											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
-									)}
-								>
-									{ARENA_SIZE_LABELS[sizeId]}
-								</button>
-							))}
-						</div>
-					</div>
-
 					{/* Obstacle Layout Selection */}
 					<div className="space-y-2">
 						<label className="flex items-center gap-2 font-mono text-sm text-slate-400 uppercase">
@@ -293,28 +241,29 @@ export function HostControls() {
 				</div>
 			)}
 
-			{/* Current arena size indicator (during match) */}
-			{isInMatch && (
-				<div className="flex items-center gap-2 text-sm text-slate-400">
-					<Maximize2 className="h-4 w-4" />
-					<span>
-						{config.arenaSizeLabel}: {gridSize.width}×{gridSize.height}
-					</span>
-				</div>
-			)}
-
 			{/* Player count */}
 			<div className="flex items-center gap-4 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-4 py-3 backdrop-blur-sm">
 				<Users className="text-neon-cyan h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
 				<span className="font-mono text-slate-300">
 					{playerCount} {config.playersJoinedLabel}
 				</span>
-				{playerCount < 2 && phase === 'lobby' && (
+				{playerCount < MIN_ARENA_PLAYERS && phase === 'lobby' && (
 					<span className="text-neon-rose font-mono text-sm">
 						({config.minPlayersMessage})
 					</span>
 				)}
+				{playerCount > MAX_ARENA_PLAYERS && phase === 'lobby' && (
+					<span className="text-neon-rose font-mono text-sm">
+						({config.maxPlayersMessage})
+					</span>
+				)}
 			</div>
+
+			{phase === 'lobby' && (
+				<p className="font-mono text-xs text-slate-500">
+					{config.hostReconnectHintMessage}
+				</p>
+			)}
 
 			{/* Robot status (during match) */}
 			{isInMatch && Object.keys(robots).length > 0 && (
@@ -376,7 +325,7 @@ export function HostControls() {
 						type="button"
 						className="km-btn-primary"
 						onClick={handleStartMatch}
-						disabled={playerCount < 2}
+						disabled={!canStartMatch}
 					>
 						<Play className="h-5 w-5" />
 						{config.startMatchButton}

@@ -7,6 +7,7 @@ Code-A-Bot Arena is a **real-time multiplayer strategy game** where players prog
 - **Players** join via mobile phones or tablets and program their robot's moves in 60-second rounds
 - **Host** controls the game flow, starts matches, and manages the session
 - **Presenter Screen** displays the arena battle to spectators (TV, projector, or shared screen)
+- **Arena Size** is fixed at 14×14 for every match
 
 ---
 
@@ -30,19 +31,19 @@ This game works well for:
 
 - Friends playing together for entertainment
 - Gaming meetups or casual competitions
-- Works with 2-12 players
+- Works with 2-10 players
 
 ---
 
 ## When to Use Code-A-Bot Arena
 
-| Scenario                      | Good Fit?  | Notes                                                |
-| ----------------------------- | ---------- | ---------------------------------------------------- |
-| Classroom lesson (30-60 mins) | ✅ Yes     | Perfect for teaching logic & strategy                |
-| After-school coding club      | ✅ Yes     | Engaging, fun way to apply programming concepts      |
-| Team building event           | ✅ Yes     | Encourages strategy & teamwork                       |
-| Game night with friends       | ✅ Yes     | Works for casual entertainment                       |
-| Very large audience (100+)    | ⚠️ Limited | Works, but limit active players to 12-15 per session |
+| Scenario                      | Good Fit?  | Notes                                             |
+| ----------------------------- | ---------- | ------------------------------------------------- |
+| Classroom lesson (30-60 mins) | ✅ Yes     | Perfect for teaching logic & strategy             |
+| After-school coding club      | ✅ Yes     | Engaging, fun way to apply programming concepts   |
+| Team building event           | ✅ Yes     | Encourages strategy & teamwork                    |
+| Game night with friends       | ✅ Yes     | Works for casual entertainment                    |
+| Very large audience (100+)    | ⚠️ Limited | Works, but limit active players to 10 per session |
 
 ---
 
@@ -133,7 +134,7 @@ Before starting, you'll see options to customize:
 
 - **Map layout** - Choose arena style (Open, Cross, Maze, etc.)
   - _Tip: Recommendation shows the most voted map by players_
-- **Player count** - System auto-adjusts arena size
+- **Player count** - Match supports 2-10 players
 - **Game duration** - How many rounds to play
 
 > Players can vote on maps while waiting. You can accept the top vote or override with your choice.
@@ -155,8 +156,8 @@ The game now goes through these phases automatically:
 
 #### **Programming Phase** (60 seconds)
 
-- ⏱️ Each player programs 5 moves for their robot
-- They see the commands: Move Forward, Rotate, Shoot, Wait
+- ⏱️ Each player programs up to 5 moves for their robot
+- They see the commands: Move Forward, Rotate, Shoot (empty slots do nothing)
 - **TIP:** First time? Introduce the commands and give them confidence!
 
 #### **Execution Phase** (10-20 seconds)
@@ -217,8 +218,8 @@ The game now goes through these phases automatically:
 
 - **2-4 players** = Short, quick games (good for trying it out)
 - **5-8 players** = Balanced gameplay, good for events
-- **9-15 players** = Longer, more chaotic battles (bigger screen helps)
-- **15+ players** = Run multiple simultaneous sessions with different hosts
+- **9-10 players** = More chaotic battles (bigger screen helps)
+- **11+ players** = Run multiple simultaneous sessions with different hosts
 
 ### ⏱️ **Timing Tips**
 
@@ -235,6 +236,7 @@ The game now goes through these phases automatically:
 - ✅ Check WiFi connection on players' devices
 - ✅ Make sure they have the correct join link or QR code
 - ✅ Ask them to refresh the page if stuck
+- ✅ If they disconnected mid-match, ask them to rejoin with the same pilot name to reclaim their robot
 
 ### ❌ **Game is laggy or slow**
 
@@ -276,7 +278,8 @@ For technical questions, see `README.md` in the project root.
 
 If players ask about:
 
-- **"How do I move my robot?"** → They use the programming buttons (Move Forward, Rotate Left/Right, Shoot, Wait)
+- **"How do I move my robot?"** → They use the programming buttons (Move Forward, Rotate Left/Right, Shoot). Empty slots are allowed.
+- **"I got disconnected - can I come back?"** → Yes. Rejoin with the same pilot name to reclaim your robot.
 - **"What happens if two robots crash?"** → Both stay in place, neither moves
 - **"Can I change my move?"** → No - programs must be submitted before execution phase
 - **"How do I win?"** → Last robot standing wins! Eliminate all others by shooting

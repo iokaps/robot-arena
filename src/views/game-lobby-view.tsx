@@ -5,7 +5,6 @@ import { kmClient } from '@/services/km-client';
 import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
-import { playersStore } from '@/state/stores/players-store';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
 import Markdown from 'react-markdown';
@@ -16,14 +15,10 @@ import remarkGfm from 'remark-gfm';
  * Modify or replace with your own implementation.
  */
 export function GameLobbyView() {
-	const { mapVotes, mapLayoutId, selectedSizeId } = useSnapshot(
-		arenaStore.proxy
-	);
+	const { mapVotes, mapLayoutId } = useSnapshot(arenaStore.proxy);
 	const { phase } = useSnapshot(matchStore.proxy);
-	const { players } = useSnapshot(playersStore.proxy);
 
-	const playerCount = Object.keys(players).length;
-	const previewMap = resolveArenaMap(selectedSizeId, Math.max(2, playerCount));
+	const previewMap = resolveArenaMap();
 
 	const myVote = mapVotes[kmClient.id];
 	const previewLayoutId = myVote ?? mapLayoutId;

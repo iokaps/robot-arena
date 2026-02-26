@@ -14,6 +14,7 @@ export const schema = z.object({
 	playersJoinedLabel: z.string().default('players joined'),
 	scanToJoinMessage: z.string().default('Scan the QR code to join the battle'),
 	minPlayersMessage: z.string().default('Need at least 2 players'),
+	maxPlayersMessage: z.string().default('Maximum 10 players for this arena'),
 	joinNextRoundBannerTitle: z.string().default('Spectating This Match'),
 	joinNextRoundBannerMessage: z
 		.string()
@@ -28,12 +29,22 @@ export const schema = z.object({
 	mapVoteHostOverrideNote: z
 		.string()
 		.default('Host can override map votes before starting the match.'),
+	hostReconnectHintMessage: z
+		.string()
+		.default(
+			'If someone reconnects, ask them to use the same pilot name to reclaim their robot.'
+		),
 	applyTopVotedMapButton: z.string().default('Apply Top Vote'),
 
 	// Player profile
 	createProfileMd: z
 		.string()
 		.default('# Enter the Arena\n\nChoose your pilot name to begin.'),
+	rejoinHintMessage: z
+		.string()
+		.default(
+			'Rejoining mid-match? Use your previous pilot name to reclaim your robot.'
+		),
 	playerNamePlaceholder: z.string().default('Pilot name...'),
 	playerNameLabel: z.string().default('Name:'),
 	playerNameButton: z.string().default('Join Arena'),
@@ -48,7 +59,7 @@ export const schema = z.object({
 	menuHelpMd: z
 		.string()
 		.default(
-			'# How to Play\n\n1. **Program** your robot with 5 moves\n2. **Submit** before time runs out\n3. **Watch** all robots execute simultaneously\n4. **Survive** to win!\n\n## Commands\n- **Move Forward**: Move one cell in facing direction\n- **Rotate Left/Right**: Turn 90 degrees\n- **Shoot**: Fire a laser in facing direction\n- **Wait**: Do nothing this turn'
+			'# How to Play\n\n1. **Program** up to 5 moves\n2. **Submit** before time runs out\n3. **Watch** all robots execute simultaneously\n4. **Survive** to win!\n\n## Commands\n- **Move Forward**: Move one cell in facing direction\n- **Rotate Left/Right**: Turn 90 degrees\n- **Shoot**: Fire a laser in facing direction\n- **Empty slot**: Does nothing this turn'
 		),
 
 	// Host controls
@@ -57,20 +68,16 @@ export const schema = z.object({
 	phaseProgramming: z.string().default('Programming'),
 	phaseExecuting: z.string().default('Executing'),
 	phaseResults: z.string().default('Results'),
-	arenaSizeLabel: z.string().default('Arena Size'),
+	allSubmittedStartingMessage: z
+		.string()
+		.default('All moves submitted — starting now'),
 	mapSelectLabel: z.string().default('Obstacle Layout'),
-	mapAutoSelectLabel: z.string().default('Auto'),
 	mapOpenLabel: z.string().default('Open'),
 	mapCrossLabel: z.string().default('Cross'),
 	mapMazeLabel: z.string().default('Maze'),
 	mapGauntletLabel: z.string().default('Gauntlet'),
 	mapFactoryLabel: z.string().default('Factory'),
 	mapDeathtrapLabel: z.string().default('Death Trap'),
-	mapSmallLabel: z.string().default('Small (10×10)'),
-	mapMediumLabel: z.string().default('Medium (14×14)'),
-	mapLargeLabel: z.string().default('Large (18×18)'),
-	mapMegaLabel: z.string().default('Mega (22×22)'),
-	forPlayersLabel: z.string().default('for'),
 	robotStatusLabel: z.string().default('Robots'),
 	startMatchButton: z.string().default('Start Match'),
 	rematchButton: z.string().default('Rematch'),
@@ -81,7 +88,7 @@ export const schema = z.object({
 	hostSetupTitle: z.string().default('Setup'),
 	hostSetupStep1: z.string().default('Share the Player Link or QR code'),
 	hostSetupStep2: z.string().default('Wait for players to join (min. 2)'),
-	hostSetupStep3: z.string().default('Select arena size and map layout'),
+	hostSetupStep3: z.string().default('Select map layout'),
 	hostSetupStep4: z.string().default('Click Start Match when ready'),
 	hostTerrainTitle: z.string().default('Terrain Types'),
 	hostTerrainWall: z.string().default('Wall - Blocks movement & lasers'),
@@ -99,7 +106,6 @@ export const schema = z.object({
 	commandRotateLeft: z.string().default('Left'),
 	commandRotateRight: z.string().default('Right'),
 	commandShoot: z.string().default('Shoot'),
-	commandWait: z.string().default('Wait'),
 	clearButton: z.string().default('Clear'),
 	submitButton: z.string().default('Submit'),
 	submittedMessage: z.string().default('Program Locked In!'),
@@ -113,6 +119,7 @@ export const schema = z.object({
 	// Eliminated
 	eliminatedTitle: z.string().default("You're Out!"),
 	eliminatedMessage: z.string().default('Your robot has been destroyed.'),
+	eliminatedRoundMessage: z.string().default('Eliminated in Round'),
 	roundsSurvivedLabel: z.string().default('Rounds Survived'),
 	eliminatedWaitingMessage: z
 		.string()

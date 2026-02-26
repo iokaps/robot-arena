@@ -77,12 +77,9 @@ export interface MapLayout {
 	obstacles: Position[];
 }
 
-/** Arena size identifiers */
-export type ArenaSizeId = 'auto' | 'small' | 'medium' | 'large' | 'mega';
-
-/** Arena map configuration based on player count */
+/** Arena map configuration */
 export interface ArenaMapConfig {
-	id: ArenaSizeId;
+	id: string;
 	/** Minimum players for this map size */
 	minPlayers: number;
 	/** Maximum players for this map size */

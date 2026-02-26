@@ -34,6 +34,9 @@ export function CreateProfileView() {
 					{config.createProfileMd}
 				</Markdown>
 			</article>
+			<p className="text-center font-mono text-xs text-slate-500">
+				{config.rejoinHintMessage}
+			</p>
 			<form onSubmit={handleSubmit} className="grid gap-5">
 				<div className="relative">
 					<input

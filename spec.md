@@ -16,17 +16,13 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 ### Grid
 
-- **Dynamic Size**: Scales based on player count
-  - **Small (2-4 players)**: 10×10 cells
-  - **Medium (5-8 players)**: 14×14 cells
-  - **Large (9-12 players)**: 18×18 cells
-  - **Mega (13+ players)**: 22×22 cells
-- **Size Selection**: Host can choose "Auto" (recommended) or manually select a size
+- **Fixed Size**: 14×14 cells
+- **Player Range**: 2-10 players per match
 - **Coordinate System**: (0,0) at top-left, x increases right, y increases down
 
 ### Obstacles
 
-- Dynamic density based on arena size (10-15%)
+- Fixed density tuned for 14×14
 - Obstacles avoid spawn zones (2-cell buffer around spawns)
 - Impassable by movement and block lasers
 
@@ -57,11 +53,13 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ### Spawning
 
 - **All players**: Distributed evenly around the inner perimeter (1 cell inside walls)
+- **Capacity**: Match starts with 2-10 players
 - Robots face toward center of arena
 - Minimum spacing ensured by perimeter distribution
 - Spawn positions avoid wall obstacles to ensure robots can move immediately
 - **Roster lock**: Player roster is locked when host starts a match
 - **Late joiners**: Players joining after roster lock become spectators for current match and join next match
+- **Reconnect reclaim**: If a disconnected player rejoins mid-match with the same pilot name and the previous seat is offline, their seat is reclaimed
 
 ## Robots
 
@@ -80,7 +78,8 @@ A turn-based strategy game where players "program" their robot's moves during a 
 | Rotate Left  | ↺    | Turn 90° counter-clockwise              |
 | Rotate Right | ↻    | Turn 90° clockwise                      |
 | Shoot        | ⊕    | Fire hit-scan laser in facing direction |
-| Wait         | ◷    | Do nothing this tick                    |
+
+Players can leave any timeline slot empty; empty slots do nothing on that tick.
 
 ## Execution Rules
 
@@ -119,7 +118,7 @@ Collectible items that spawn on the arena and provide bonuses.
 
 **Spawn Rules:**
 
-- 1-3 pickups spawn based on arena size (small=1, medium=2, large=3)
+- 2 pickups spawn each round on the 14×14 arena
 - New pickups spawn at the start of each round
 - Pickups spawn in center region, avoiding walls, terrain, and robots
 - Collected when a robot moves onto the pickup cell
@@ -151,10 +150,10 @@ Displayed to players before the match starts:
 - Welcome message with game title
 - **How It Works** summary:
   1. 🤖 Each player controls a robot on a grid arena
-  2. ⏱️ You have 60 seconds to program 5 moves
+  2. ⏱️ You have 60 seconds to program up to 5 moves
   3. ⚡ All robots execute their programs simultaneously
   4. 💥 Last bot standing wins!
-- Command overview (Move, Rotate, Shoot, Wait)
+- Command overview (Move, Rotate, Shoot; empty slots do nothing)
 - "Waiting for host to start" message
 - **Map voting panel**: Players can vote for preferred map layout while in lobby
 - **Map layout preview**: Players see a minimap preview of the map they tapped to vote; before voting, it falls back to the currently selected layout
@@ -188,7 +187,7 @@ Detailed instructions available in player menu:
 
 - **Goal**: Be the last robot standing
 - **Game Flow**: Programming phase → Execution phase → Repeat
-- **Commands Table**: Move, Rotate Left/Right, Shoot, Wait
+- **Commands Table**: Move, Rotate Left/Right, Shoot, Empty slot (no-op)
 - **Terrain Hazards**: Pits (instant death), Conveyors (push each tick)
 - **Rules**: 3 lives, collision behavior, laser blocking
 - **Tips**: Predict opponents, use cover, watch for conveyors
@@ -197,10 +196,9 @@ Detailed instructions available in player menu:
 
 ### Host Screen Features
 
-- **Arena Size Selection**: Auto / Small / Medium / Large / Mega
 - **Map Layout Selection**: Open / Cross / Maze / Gauntlet / Factory / Death Trap
 - **Minimap Preview**: Visual preview of selected layout at actual arena size
-- **Player Count**: Shows joined players with minimum requirement (2+)
+- **Player Count**: Shows joined players with match range (2-10)
 - **Match Controls**: Start Match / Reset Match buttons
 - **Results Controls**: Rematch button starts a new match with the same locked roster and settings
 - **QR Toggle**: Show/hide QR code on presenter screen
@@ -211,18 +209,8 @@ Detailed instructions available in player menu:
 
 1. Share the Player Link or QR code with participants
 2. Wait for players to join (minimum 2 players required)
-3. Select arena size (Auto recommended scales with player count)
-4. Choose map layout using minimap preview to see terrain
-5. Click "Start Match" when ready
-
-### Arena Options
-
-| Size   | Grid  | Players |
-| ------ | ----- | ------- |
-| Small  | 10×10 | 2-4     |
-| Medium | 14×14 | 5-8     |
-| Large  | 18×18 | 9-12    |
-| Mega   | 22×22 | 13+     |
+3. Choose map layout using minimap preview to see terrain
+4. Click "Start Match" when ready
 
 ### Map Layouts
 

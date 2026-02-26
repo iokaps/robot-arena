@@ -57,19 +57,11 @@ const COMMANDS: {
 		label: config.commandShoot,
 		color:
 			'text-neon-rose border-neon-rose/60 bg-neon-rose/10 hover:bg-neon-rose/20'
-	},
-	{
-		id: 'wait',
-		icon: <Clock className="h-6 w-6" />,
-		label: config.commandWait,
-		color:
-			'text-slate-400 border-slate-500/60 bg-slate-700/50 hover:bg-slate-600/50'
 	}
 ];
 
 /** Get command config by ID */
-const getCommandConfig = (id: MoveCommand) =>
-	COMMANDS.find((c) => c.id === id) || COMMANDS[4];
+const getCommandConfig = (id: MoveCommand) => COMMANDS.find((c) => c.id === id);
 
 /**
  * Programming view for players to program their robot's moves

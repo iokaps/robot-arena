@@ -1,4 +1,5 @@
 import { config } from '@/config';
+import { kmClient } from '@/services/km-client';
 import { matchStore } from '@/state/stores/match-store';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
@@ -9,7 +10,13 @@ import * as React from 'react';
  * Eliminated view shown to players who have been knocked out
  */
 export const EliminatedView: React.FC = () => {
-	const { currentRound } = useSnapshot(matchStore.proxy);
+	const { currentRound, eliminatedPlayerRounds } = useSnapshot(
+		matchStore.proxy
+	);
+	const roundsSurvived =
+		eliminatedPlayerRounds[kmClient.id] !== undefined
+			? eliminatedPlayerRounds[kmClient.id]
+			: currentRound;
 
 	return (
 		<div className="animate-fade-in-up flex w-full max-w-md flex-col items-center gap-8 text-center">
@@ -26,13 +33,16 @@ export const EliminatedView: React.FC = () => {
 				<p className="font-mono text-lg text-slate-400">
 					{config.eliminatedMessage}
 				</p>
+				<p className="font-mono text-sm text-slate-500 uppercase">
+					{config.eliminatedRoundMessage} {roundsSurvived}
+				</p>
 			</div>
 
 			{/* Stats */}
 			<div className="flex gap-8">
 				<div className="flex flex-col items-center rounded-sm border-2 border-slate-700 bg-slate-800/40 px-8 py-5 backdrop-blur-sm">
 					<span className="font-display text-neon-cyan neon-text-glow-sm text-4xl">
-						{currentRound}
+						{roundsSurvived}
 					</span>
 					<span className="font-mono text-sm text-slate-500 uppercase">
 						{config.roundsSurvivedLabel}

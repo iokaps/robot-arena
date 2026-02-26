@@ -23,7 +23,7 @@ gameLobbyMd: |
   - **Move Forward** - Move one cell in facing direction
   - **Rotate Left/Right** - Turn 90 degrees
   - **Shoot** - Fire a laser (instant hit-scan)
-  - **Wait** - Stay put this turn
+  - **Empty slot** - Stay put this turn
 
   ---
 
@@ -33,12 +33,14 @@ presenterLobbyMessage: 'Waiting for players to join...'
 playersJoinedLabel: 'players joined'
 scanToJoinMessage: 'Scan the QR code to join the battle'
 minPlayersMessage: 'Need at least 2 players'
+maxPlayersMessage: 'Maximum 10 players for this arena'
 joinNextRoundBannerTitle: 'Spectating This Match'
 joinNextRoundBannerMessage: 'You joined after the round roster was locked. You will play next match.'
 mapVotingTitle: 'Map Vote'
 mapVotingDescription: 'Vote for your preferred layout while waiting for the host.'
 mapVotesLabel: 'votes'
 mapVoteHostOverrideNote: 'Host can override map votes before starting the match.'
+hostReconnectHintMessage: 'If someone reconnects, ask them to use the same pilot name to reclaim their robot.'
 applyTopVotedMapButton: 'Apply Top Vote'
 
 # Player profile
@@ -47,6 +49,7 @@ createProfileMd: |
 
   Choose your pilot name to begin.
 
+rejoinHintMessage: 'Rejoining mid-match? Use your previous pilot name to reclaim your robot.'
 playerNamePlaceholder: 'Pilot name...'
 playerNameLabel: 'Name:'
 playerNameButton: 'Join Arena'
@@ -66,7 +69,7 @@ menuHelpMd: |
 
   ## Game Flow
   1. **Programming Phase** (60 seconds)
-     - Tap commands to program your next 5 moves
+      - Tap commands to program up to 5 moves
      - Plan carefully - you can't change once submitted!
 
   2. **Execution Phase**
@@ -83,7 +86,7 @@ menuHelpMd: |
   | ↺ Rotate Left | Turn 90° counter-clockwise |
   | ↻ Rotate Right | Turn 90° clockwise |
   | ⊕ Shoot | Fire a laser in facing direction |
-  | ◷ Wait | Do nothing this turn |
+  | Empty slot | Do nothing this turn |
 
   ## Rules
   - Each robot has **3 lives**
@@ -94,7 +97,7 @@ menuHelpMd: |
   ## Tips
   - Predict where opponents will move
   - Use obstacles for cover
-  - Sometimes waiting is the best strategy!
+  - Leaving an empty slot can be a smart strategy!
 
 # Host controls
 phaseLabel: 'Phase'
@@ -102,20 +105,14 @@ phaseLobby: 'Lobby'
 phaseProgramming: 'Programming'
 phaseExecuting: 'Executing'
 phaseResults: 'Results'
-arenaSizeLabel: 'Arena Size'
+allSubmittedStartingMessage: 'All moves submitted — starting now'
 mapSelectLabel: 'Obstacle Layout'
-mapAutoSelectLabel: 'Auto'
 mapOpenLabel: 'Open'
 mapCrossLabel: 'Cross'
 mapMazeLabel: 'Maze'
 mapGauntletLabel: 'Gauntlet'
 mapFactoryLabel: 'Factory'
 mapDeathtrapLabel: 'Death Trap'
-mapSmallLabel: 'Small (10×10)'
-mapMediumLabel: 'Medium (14×14)'
-mapLargeLabel: 'Large (18×18)'
-mapMegaLabel: 'Mega (22×22)'
-forPlayersLabel: 'for'
 robotStatusLabel: 'Robots'
 startMatchButton: 'Start Match'
 rematchButton: 'Rematch'
@@ -126,7 +123,7 @@ hostHowToPlayTitle: 'How to Play'
 hostSetupTitle: 'Setup'
 hostSetupStep1: 'Share the Player Link or QR code'
 hostSetupStep2: 'Wait for players to join (min. 2)'
-hostSetupStep3: 'Select arena size and map layout'
+hostSetupStep3: 'Select map layout'
 hostSetupStep4: 'Click Start Match when ready'
 hostTerrainTitle: 'Terrain Types'
 hostTerrainWall: 'Wall - Blocks movement & lasers'
@@ -144,7 +141,6 @@ commandMoveForward: 'Move'
 commandRotateLeft: 'Left'
 commandRotateRight: 'Right'
 commandShoot: 'Shoot'
-commandWait: 'Wait'
 clearButton: 'Clear'
 submitButton: 'Submit'
 submittedMessage: 'Program Locked In!'
@@ -158,6 +154,7 @@ yourProgramLabel: 'Your Program'
 # Eliminated
 eliminatedTitle: "You're Out!"
 eliminatedMessage: 'Your robot has been destroyed.'
+eliminatedRoundMessage: 'Eliminated in Round'
 roundsSurvivedLabel: 'Rounds Survived'
 eliminatedWaitingMessage: 'Watch the remaining bots battle it out...'
 

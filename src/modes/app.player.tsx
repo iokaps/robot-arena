@@ -11,6 +11,7 @@ import { localPlayerActions } from '@/state/actions/local-player-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { localPlayerStore } from '@/state/stores/local-player-store';
 import { matchStore } from '@/state/stores/match-store';
+import { playersStore } from '@/state/stores/players-store';
 import { CreateProfileView } from '@/views/create-profile-view';
 import { EliminatedView } from '@/views/eliminated-view';
 import { GameLobbyView } from '@/views/game-lobby-view';
@@ -27,6 +28,7 @@ const App: React.FC = () => {
 	const { name, currentView } = useSnapshot(localPlayerStore.proxy);
 	const { phase, eliminatedPlayers } = useSnapshot(matchStore.proxy);
 	const { robots } = useSnapshot(arenaStore.proxy);
+	const { players } = useSnapshot(playersStore.proxy);
 
 	const myRobotColor = robots[kmClient.id]?.color;
 	const isArenaParticipant = Boolean(robots[kmClient.id]);
@@ -36,6 +38,17 @@ const App: React.FC = () => {
 		(phase === 'programming' || phase === 'executing') &&
 		!isArenaParticipant &&
 		!isEliminated;
+
+	React.useEffect(() => {
+		if (name) {
+			return;
+		}
+
+		const registeredName = players[kmClient.id]?.name;
+		if (registeredName) {
+			localPlayerActions.setLocalName(registeredName);
+		}
+	}, [name, players]);
 
 	// React to phase changes and update local view
 	React.useEffect(() => {

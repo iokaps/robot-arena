@@ -1,9 +1,48 @@
+import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
 import type { MoveCommand } from '@/types/arena';
 import { arenaStore } from '../stores/arena-store';
 import { matchStore } from '../stores/match-store';
 import { robotProgramsStore } from '../stores/robot-programs-store';
 import { arenaActions } from './arena-actions';
+
+const VALID_MOVE_COMMANDS: readonly MoveCommand[] = [
+	'move-forward',
+	'rotate-left',
+	'rotate-right',
+	'shoot',
+	'wait'
+];
+
+function isMoveCommand(value: unknown): value is MoveCommand {
+	return (
+		typeof value === 'string' &&
+		VALID_MOVE_COMMANDS.includes(value as MoveCommand)
+	);
+}
+
+function normalizeProgram(
+	program: readonly unknown[] | undefined
+): MoveCommand[] {
+	const normalized: MoveCommand[] = [];
+
+	for (const command of program ?? []) {
+		if (!isMoveCommand(command)) {
+			continue;
+		}
+
+		normalized.push(command);
+		if (normalized.length >= 5) {
+			break;
+		}
+	}
+
+	while (normalized.length < 5) {
+		normalized.push('wait');
+	}
+
+	return normalized;
+}
 
 /**
  * Actions for match lifecycle mutations
@@ -19,7 +58,10 @@ export const matchActions = {
 			[matchStore, robotProgramsStore, arenaStore],
 			([matchState, programsState, arenaState]) => {
 				const participantIds = Object.keys(arenaState.robots);
-				if (participantIds.length < 2) {
+				if (
+					participantIds.length < MIN_ARENA_PLAYERS ||
+					participantIds.length > MAX_ARENA_PLAYERS
+				) {
 					return;
 				}
 
@@ -33,6 +75,7 @@ export const matchActions = {
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
+				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
 				matchState.winnerId = '';
@@ -57,13 +100,7 @@ export const matchActions = {
 					return;
 				if (matchState.submittedPlayers[clientId]) return;
 
-				// Pad program to 5 moves with 'wait' if needed
-				const paddedProgram = [...program];
-				while (paddedProgram.length < 5) {
-					paddedProgram.push('wait');
-				}
-
-				programsState.programs[clientId] = paddedProgram.slice(0, 5);
+				programsState.programs[clientId] = normalizeProgram(program);
 				matchState.submittedPlayers[clientId] = true;
 			}
 		);
@@ -79,16 +116,10 @@ export const matchActions = {
 				// Auto-submit 'wait' for players who didn't submit
 				const activeRobots = Object.keys(arenaState.robots);
 				for (const clientId of activeRobots) {
-					if (!programsState.programs[clientId]) {
-						programsState.programs[clientId] = [
-							'wait',
-							'wait',
-							'wait',
-							'wait',
-							'wait'
-						];
-						matchState.submittedPlayers[clientId] = true;
-					}
+					programsState.programs[clientId] = normalizeProgram(
+						programsState.programs[clientId]
+					);
+					matchState.submittedPlayers[clientId] = true;
 				}
 
 				matchState.phase = 'executing';
@@ -150,7 +181,10 @@ export const matchActions = {
 	/** Start a rematch from results using the locked roster and current arena settings */
 	async startRematch() {
 		const participantIds = Object.keys(matchStore.proxy.participantIds);
-		if (participantIds.length < 2) {
+		if (
+			participantIds.length < MIN_ARENA_PLAYERS ||
+			participantIds.length > MAX_ARENA_PLAYERS
+		) {
 			return;
 		}
 
@@ -160,7 +194,10 @@ export const matchActions = {
 			[matchStore, robotProgramsStore, arenaStore],
 			([matchState, programsState, arenaState]) => {
 				const spawnedParticipantIds = Object.keys(arenaState.robots);
-				if (spawnedParticipantIds.length < 2) {
+				if (
+					spawnedParticipantIds.length < MIN_ARENA_PLAYERS ||
+					spawnedParticipantIds.length > MAX_ARENA_PLAYERS
+				) {
 					return;
 				}
 
@@ -174,6 +211,7 @@ export const matchActions = {
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
+				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
 				matchState.winnerId = '';
@@ -193,6 +231,7 @@ export const matchActions = {
 				matchState.phaseStartTimestamp = 0;
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
+				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
 				matchState.winnerId = '';

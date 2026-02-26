@@ -7,11 +7,57 @@ import { arenaStore } from '@/state/stores/arena-store';
 import { gameSessionStore } from '@/state/stores/game-session-store';
 import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
-import type { Position, Rotation } from '@/types/arena';
+import type { MoveCommand, Position, Rotation } from '@/types/arena';
 import { useSnapshot } from '@kokimoki/app';
 import { useEffect, useRef } from 'react';
 import { useServerTimer } from './useServerTime';
 import { useStoreConnections } from './useStoreConnections';
+
+const VALID_MOVE_COMMANDS: readonly MoveCommand[] = [
+	'move-forward',
+	'rotate-left',
+	'rotate-right',
+	'shoot',
+	'wait'
+];
+
+function isMoveCommand(value: unknown): value is MoveCommand {
+	return (
+		typeof value === 'string' &&
+		VALID_MOVE_COMMANDS.includes(value as MoveCommand)
+	);
+}
+
+function normalizeProgram(
+	program: readonly unknown[] | undefined
+): MoveCommand[] {
+	const normalized: MoveCommand[] = [];
+
+	for (const command of program ?? []) {
+		if (!isMoveCommand(command)) {
+			continue;
+		}
+
+		normalized.push(command);
+		if (normalized.length >= 5) {
+			break;
+		}
+	}
+
+	while (normalized.length < 5) {
+		normalized.push('wait');
+	}
+
+	return normalized;
+}
+
+function getCommandAtTick(
+	program: readonly unknown[] | undefined,
+	tick: number
+): MoveCommand {
+	const command = program?.[tick];
+	return isMoveCommand(command) ? command : 'wait';
+}
 
 /**
  * Hook that maintains a single global controller connection across all clients.
@@ -101,35 +147,38 @@ export function useGlobalController(): boolean {
 			const elapsedMs = serverTime - phaseStartTimestamp;
 			const totalMs = programmingDuration * 1000;
 
-			// Check if programming time is up
-			if (elapsedMs >= totalMs) {
-				// Transition to execution phase
-				await kmClient.transact(
-					[matchStore, robotProgramsStore, arenaStore],
-					([matchState, programsState, arenaState]) => {
-						if (matchState.phase !== 'programming') return;
+			await kmClient.transact(
+				[matchStore, robotProgramsStore, arenaStore],
+				([matchState, programsState, arenaState]) => {
+					if (matchState.phase !== 'programming') return;
 
-						// Auto-submit 'wait' for players who didn't submit
-						const activeRobots = Object.keys(arenaState.robots);
-						for (const clientId of activeRobots) {
-							if (!programsState.programs[clientId]) {
-								programsState.programs[clientId] = [
-									'wait',
-									'wait',
-									'wait',
-									'wait',
-									'wait'
-								];
-								matchState.submittedPlayers[clientId] = true;
-							}
-						}
+					const aliveRobotIds = Object.entries(arenaState.robots)
+						.filter(([, robot]) => robot.lives > 0)
+						.map(([clientId]) => clientId);
 
-						matchState.phase = 'executing';
-						matchState.phaseStartTimestamp = kmClient.serverTimestamp();
-						matchState.currentTick = -1; // Will increment to 0 on first tick
+					const allAliveSubmitted =
+						aliveRobotIds.length > 0 &&
+						aliveRobotIds.every(
+							(clientId) => matchState.submittedPlayers[clientId] === true
+						);
+
+					const timedOut = elapsedMs >= totalMs;
+					if (!timedOut && !allAliveSubmitted) {
+						return;
 					}
-				);
-			}
+
+					for (const clientId of aliveRobotIds) {
+						programsState.programs[clientId] = normalizeProgram(
+							programsState.programs[clientId]
+						);
+						matchState.submittedPlayers[clientId] = true;
+					}
+
+					matchState.phase = 'executing';
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					matchState.currentTick = -1; // Will increment to 0 on first tick
+				}
+			);
 		};
 
 		handleProgrammingPhase();
@@ -192,14 +241,17 @@ export function useGlobalController(): boolean {
 			[arenaStore, robotProgramsStore, matchStore],
 			([arenaState, programsState, matchState]) => {
 				const robotIds = Object.keys(arenaState.robots);
+				const aliveRobotIds = robotIds.filter(
+					(clientId) => (arenaState.robots[clientId]?.lives ?? 0) > 0
+				);
 
 				// 1. Process rotations first
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
 					const program = programsState.programs[clientId];
-					if (!robot || !program || robot.lives <= 0) continue;
+					if (!robot) continue;
 
-					const command = program[tick];
+					const command = getCommandAtTick(program, tick);
 					if (command === 'rotate-left') {
 						robot.rotation = ((robot.rotation - 90 + 360) % 360) as Rotation;
 					} else if (command === 'rotate-right') {
@@ -209,12 +261,12 @@ export function useGlobalController(): boolean {
 
 				// 2. Calculate intended movements
 				const intendedMoves: Record<string, Position> = {};
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
 					const program = programsState.programs[clientId];
-					if (!robot || !program || robot.lives <= 0) continue;
+					if (!robot) continue;
 
-					const command = program[tick];
+					const command = getCommandAtTick(program, tick);
 					if (command === 'move-forward') {
 						const newPos = getForwardPosition(robot.position, robot.rotation);
 
@@ -235,78 +287,11 @@ export function useGlobalController(): boolean {
 				}
 
 				// 3. Resolve movement collisions
-				const finalPositions: Record<string, Position> = {};
-				const destinationCounts: Record<string, string[]> = {};
-
-				// Count how many robots want to move to each cell
-				for (const [clientId, pos] of Object.entries(intendedMoves)) {
-					const key = `${pos.x},${pos.y}`;
-					if (!destinationCounts[key]) {
-						destinationCounts[key] = [];
-					}
-					destinationCounts[key].push(clientId);
-				}
-
-				// Also check if destination is occupied by a non-moving robot
-				for (const clientId of robotIds) {
-					const robot = arenaState.robots[clientId];
-					if (!robot) continue;
-					if (!intendedMoves[clientId]) {
-						// This robot is staying put
-						const key = `${robot.position.x},${robot.position.y}`;
-						if (!destinationCounts[key]) {
-							destinationCounts[key] = [];
-						}
-						// Mark this cell as occupied
-					}
-				}
-
-				// Resolve collisions
-				for (const [clientId, pos] of Object.entries(intendedMoves)) {
-					const key = `${pos.x},${pos.y}`;
-
-					// Check if multiple robots want this cell
-					if (destinationCounts[key].length > 1) {
-						// Collision - nobody moves to this cell
-						continue;
-					}
-
-					// Check if a stationary robot is there
-					const occupyingRobot = robotIds.find((id) => {
-						const r = arenaState.robots[id];
-						return (
-							r &&
-							!intendedMoves[id] &&
-							r.position.x === pos.x &&
-							r.position.y === pos.y
-						);
-					});
-
-					if (occupyingRobot) {
-						// Can't move into occupied cell
-						continue;
-					}
-
-					// Check for head-on collision (swap)
-					const swappingRobot = robotIds.find((otherId) => {
-						if (otherId === clientId) return false;
-						const otherMove = intendedMoves[otherId];
-						const myRobot = arenaState.robots[clientId];
-						if (!otherMove || !myRobot) return false;
-
-						return (
-							otherMove.x === myRobot.position.x &&
-							otherMove.y === myRobot.position.y
-						);
-					});
-
-					if (swappingRobot) {
-						// Head-on collision - both stay
-						continue;
-					}
-
-					finalPositions[clientId] = pos;
-				}
+				const finalPositions = resolveSimultaneousMoves(
+					aliveRobotIds,
+					arenaState.robots,
+					intendedMoves
+				);
 
 				// Apply movements
 				for (const [clientId, pos] of Object.entries(finalPositions)) {
@@ -316,9 +301,9 @@ export function useGlobalController(): boolean {
 				}
 
 				// 4. Pickup collection - check robots standing on pickups
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
-					if (!robot || robot.lives <= 0) continue;
+					if (!robot) continue;
 
 					const pickupKey = `${robot.position.x},${robot.position.y}`;
 					const pickup = arenaState.pickups[pickupKey];
@@ -347,12 +332,12 @@ export function useGlobalController(): boolean {
 					shooterId: string;
 				}> = [];
 
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
 					const program = programsState.programs[clientId];
-					if (!robot || !program || robot.lives <= 0) continue;
+					if (!robot) continue;
 
-					const command = program[tick];
+					const command = getCommandAtTick(program, tick);
 					if (command === 'shoot') {
 						// Find first robot in line of fire (only alive robots)
 						const target = findShootTarget(
@@ -394,29 +379,37 @@ export function useGlobalController(): boolean {
 							robot.lives -= remainingDamage;
 							if (robot.lives <= 0) {
 								robot.lives = 0;
-								matchState.eliminatedPlayers[hit.targetId] = true;
+								if (!matchState.eliminatedPlayers[hit.targetId]) {
+									matchState.eliminatedPlayers[hit.targetId] = true;
+									matchState.eliminatedPlayerRounds[hit.targetId] =
+										matchState.currentRound;
+								}
 							}
 						}
 					}
 				}
 
 				// 6. Check for pit deaths (robots standing on pits after movement)
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
-					if (!robot || robot.lives <= 0) continue;
+					if (!robot) continue;
 
 					const terrainKey = `${robot.position.x},${robot.position.y}`;
 					const terrainCell = arenaState.terrain?.[terrainKey];
 					if (terrainCell?.type === 'pit') {
 						// Instant death from pit
 						robot.lives = 0;
-						matchState.eliminatedPlayers[clientId] = true;
+						if (!matchState.eliminatedPlayers[clientId]) {
+							matchState.eliminatedPlayers[clientId] = true;
+							matchState.eliminatedPlayerRounds[clientId] =
+								matchState.currentRound;
+						}
 					}
 				}
 
 				// 7. Apply conveyor belt movements (end of tick)
 				const conveyorMoves: Record<string, Position> = {};
-				for (const clientId of robotIds) {
+				for (const clientId of aliveRobotIds) {
 					const robot = arenaState.robots[clientId];
 					if (!robot || robot.lives <= 0) continue;
 
@@ -446,32 +439,30 @@ export function useGlobalController(): boolean {
 					}
 				}
 
-				// Resolve conveyor collisions (similar to movement)
-				for (const [clientId, newPos] of Object.entries(conveyorMoves)) {
-					// Check if another robot is already there (and not being pushed)
-					const blocked = robotIds.some((otherId) => {
-						if (otherId === clientId) return false;
-						const other = arenaState.robots[otherId];
-						if (!other || other.lives <= 0) return false;
-						// Check if other is at destination and not being pushed away
-						if (
-							other.position.x === newPos.x &&
-							other.position.y === newPos.y
-						) {
-							return !conveyorMoves[otherId];
-						}
-						return false;
-					});
+				// Resolve conveyor collisions (same rules as movement)
+				const finalConveyorPositions = resolveSimultaneousMoves(
+					aliveRobotIds,
+					arenaState.robots,
+					conveyorMoves
+				);
 
-					if (!blocked && arenaState.robots[clientId]) {
-						arenaState.robots[clientId].position = newPos;
+				for (const [clientId, newPos] of Object.entries(
+					finalConveyorPositions
+				)) {
+					if (!arenaState.robots[clientId]) {
+						continue;
+					}
 
-						// Check if pushed onto pit
-						const newTerrainKey = `${newPos.x},${newPos.y}`;
-						const newTerrain = arenaState.terrain?.[newTerrainKey];
-						if (newTerrain?.type === 'pit') {
-							arenaState.robots[clientId].lives = 0;
+					arenaState.robots[clientId].position = newPos;
+
+					const newTerrainKey = `${newPos.x},${newPos.y}`;
+					const newTerrain = arenaState.terrain?.[newTerrainKey];
+					if (newTerrain?.type === 'pit') {
+						arenaState.robots[clientId].lives = 0;
+						if (!matchState.eliminatedPlayers[clientId]) {
 							matchState.eliminatedPlayers[clientId] = true;
+							matchState.eliminatedPlayerRounds[clientId] =
+								matchState.currentRound;
 						}
 					}
 				}
@@ -562,6 +553,82 @@ function getForwardPosition(pos: Position, rotation: Rotation): Position {
 		default:
 			return pos;
 	}
+}
+
+function resolveSimultaneousMoves(
+	aliveRobotIds: string[],
+	robots: Record<string, { position: Position; lives: number }>,
+	intendedMoves: Record<string, Position>
+): Record<string, Position> {
+	const finalPositions: Record<string, Position> = {};
+	const destinationCounts: Record<string, number> = {};
+	const occupiedByStationary = new Set<string>();
+
+	for (const [clientId, destination] of Object.entries(intendedMoves)) {
+		if (!aliveRobotIds.includes(clientId)) {
+			continue;
+		}
+
+		const key = `${destination.x},${destination.y}`;
+		destinationCounts[key] = (destinationCounts[key] ?? 0) + 1;
+	}
+
+	for (const clientId of aliveRobotIds) {
+		if (intendedMoves[clientId]) {
+			continue;
+		}
+
+		const robot = robots[clientId];
+		if (!robot || robot.lives <= 0) {
+			continue;
+		}
+
+		occupiedByStationary.add(`${robot.position.x},${robot.position.y}`);
+	}
+
+	for (const [clientId, destination] of Object.entries(intendedMoves)) {
+		const robot = robots[clientId];
+		if (!robot || robot.lives <= 0) {
+			continue;
+		}
+
+		const destinationKey = `${destination.x},${destination.y}`;
+		if ((destinationCounts[destinationKey] ?? 0) > 1) {
+			continue;
+		}
+
+		if (occupiedByStationary.has(destinationKey)) {
+			continue;
+		}
+
+		const hasHeadOnSwap = Object.entries(intendedMoves).some(
+			([otherClientId, otherDestination]) => {
+				if (otherClientId === clientId) {
+					return false;
+				}
+
+				const otherRobot = robots[otherClientId];
+				if (!otherRobot || otherRobot.lives <= 0) {
+					return false;
+				}
+
+				return (
+					otherDestination.x === robot.position.x &&
+					otherDestination.y === robot.position.y &&
+					destination.x === otherRobot.position.x &&
+					destination.y === otherRobot.position.y
+				);
+			}
+		);
+
+		if (hasHeadOnSwap) {
+			continue;
+		}
+
+		finalPositions[clientId] = destination;
+	}
+
+	return finalPositions;
 }
 
 /** Find the first robot hit by a shot (hit-scan) - only targets alive robots */

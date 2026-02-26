@@ -1,6 +1,5 @@
 import { kmClient } from '@/services/km-client';
 import type {
-	ArenaSizeId,
 	MapLayoutId,
 	PickupCell,
 	Position,
@@ -23,19 +22,16 @@ export interface ArenaState {
 	mapLayoutId: MapLayoutId;
 	/** Lobby map votes keyed by clientId */
 	mapVotes: Record<string, MapLayoutId>;
-	/** Selected arena size ID ('auto' for player-count based) */
-	selectedSizeId: ArenaSizeId;
 }
 
 const initialState: ArenaState = {
-	gridSize: { width: 10, height: 10 },
+	gridSize: { width: 14, height: 14 },
 	robots: {},
 	obstacles: {},
 	terrain: {},
 	pickups: {},
 	mapLayoutId: 'open',
-	mapVotes: {},
-	selectedSizeId: 'auto'
+	mapVotes: {}
 };
 
 /**

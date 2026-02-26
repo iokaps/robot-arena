@@ -112,6 +112,10 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		(robot) => robot.lives > 0
 	).length;
 	const submittedCount = Object.keys(submittedPlayers).length;
+	const allAliveSubmitted =
+		phase === 'programming' &&
+		aliveRobotCount > 0 &&
+		submittedCount >= aliveRobotCount;
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
 
 	// Trigger confetti on results phase with a winner
@@ -292,16 +296,32 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 					{/* Submission status during programming */}
 					{phase === 'programming' && (
 						<div className="flex items-center gap-2 font-mono text-slate-400">
-							<span>
-								{submittedCount}/{aliveRobotCount} {config.submittedLabel}
-							</span>
+							{allAliveSubmitted ? (
+								<span className="text-neon-lime">
+									{config.allSubmittedStartingMessage}
+								</span>
+							) : (
+								<span>
+									{submittedCount}/{aliveRobotCount} {config.submittedLabel}
+								</span>
+							)}
 						</div>
 					)}
 				</div>
 			</HostPresenterLayout.Header>
 
-			<HostPresenterLayout.Main className="justify-center">
+			<HostPresenterLayout.Main className="relative justify-center">
 				<ArenaGrid cellSize={56} showNames={true} activeShots={activeShots} />
+
+				<div className="absolute right-6 bottom-6">
+					<KmQrCode
+						data={playerLink}
+						size={140}
+						className={cn('transition-opacity', {
+							invisible: !showPresenterQr
+						})}
+					/>
+				</div>
 			</HostPresenterLayout.Main>
 		</HostPresenterLayout.Root>
 	);

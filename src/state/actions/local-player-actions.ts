@@ -1,10 +1,13 @@
 import { kmClient } from '@/services/km-client';
 import type { MoveCommand } from '@/types/arena';
+import { arenaStore } from '../stores/arena-store';
 import {
 	localPlayerStore,
 	type LocalPlayerState
 } from '../stores/local-player-store';
+import { matchStore } from '../stores/match-store';
 import { playersStore } from '../stores/players-store';
+import { robotProgramsStore } from '../stores/robot-programs-store';
 
 /**
  * Actions for local player mutations.
@@ -14,6 +17,13 @@ import { playersStore } from '../stores/players-store';
  * Note: Uses `kmClient.id` to identify current player in global stores.
  */
 export const localPlayerActions = {
+	/** Set only local player name without touching shared players registry */
+	async setLocalName(name: string) {
+		await kmClient.transact([localPlayerStore], ([localPlayerState]) => {
+			localPlayerState.name = name;
+		});
+	},
+
 	/** Change current player's view/navigation state */
 	async setCurrentView(view: LocalPlayerState['currentView']) {
 		await kmClient.transact([localPlayerStore], ([localPlayerState]) => {
@@ -27,11 +37,97 @@ export const localPlayerActions = {
 	 * Note: This is an example of a multi-store transaction.
 	 */
 	async setPlayerName(name: string) {
+		const normalizedName = name.trim().toLowerCase();
+		const currentClientId = kmClient.id;
+		const onlineClientIds = new Set(playersStore.connections.clientIds);
+		const players = playersStore.proxy.players;
+		const participantIds = matchStore.proxy.participantIds;
+
+		const reclaimClientId = Object.keys(players).find((clientId) => {
+			if (clientId === currentClientId) {
+				return false;
+			}
+
+			const existingName = players[clientId]?.name?.trim().toLowerCase();
+			if (!existingName || existingName !== normalizedName) {
+				return false;
+			}
+
+			if (!participantIds[clientId]) {
+				return false;
+			}
+
+			if (participantIds[currentClientId]) {
+				return false;
+			}
+
+			return !onlineClientIds.has(clientId);
+		});
+
 		await kmClient.transact(
-			[localPlayerStore, playersStore],
-			([localPlayerState, playersState]) => {
+			[
+				localPlayerStore,
+				playersStore,
+				arenaStore,
+				matchStore,
+				robotProgramsStore
+			],
+			([
+				localPlayerState,
+				playersState,
+				arenaState,
+				matchState,
+				programsState
+			]) => {
 				localPlayerState.name = name;
-				playersState.players[kmClient.id] = { name };
+
+				if (reclaimClientId) {
+					const reclaimedPlayer = playersState.players[reclaimClientId] ?? {
+						name
+					};
+					playersState.players[currentClientId] = {
+						...reclaimedPlayer,
+						name
+					};
+					delete playersState.players[reclaimClientId];
+
+					if (arenaState.robots[reclaimClientId]) {
+						arenaState.robots[currentClientId] =
+							arenaState.robots[reclaimClientId];
+						delete arenaState.robots[reclaimClientId];
+					}
+
+					if (matchState.participantIds[reclaimClientId]) {
+						matchState.participantIds[currentClientId] = true;
+						delete matchState.participantIds[reclaimClientId];
+					}
+
+					if (matchState.submittedPlayers[reclaimClientId]) {
+						matchState.submittedPlayers[currentClientId] = true;
+						delete matchState.submittedPlayers[reclaimClientId];
+					}
+
+					if (matchState.eliminatedPlayers[reclaimClientId]) {
+						matchState.eliminatedPlayers[currentClientId] = true;
+						delete matchState.eliminatedPlayers[reclaimClientId];
+					}
+
+					if (
+						matchState.eliminatedPlayerRounds[reclaimClientId] !== undefined
+					) {
+						matchState.eliminatedPlayerRounds[currentClientId] =
+							matchState.eliminatedPlayerRounds[reclaimClientId];
+						delete matchState.eliminatedPlayerRounds[reclaimClientId];
+					}
+
+					if (programsState.programs[reclaimClientId]) {
+						programsState.programs[currentClientId] =
+							programsState.programs[reclaimClientId];
+						delete programsState.programs[reclaimClientId];
+					}
+				} else {
+					playersState.players[currentClientId] = { name };
+				}
 			}
 		);
 	},

@@ -1,8 +1,11 @@
 import { config } from '@/config';
-import { resolveArenaMap } from '@/config/arena-maps';
+import {
+	MAX_ARENA_PLAYERS,
+	MIN_ARENA_PLAYERS,
+	resolveArenaMap
+} from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
 import type {
-	ArenaSizeId,
 	MapLayout,
 	MapLayoutId,
 	PickupCell,
@@ -546,14 +549,13 @@ function spawnRobotsForClientIds(
 	);
 	const playerCount = uniqueClientIds.length;
 
-	if (playerCount < 2) {
+	const mapConfig = resolveArenaMap();
+	arenaState.gridSize = { ...mapConfig.gridSize };
+
+	if (playerCount < MIN_ARENA_PLAYERS || playerCount > MAX_ARENA_PLAYERS) {
 		arenaState.robots = {};
 		return;
 	}
-
-	const mapConfig = resolveArenaMap(arenaState.selectedSizeId, playerCount);
-
-	arenaState.gridSize = { ...mapConfig.gridSize };
 
 	const spawns = getPerimeterSpawnPositions(mapConfig.gridSize, playerCount);
 	const spawnPositions = spawns.map((s) => s.position);
@@ -585,6 +587,7 @@ function spawnRobotsForClientIds(
 	});
 
 	matchState.eliminatedPlayers = {};
+	matchState.eliminatedPlayerRounds = {};
 
 	const robotPositions = Object.values(arenaState.robots).map(
 		(r) => r.position
@@ -607,13 +610,6 @@ export const arenaActions = {
 	async setMapLayout(layoutId: MapLayoutId) {
 		await kmClient.transact([arenaStore], ([arenaState]) => {
 			arenaState.mapLayoutId = layoutId;
-		});
-	},
-
-	/** Set the arena size selection */
-	async setArenaSize(sizeId: ArenaSizeId) {
-		await kmClient.transact([arenaStore], ([arenaState]) => {
-			arenaState.selectedSizeId = sizeId;
 		});
 	},
 
@@ -670,6 +666,10 @@ export const arenaActions = {
 
 				if (robot.lives === 0) {
 					matchState.eliminatedPlayers[clientId] = true;
+					if (matchState.eliminatedPlayerRounds[clientId] === undefined) {
+						matchState.eliminatedPlayerRounds[clientId] =
+							matchState.currentRound;
+					}
 					// Don't delete robot - keep it for rendering (filtered by lives > 0)
 				}
 			}

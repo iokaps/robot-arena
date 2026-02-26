@@ -18,6 +18,8 @@ export interface MatchState {
 	submittedPlayers: Record<string, boolean>;
 	/** Players who have been eliminated */
 	eliminatedPlayers: Record<string, boolean>;
+	/** Round number when each player was eliminated */
+	eliminatedPlayerRounds: Record<string, number>;
 	/** Current execution tick (0-4 for 5 moves) */
 	currentTick: number;
 	/** Execution events for animation playback */
@@ -35,6 +37,7 @@ const initialState: MatchState = {
 	programmingDuration: 60,
 	submittedPlayers: {},
 	eliminatedPlayers: {},
+	eliminatedPlayerRounds: {},
 	currentTick: -1,
 	executionEvents: {},
 	winnerId: ''
