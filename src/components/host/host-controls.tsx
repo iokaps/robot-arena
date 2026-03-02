@@ -245,7 +245,7 @@ export function HostControls() {
 			<div className="flex items-center gap-4 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-4 py-3 backdrop-blur-sm">
 				<Users className="text-neon-cyan h-5 w-5 drop-shadow-[0_0_6px_currentColor]" />
 				<span className="font-mono text-slate-300">
-					{playerCount} {config.playersJoinedLabel}
+					{playerCount}/{MAX_ARENA_PLAYERS} {config.playersJoinedLabel}
 				</span>
 				{playerCount < MIN_ARENA_PLAYERS && phase === 'lobby' && (
 					<span className="text-neon-rose font-mono text-sm">

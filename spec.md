@@ -208,7 +208,7 @@ Detailed instructions available in player menu:
 ### How to Host Guide
 
 1. Share the Player Link or QR code with participants
-2. Wait for players to join (minimum 2 players required)
+2. Wait for players to join (2-10 players per match)
 3. Choose map layout using minimap preview to see terrain
 4. Click "Start Match" when ready
 

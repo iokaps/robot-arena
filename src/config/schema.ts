@@ -8,9 +8,11 @@ export const schema = z.object({
 	gameLobbyMd: z
 		.string()
 		.default(
-			'# Welcome to Code-A-Bot Arena!\n\nProgram your robot and battle in the arena. Wait for the host to start the match.'
+			'# Welcome to Code-A-Bot Arena!\n\nProgram your robot and battle in the arena. Match size: 2-10 players. Wait for the host to start the match.'
 		),
-	presenterLobbyMessage: z.string().default('Waiting for players to join...'),
+	presenterLobbyMessage: z
+		.string()
+		.default('Waiting for players to join (2-10)...'),
 	playersJoinedLabel: z.string().default('players joined'),
 	scanToJoinMessage: z.string().default('Scan the QR code to join the battle'),
 	minPlayersMessage: z.string().default('Need at least 2 players'),
@@ -39,7 +41,9 @@ export const schema = z.object({
 	// Player profile
 	createProfileMd: z
 		.string()
-		.default('# Enter the Arena\n\nChoose your pilot name to begin.'),
+		.default(
+			'# Enter the Arena\n\nChoose your pilot name to begin (up to 10 pilots per match).'
+		),
 	rejoinHintMessage: z
 		.string()
 		.default(
@@ -87,7 +91,7 @@ export const schema = z.object({
 	hostHowToPlayTitle: z.string().default('How to Play'),
 	hostSetupTitle: z.string().default('Setup'),
 	hostSetupStep1: z.string().default('Share the Player Link or QR code'),
-	hostSetupStep2: z.string().default('Wait for players to join (min. 2)'),
+	hostSetupStep2: z.string().default('Wait for players to join (2-10 players)'),
 	hostSetupStep3: z.string().default('Select map layout'),
 	hostSetupStep4: z.string().default('Click Start Match when ready'),
 	hostTerrainTitle: z.string().default('Terrain Types'),

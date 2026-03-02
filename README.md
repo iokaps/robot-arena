@@ -2,6 +2,11 @@
 
 A Kokimoki concept.
 
+## Match Capacity
+
+- Supports 2-10 active players per match
+- For larger groups, run multiple parallel sessions
+
 ## Getting Started
 
 ### Prerequisites
@@ -46,6 +51,7 @@ kokimoki upload
 **Important:** Before uploading again, you must update the version in `package.json`. You can do this:
 
 1. Using the npm version command:
+
    ```bash
    npm version patch  # for bug fixes
    npm version minor  # for new features

@@ -11,6 +11,8 @@ gameLobbyMd: |
 
   **Program your robot. Battle your friends. Only one bot survives.**
 
+  **Match size:** 2-10 players
+
   ## How It Works
 
   1. 🤖 Each player controls a robot on the arena grid
@@ -29,7 +31,7 @@ gameLobbyMd: |
 
   *Waiting for the host to start the match...*
 
-presenterLobbyMessage: 'Waiting for players to join...'
+presenterLobbyMessage: 'Waiting for players to join (2-10)...'
 playersJoinedLabel: 'players joined'
 scanToJoinMessage: 'Scan the QR code to join the battle'
 minPlayersMessage: 'Need at least 2 players'
@@ -47,7 +49,7 @@ applyTopVotedMapButton: 'Apply Top Vote'
 createProfileMd: |
   # Enter the Arena
 
-  Choose your pilot name to begin.
+  Choose your pilot name to begin (up to 10 pilots per match).
 
 rejoinHintMessage: 'Rejoining mid-match? Use your previous pilot name to reclaim your robot.'
 playerNamePlaceholder: 'Pilot name...'
@@ -122,7 +124,7 @@ resetMatchButton: 'Reset Match'
 hostHowToPlayTitle: 'How to Play'
 hostSetupTitle: 'Setup'
 hostSetupStep1: 'Share the Player Link or QR code'
-hostSetupStep2: 'Wait for players to join (min. 2)'
+hostSetupStep2: 'Wait for players to join (2-10 players)'
 hostSetupStep3: 'Select map layout'
 hostSetupStep4: 'Click Start Match when ready'
 hostTerrainTitle: 'Terrain Types'

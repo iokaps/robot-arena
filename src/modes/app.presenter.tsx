@@ -5,6 +5,7 @@ import {
 	type ModeGuardProps
 } from '@/components/with-mode-guard';
 import { config } from '@/config';
+import { MAX_ARENA_PLAYERS } from '@/config/arena-maps';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGlobalController } from '@/hooks/useGlobalController';
 import { useServerTimer } from '@/hooks/useServerTime';
@@ -46,6 +47,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	const { robots, mapVotes, mapLayoutId } = useSnapshot(arenaStore.proxy);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
+	const playerCount = Object.keys(players).length;
 
 	const voteSummary = Object.values(MAP_LAYOUTS)
 		.map((layout) => ({
@@ -145,7 +147,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 						<div className="flex items-center gap-5 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-8 py-5 backdrop-blur-sm">
 							<Users className="text-neon-cyan h-8 w-8 drop-shadow-[0_0_8px_currentColor]" />
 							<span className="font-display text-neon-cyan neon-text-glow-sm text-4xl">
-								{Object.keys(players).length}
+								{playerCount}/{MAX_ARENA_PLAYERS}
 							</span>
 							<span className="font-mono text-slate-500 uppercase">
 								{config.playersJoinedLabel}
@@ -153,7 +155,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 						</div>
 
 						{/* Animated player roster */}
-						{Object.keys(players).length > 0 && (
+						{playerCount > 0 && (
 							<div className="flex flex-wrap justify-center gap-3">
 								{Object.values(players).map((player, index) => (
 									<div

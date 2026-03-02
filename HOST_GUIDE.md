@@ -18,13 +18,13 @@ This game works well for:
 ### 👨‍🏫 **Teachers & Educators**
 
 - Teach programming logic and strategy in an engaging way
-- Classroom size: 5-20 students per session
+- Classroom size: 5-10 students per session
 - Great for STEM curriculum, coding clubs, or computer science classes
 
 ### 🎉 **Event Organizers**
 
 - School events, corporate team building, game nights, conferences
-- Works for small gatherings (4-6 people) to large events (20+ players)
+- Works for small gatherings (4-6 people) up to 10 active players per session
 - Requires minimal setup - just WiFi and a projector/large screen
 
 ### 👥 **Casual Groups**
@@ -290,7 +290,7 @@ If players ask about:
 
 1. ✅ Get the **join link** from the host console
 2. ✅ Share QR code with players via screen or projector
-3. ✅ Wait for 2+ players to join
+3. ✅ Wait for 2-10 players to join
 4. ✅ Press **"Start Match"**
 5. ✅ Players program their robots (60 seconds)
 6. ✅ Watch robots battle on presenter screen (30 seconds)
