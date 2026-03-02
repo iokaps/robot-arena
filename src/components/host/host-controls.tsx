@@ -1,7 +1,11 @@
 import { MinimapPreview } from '@/components/minimap-preview';
 import { config } from '@/config';
 import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
-import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
+import {
+	MAP_LAYOUTS,
+	arenaActions,
+	sanitizeMapLayoutId
+} from '@/state/actions/arena-actions';
 import { gameConfigActions } from '@/state/actions/game-config-actions';
 import { matchActions } from '@/state/actions/match-actions';
 import { arenaStore } from '@/state/stores/arena-store';
@@ -32,11 +36,10 @@ import * as React from 'react';
 export function HostControls() {
 	const [showHowToPlay, setShowHowToPlay] = React.useState(false);
 	const { phase, currentRound } = useSnapshot(matchStore.proxy);
-	const { mapLayoutId, mapVotes, robots, gridSize } = useSnapshot(
-		arenaStore.proxy
-	);
+	const { mapLayoutId, robots, gridSize } = useSnapshot(arenaStore.proxy);
 	const { showPresenterQr } = useSnapshot(gameConfigStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
+	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
 
 	const playerCount = Object.keys(players).length;
 	const isInMatch = phase !== 'lobby' && phase !== 'results';
@@ -59,23 +62,6 @@ export function HostControls() {
 	const handleResetMatch = async () => {
 		await matchActions.resetMatch();
 	};
-
-	const mapVoteCounts = Object.values(MAP_LAYOUTS).map((layout) => ({
-		layoutId: layout.id,
-		votes: Object.values(mapVotes).filter((vote) => vote === layout.id).length
-	}));
-
-	const topVotedMap = mapVoteCounts.reduce(
-		(best, current) =>
-			current.votes > best.votes ||
-			(current.votes === best.votes && current.layoutId < best.layoutId)
-				? current
-				: best,
-		{ layoutId: mapLayoutId, votes: 0 }
-	);
-
-	const canApplyTopVotedMap =
-		topVotedMap.votes > 0 && topVotedMap.layoutId !== mapLayoutId;
 
 	return (
 		<div className="space-y-6">
@@ -190,10 +176,6 @@ export function HostControls() {
 						</label>
 						<div className="flex flex-wrap gap-2">
 							{Object.values(MAP_LAYOUTS).map((layout) => {
-								const voteCount =
-									mapVoteCounts.find((entry) => entry.layoutId === layout.id)
-										?.votes || 0;
-
 								return (
 									<button
 										key={layout.id}
@@ -201,34 +183,21 @@ export function HostControls() {
 										onClick={() => handleMapLayoutChange(layout.id)}
 										className={cn(
 											'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
-											mapLayoutId === layout.id
+											selectedMapLayoutId === layout.id
 												? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
 												: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
 										)}
 									>
-										{layout.name} ({voteCount})
+										{layout.name}
 									</button>
 								);
 							})}
 						</div>
 
-						<div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-							<span>{config.mapVoteHostOverrideNote}</span>
-							{canApplyTopVotedMap && (
-								<button
-									type="button"
-									onClick={() => handleMapLayoutChange(topVotedMap.layoutId)}
-									className="km-btn-secondary"
-								>
-									{config.applyTopVotedMapButton}
-								</button>
-							)}
-						</div>
-
 						{/* Minimap Preview */}
 						<div className="mt-3 flex items-center gap-3">
 							<MinimapPreview
-								layoutId={mapLayoutId}
+								layoutId={selectedMapLayoutId}
 								gridSize={gridSize}
 								cellSize={10}
 								maxWidth={200}

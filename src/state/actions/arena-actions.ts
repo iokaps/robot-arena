@@ -13,8 +13,7 @@ import type {
 	Position,
 	RobotColor,
 	Rotation,
-	TerrainCell,
-	TerrainType
+	TerrainCell
 } from '@/types/arena';
 import type { ArenaState } from '../stores/arena-store';
 import { arenaStore } from '../stores/arena-store';
@@ -39,33 +38,16 @@ export const MAP_LAYOUTS: Record<MapLayoutId, MapLayout> = {
 		id: 'open',
 		name: config.mapOpenLabel,
 		obstacles: []
-	},
-	cross: {
-		id: 'cross',
-		name: config.mapCrossLabel,
-		obstacles: []
-	},
-	maze: {
-		id: 'maze',
-		name: config.mapMazeLabel,
-		obstacles: []
-	},
-	gauntlet: {
-		id: 'gauntlet',
-		name: config.mapGauntletLabel,
-		obstacles: []
-	},
-	factory: {
-		id: 'factory',
-		name: config.mapFactoryLabel,
-		obstacles: []
-	},
-	deathtrap: {
-		id: 'deathtrap',
-		name: config.mapDeathtrapLabel,
-		obstacles: []
 	}
 };
+
+/** Runtime-safe map layout resolver to guard against stale persisted IDs. */
+export function sanitizeMapLayoutId(layoutId: unknown): MapLayoutId {
+	if (typeof layoutId === 'string' && layoutId in MAP_LAYOUTS) {
+		return layoutId as MapLayoutId;
+	}
+	return 'open';
+}
 
 /**
  * Generate terrain for a given grid size based on layout pattern.
@@ -85,6 +67,7 @@ export function generateLayoutTerrain(
 	const { width, height } = gridSize;
 	const centerX = Math.floor(width / 2);
 	const centerY = Math.floor(height / 2);
+	void density;
 
 	// Create spawn zone set for exclusion (2-cell buffer around spawns)
 	const spawnExclusion = new Set<string>();
@@ -115,17 +98,6 @@ export function generateLayoutTerrain(
 		}
 	};
 
-	const addTerrain = (
-		x: number,
-		y: number,
-		type: TerrainType,
-		direction?: Rotation
-	) => {
-		if (canPlace(x, y)) {
-			terrain[`${x},${y}`] = { position: { x, y }, type, direction };
-		}
-	};
-
 	// Add perimeter walls to prevent robots from falling off edges
 	// Top edge
 	for (let x = 0; x < width; x++) {
@@ -144,160 +116,19 @@ export function generateLayoutTerrain(
 		obstacles[`${width - 1},${y}`] = { x: width - 1, y };
 	}
 
-	switch (layoutId) {
-		case 'open': {
-			// Scattered corner obstacles
-			const offset = Math.floor(Math.min(width, height) * 0.25);
-			addObstacle(offset, offset);
-			addObstacle(width - 1 - offset, offset);
-			addObstacle(offset, height - 1 - offset);
-			addObstacle(width - 1 - offset, height - 1 - offset);
+	void layoutId;
 
-			// Add center obstacles for larger maps
-			if (width >= 14) {
-				addObstacle(centerX - 1, centerY);
-				addObstacle(centerX + 1, centerY);
-			}
-			break;
-		}
+	// Scattered corner obstacles
+	const offset = Math.floor(Math.min(width, height) * 0.25);
+	addObstacle(offset, offset);
+	addObstacle(width - 1 - offset, offset);
+	addObstacle(offset, height - 1 - offset);
+	addObstacle(width - 1 - offset, height - 1 - offset);
 
-		case 'cross': {
-			// Cross pattern scaled to grid
-			const armLength = Math.floor(Math.min(width, height) * 0.15);
-			const armOffset = Math.floor(Math.min(width, height) * 0.2);
-
-			// Top arm
-			for (let i = 0; i < armLength; i++) {
-				addObstacle(centerX, armOffset + i);
-				addObstacle(centerX - 1, armOffset + i);
-			}
-			// Bottom arm
-			for (let i = 0; i < armLength; i++) {
-				addObstacle(centerX, height - 1 - armOffset - i);
-				addObstacle(centerX - 1, height - 1 - armOffset - i);
-			}
-			// Left arm
-			for (let i = 0; i < armLength; i++) {
-				addObstacle(armOffset + i, centerY);
-				addObstacle(armOffset + i, centerY - 1);
-			}
-			// Right arm
-			for (let i = 0; i < armLength; i++) {
-				addObstacle(width - 1 - armOffset - i, centerY);
-				addObstacle(width - 1 - armOffset - i, centerY - 1);
-			}
-			break;
-		}
-
-		case 'maze': {
-			// Random scattered obstacles
-			const totalCells = width * height;
-			const targetCount = Math.floor(totalCells * density);
-			let placed = 0;
-			let attempts = 0;
-
-			while (placed < targetCount && attempts < targetCount * 10) {
-				const x = Math.floor(Math.random() * width);
-				const y = Math.floor(Math.random() * height);
-				if (canPlace(x, y)) {
-					addObstacle(x, y);
-					placed++;
-				}
-				attempts++;
-			}
-			break;
-		}
-
-		case 'gauntlet': {
-			// Central corridor with pits on sides, conveyors pushing toward center
-			const corridorWidth = Math.max(4, Math.floor(width * 0.3));
-			const corridorStart = Math.floor((width - corridorWidth) / 2);
-			const corridorEnd = corridorStart + corridorWidth;
-
-			// Add pits on both sides of the corridor
-			for (let y = 2; y < height - 2; y++) {
-				// Left side pits
-				if (corridorStart > 2) {
-					addTerrain(corridorStart - 1, y, 'pit');
-				}
-				// Right side pits
-				if (corridorEnd < width - 2) {
-					addTerrain(corridorEnd, y, 'pit');
-				}
-			}
-
-			// Add conveyors pushing toward center at top and bottom
-			for (let x = 2; x < width - 2; x++) {
-				if (x < centerX - 1) {
-					addTerrain(x, 1, 'conveyor', 90); // Push right
-					addTerrain(x, height - 2, 'conveyor', 90);
-				} else if (x > centerX) {
-					addTerrain(x, 1, 'conveyor', 270); // Push left
-					addTerrain(x, height - 2, 'conveyor', 270);
-				}
-			}
-
-			// Add some walls for cover
-			addObstacle(centerX, Math.floor(height * 0.3));
-			addObstacle(centerX - 1, Math.floor(height * 0.7));
-			break;
-		}
-
-		case 'factory': {
-			// Conveyor belt network with walls
-			const beltSpacing = Math.max(3, Math.floor(width / 4));
-
-			// Horizontal conveyor lanes
-			for (let x = 2; x < width - 2; x++) {
-				// Top lane going right
-				addTerrain(x, beltSpacing, 'conveyor', 90);
-				// Bottom lane going left
-				addTerrain(x, height - 1 - beltSpacing, 'conveyor', 270);
-			}
-
-			// Vertical conveyor lanes
-			for (let y = beltSpacing + 1; y < height - 1 - beltSpacing; y++) {
-				// Left side going down
-				addTerrain(beltSpacing, y, 'conveyor', 180);
-				// Right side going up
-				addTerrain(width - 1 - beltSpacing, y, 'conveyor', 0);
-			}
-
-			// Add walls in center
-			addObstacle(centerX, centerY);
-			addObstacle(centerX - 1, centerY);
-			addObstacle(centerX + 1, centerY);
-			addObstacle(centerX, centerY - 1);
-			addObstacle(centerX, centerY + 1);
-			break;
-		}
-
-		case 'deathtrap': {
-			// Checkered pattern of pits and walls
-			const pitSpacing = Math.max(3, Math.floor(Math.min(width, height) / 5));
-
-			for (let x = pitSpacing; x < width - pitSpacing; x += pitSpacing) {
-				for (let y = pitSpacing; y < height - pitSpacing; y += pitSpacing) {
-					// Alternate between pit and wall
-					if ((x + y) % (pitSpacing * 2) === 0) {
-						addTerrain(x, y, 'pit');
-					} else {
-						addObstacle(x, y);
-					}
-				}
-			}
-
-			// Add conveyors around the edge pushing inward
-			for (let x = 2; x < width - 2; x++) {
-				addTerrain(x, 1, 'conveyor', 180); // Push down
-				addTerrain(x, height - 2, 'conveyor', 0); // Push up
-			}
-			for (let y = 2; y < height - 2; y++) {
-				addTerrain(1, y, 'conveyor', 90); // Push right
-				addTerrain(width - 2, y, 'conveyor', 270); // Push left
-			}
-			break;
-		}
+	// Add center obstacles for larger maps
+	if (width >= 14) {
+		addObstacle(centerX - 1, centerY);
+		addObstacle(centerX + 1, centerY);
 	}
 
 	return { obstacles, terrain };
@@ -557,6 +388,8 @@ function spawnRobotsForClientIds(
 		return;
 	}
 
+	arenaState.mapLayoutId = sanitizeMapLayoutId(arenaState.mapLayoutId);
+
 	const spawns = getPerimeterSpawnPositions(mapConfig.gridSize, playerCount);
 	const spawnPositions = spawns.map((s) => s.position);
 	const { obstacles, terrain } = generateLayoutTerrain(
@@ -609,7 +442,7 @@ export const arenaActions = {
 	/** Set the map layout (obstacle pattern) */
 	async setMapLayout(layoutId: MapLayoutId) {
 		await kmClient.transact([arenaStore], ([arenaState]) => {
-			arenaState.mapLayoutId = layoutId;
+			arenaState.mapLayoutId = sanitizeMapLayoutId(layoutId);
 		});
 	},
 
@@ -619,7 +452,7 @@ export const arenaActions = {
 			[arenaStore, matchStore],
 			([arenaState, matchState]) => {
 				if (matchState.phase !== 'lobby') return;
-				arenaState.mapVotes[kmClient.id] = layoutId;
+				arenaState.mapVotes[kmClient.id] = sanitizeMapLayoutId(layoutId);
 			}
 		);
 	},

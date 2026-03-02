@@ -44,11 +44,7 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ### Map Layouts
 
 - **Open Arena**: Scattered corner obstacles, center cover on larger maps
-- **Cross**: Cross-shaped obstacle pattern scaled to grid
-- **Maze**: Random scattered obstacles based on density
-- **Gauntlet**: Corridor with pits on sides, conveyors at ends
-- **Factory**: Conveyor belt loop around center obstacles
-- **Death Trap**: Checkered pits/walls with edge conveyors pushing inward
+- **Testing mode (current)**: Only Open Arena is enabled to simplify validation and debugging
 
 ### Spawning
 
@@ -196,7 +192,7 @@ Detailed instructions available in player menu:
 
 ### Host Screen Features
 
-- **Map Layout Selection**: Open / Cross / Maze / Gauntlet / Factory / Death Trap
+- **Map Layout Selection**: Open only (testing mode)
 - **Minimap Preview**: Visual preview of selected layout at actual arena size
 - **Player Count**: Shows joined players with match range (2-10)
 - **Match Controls**: Start Match / Reset Match buttons
@@ -214,14 +210,9 @@ Detailed instructions available in player menu:
 
 ### Map Layouts
 
-| Layout     | Description                                     |
-| ---------- | ----------------------------------------------- |
-| Open       | Minimal obstacles, corner cover                 |
-| Cross      | Cross-shaped walls for tactical play            |
-| Maze       | Random scattered obstacles                      |
-| Gauntlet   | Corridor with pit hazards, conveyor ends        |
-| Factory    | Conveyor belt loop, central walls               |
-| Death Trap | Checkered pits/walls, edge conveyors pushing in |
+| Layout | Description                     |
+| ------ | ------------------------------- |
+| Open   | Minimal obstacles, corner cover |
 
 ## Presenter Display
 

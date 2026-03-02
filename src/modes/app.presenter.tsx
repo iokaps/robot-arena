@@ -11,7 +11,10 @@ import { useGlobalController } from '@/hooks/useGlobalController';
 import { useServerTimer } from '@/hooks/useServerTime';
 import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
-import { MAP_LAYOUTS } from '@/state/actions/arena-actions';
+import {
+	MAP_LAYOUTS,
+	sanitizeMapLayoutId
+} from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { gameConfigStore } from '@/state/stores/game-config-store';
 import { matchStore } from '@/state/stores/match-store';
@@ -44,20 +47,11 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		winnerId,
 		submittedPlayers
 	} = useSnapshot(matchStore.proxy);
-	const { robots, mapVotes, mapLayoutId } = useSnapshot(arenaStore.proxy);
+	const { robots, mapLayoutId } = useSnapshot(arenaStore.proxy);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
 	const playerCount = Object.keys(players).length;
-
-	const voteSummary = Object.values(MAP_LAYOUTS)
-		.map((layout) => ({
-			layout,
-			votes: Object.values(mapVotes).filter((vote) => vote === layout.id).length
-		}))
-		.filter((entry) => entry.votes > 0)
-		.sort(
-			(a, b) => b.votes - a.votes || a.layout.id.localeCompare(b.layout.id)
-		);
+	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
 
 	const serverTime = useServerTimer(100);
 
@@ -180,36 +174,19 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 									{config.mapVotingTitle}
 								</h2>
 								<span className="font-mono text-sm text-slate-400 uppercase">
-									{config.mapSelectLabel}: {MAP_LAYOUTS[mapLayoutId].name}
+									{config.mapSelectLabel}:{' '}
+									{MAP_LAYOUTS[selectedMapLayoutId].name}
 								</span>
 							</div>
 
-							{voteSummary.length > 0 ? (
-								<div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-									{voteSummary.map(({ layout, votes }) => (
-										<div
-											key={layout.id}
-											className={cn(
-												'rounded-sm border-2 px-3 py-2',
-												mapLayoutId === layout.id
-													? 'border-neon-lime/60 bg-neon-lime/10'
-													: 'border-slate-700 bg-slate-900/40'
-											)}
-										>
-											<div className="font-display text-sm tracking-wide text-slate-100 uppercase">
-												{layout.name}
-											</div>
-											<div className="font-mono text-xs text-slate-400 uppercase">
-												{votes} {config.mapVotesLabel}
-											</div>
-										</div>
-									))}
+							<div className="border-neon-lime/60 bg-neon-lime/10 rounded-sm border-2 px-3 py-2">
+								<div className="font-display text-sm tracking-wide text-slate-100 uppercase">
+									{MAP_LAYOUTS[selectedMapLayoutId].name}
 								</div>
-							) : (
-								<p className="font-mono text-sm text-slate-500">
+								<div className="font-mono text-xs text-slate-400 uppercase">
 									{config.mapVotingDescription}
-								</p>
-							)}
+								</div>
+							</div>
 						</div>
 
 						<KmQrCode

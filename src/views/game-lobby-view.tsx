@@ -2,7 +2,11 @@ import { MinimapPreview } from '@/components/minimap-preview';
 import { config } from '@/config';
 import { resolveArenaMap } from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
-import { MAP_LAYOUTS, arenaActions } from '@/state/actions/arena-actions';
+import {
+	MAP_LAYOUTS,
+	arenaActions,
+	sanitizeMapLayoutId
+} from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
 import { cn } from '@/utils/cn';
@@ -21,11 +25,9 @@ export function GameLobbyView() {
 	const previewMap = resolveArenaMap();
 
 	const myVote = mapVotes[kmClient.id];
-	const previewLayoutId = myVote ?? mapLayoutId;
-	const voteEntries = Object.values(MAP_LAYOUTS).map((layout) => ({
-		layout,
-		count: Object.values(mapVotes).filter((vote) => vote === layout.id).length
-	}));
+	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
+	const previewLayoutId = sanitizeMapLayoutId(myVote ?? selectedMapLayoutId);
+	const voteEntries = Object.values(MAP_LAYOUTS);
 
 	return (
 		<div className="animate-fade-in-up flex w-full max-w-2xl flex-col gap-6">
@@ -45,26 +47,21 @@ export function GameLobbyView() {
 					</div>
 
 					<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-						{voteEntries.map(({ layout, count }) => (
+						{voteEntries.map((layout) => (
 							<button
 								key={layout.id}
 								type="button"
 								onClick={() => arenaActions.setMapVote(layout.id)}
 								className={cn(
 									'border-2 px-3 py-2 text-left font-mono text-sm transition-all',
-									myVote === layout.id
+									sanitizeMapLayoutId(myVote) === layout.id && Boolean(myVote)
 										? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan'
-										: mapLayoutId === layout.id
+										: selectedMapLayoutId === layout.id
 											? 'border-neon-lime/60 bg-neon-lime/10 text-neon-lime'
 											: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-300'
 								)}
 							>
-								<div className="flex items-center justify-between gap-2">
-									<span className="uppercase">{layout.name}</span>
-									<span className="text-xs text-slate-400">
-										{count} {config.mapVotesLabel}
-									</span>
-								</div>
+								<span className="uppercase">{layout.name}</span>
 							</button>
 						))}
 					</div>
@@ -85,10 +82,6 @@ export function GameLobbyView() {
 							</span>
 						</div>
 					</div>
-
-					<p className="font-mono text-xs text-slate-500">
-						{config.mapVoteHostOverrideNote}
-					</p>
 				</section>
 			)}
 		</div>

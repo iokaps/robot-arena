@@ -62,13 +62,7 @@ export interface TerrainCell {
 }
 
 /** Pre-defined map layout identifiers */
-export type MapLayoutId =
-	| 'open'
-	| 'cross'
-	| 'maze'
-	| 'gauntlet'
-	| 'factory'
-	| 'deathtrap';
+export type MapLayoutId = 'open';
 
 /** Map layout definition */
 export interface MapLayout {
