@@ -1,6 +1,7 @@
 import { ArenaGrid } from '@/components/arena-grid';
 import { config } from '@/config';
 import { kmClient } from '@/services/km-client';
+import { willArenaShrinkNextRound } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
@@ -30,11 +31,12 @@ const COMMAND_ICONS: Record<MoveCommand, React.ReactNode> = {
  * Spectating view for players to watch the execution phase
  */
 export const SpectatingView: React.FC = () => {
-	const { robots } = useSnapshot(arenaStore.proxy);
-	const { currentTick, phase } = useSnapshot(matchStore.proxy);
+	const { robots, gridSize } = useSnapshot(arenaStore.proxy);
+	const { currentTick, phase, currentRound } = useSnapshot(matchStore.proxy);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const myRobot = robots[kmClient.id];
 	const myProgram = programs[kmClient.id] || [];
+	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
 
 	// Calculate active shots for visualization
 	const [activeShots, setActiveShots] = React.useState<
@@ -108,6 +110,17 @@ export const SpectatingView: React.FC = () => {
 					</span>
 				</div>
 			</div>
+
+			{showShrinkWarning && (
+				<div className="border-neon-rose/60 bg-neon-rose/10 w-full rounded-sm border-2 px-4 py-3 shadow-[0_0_12px_var(--color-neon-rose)/0.15]">
+					<p className="font-display text-neon-rose text-sm tracking-wide uppercase">
+						{config.hazardShrinkWarningTitle}
+					</p>
+					<p className="font-mono text-sm text-slate-300">
+						{config.hazardShrinkWarningMessage}
+					</p>
+				</div>
+			)}
 
 			{/* Arena */}
 			<ArenaGrid

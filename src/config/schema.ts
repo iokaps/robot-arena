@@ -96,7 +96,9 @@ export const schema = z.object({
 	hostSetupStep4: z.string().default('Click Start Match when ready'),
 	hostTerrainTitle: z.string().default('Terrain Types'),
 	hostTerrainWall: z.string().default('Wall - Blocks movement & lasers'),
-	hostTerrainPit: z.string().default('Pit - Instant elimination'),
+	hostTerrainPit: z
+		.string()
+		.default('Pit - Map pits eliminate instantly; shrink skulls drain 1 life'),
 	hostTerrainConveyor: z.string().default('Conveyor - Pushes robots each tick'),
 	hostRulesTitle: z.string().default('Quick Rules'),
 	hostRule1: z.string().default('Each robot has 3 lives'),
@@ -119,6 +121,10 @@ export const schema = z.object({
 	tickLabel: z.string().default('Tick'),
 	roundLabel: z.string().default('Round'),
 	yourProgramLabel: z.string().default('Your Program'),
+	hazardShrinkWarningTitle: z.string().default('Arena Shrink Incoming'),
+	hazardShrinkWarningMessage: z
+		.string()
+		.default('Skull ring will close in next round. Stay away from the edge.'),
 
 	// Eliminated
 	eliminatedTitle: z.string().default("You're Out!"),
@@ -137,6 +143,7 @@ export const schema = z.object({
 		.string()
 		.default('The match has ended. Waiting for host to start a new match.'),
 	hazardEscalationEveryNRounds: z.number().int().min(1).default(2),
+	hazardShrinkDecayPerTick: z.number().int().min(1).default(1),
 
 	// Misc
 	loading: z.string().default('Loading...'),

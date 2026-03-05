@@ -1,6 +1,7 @@
 import { config } from '@/config';
 import { useServerTimer } from '@/hooks/useServerTime';
 import { kmClient } from '@/services/km-client';
+import { willArenaShrinkNextRound } from '@/state/actions/arena-actions';
 import { localPlayerActions } from '@/state/actions/local-player-actions';
 import { matchActions } from '@/state/actions/match-actions';
 import { arenaStore } from '@/state/stores/arena-store';
@@ -68,10 +69,9 @@ const getCommandConfig = (id: MoveCommand) => COMMANDS.find((c) => c.id === id);
  */
 export const ProgrammingView: React.FC = () => {
 	const { draftProgram, hasSubmitted } = useSnapshot(localPlayerStore.proxy);
-	const { phaseStartTimestamp, programmingDuration } = useSnapshot(
-		matchStore.proxy
-	);
-	const { robots } = useSnapshot(arenaStore.proxy);
+	const { phaseStartTimestamp, programmingDuration, currentRound } =
+		useSnapshot(matchStore.proxy);
+	const { robots, gridSize } = useSnapshot(arenaStore.proxy);
 
 	const serverTime = useServerTimer(100);
 	const myRobot = robots[kmClient.id];
@@ -81,6 +81,7 @@ export const ProgrammingView: React.FC = () => {
 	const totalMs = programmingDuration * 1000;
 	const remainingMs = Math.max(0, totalMs - elapsedMs);
 	const isUrgent = remainingMs < 10000;
+	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
 
 	const handleAddCommand = async (command: MoveCommand) => {
 		if (!myRobot || hasSubmitted || draftProgram.length >= 5) return;
@@ -141,6 +142,17 @@ export const ProgrammingView: React.FC = () => {
 					<KmTimeCountdown ms={remainingMs} />
 				</div>
 			</div>
+
+			{showShrinkWarning && (
+				<div className="border-neon-rose/60 bg-neon-rose/10 w-full rounded-sm border-2 px-4 py-3 shadow-[0_0_12px_var(--color-neon-rose)/0.15]">
+					<p className="font-display text-neon-rose text-sm tracking-wide uppercase">
+						{config.hazardShrinkWarningTitle}
+					</p>
+					<p className="font-mono text-sm text-slate-300">
+						{config.hazardShrinkWarningMessage}
+					</p>
+				</div>
+			)}
 
 			{/* Title */}
 			<h2 className="font-display neon-text-glow-sm text-neon-cyan text-xl tracking-wider uppercase">

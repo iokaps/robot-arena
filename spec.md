@@ -28,17 +28,19 @@ A turn-based strategy game where players "program" their robot's moves during a 
 
 ### Terrain Types
 
-| Type     | Visual      | Effect                                                |
-| -------- | ----------- | ----------------------------------------------------- |
-| Wall     | Dark block  | Blocks movement and lasers                            |
-| Pit      | Red + skull | Instant death when standing on it                     |
-| Conveyor | Amber arrow | Pushes robot 1 cell in arrow direction at end of tick |
+| Type     | Visual      | Effect                                                 |
+| -------- | ----------- | ------------------------------------------------------ |
+| Wall     | Dark block  | Blocks movement and lasers                             |
+| Pit      | Red + skull | Map pits eliminate instantly; shrink skulls drain life |
+| Conveyor | Amber arrow | Pushes robot 1 cell in arrow direction at end of tick  |
 
 ### Hazard Escalation
 
 - Safe area begins shrinking after Round 1
 - A new hazard ring is added every N rounds (default: every 2 rounds), one cell further inward
+- One round before a shrink event, a warning banner appears in player and presenter gameplay views
 - Hazard rings are mostly pits with conveyors at side midpoints
+- Hazard ring skull pits drain 1 life per tick while a robot remains on them
 - Conveyors on hazard rings push robots toward the center
 
 ### Map Layouts
@@ -86,7 +88,7 @@ Players can leave any timeline slot empty; empty slots do nothing on that tick.
 3. **Pickup Collection**: Robots standing on pickups collect them
 4. **Shooting**: All shots fired simultaneously
 5. **Damage**: Apply damage from shots (shields absorb first)
-6. **Pit Death**: Robots standing on pits are eliminated
+6. **Pit Hazards**: Map pits eliminate instantly; shrink skull pits drain 1 life
 7. **Conveyor Push**: Conveyors push robots 1 cell (can push onto pits)
 
 ### Collision Rules
@@ -184,7 +186,7 @@ Detailed instructions available in player menu:
 - **Goal**: Be the last robot standing
 - **Game Flow**: Programming phase → Execution phase → Repeat
 - **Commands Table**: Move, Rotate Left/Right, Shoot, Empty slot (no-op)
-- **Terrain Hazards**: Pits (instant death), Conveyors (push each tick)
+- **Terrain Hazards**: Map pits (instant death), shrink skulls (1 life decay per tick), Conveyors (push each tick)
 - **Rules**: 3 lives, collision behavior, laser blocking
 - **Tips**: Predict opponents, use cover, watch for conveyors
 

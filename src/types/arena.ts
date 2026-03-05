@@ -53,12 +53,17 @@ export type GamePhase = 'lobby' | 'programming' | 'executing' | 'results';
 /** Terrain cell types */
 export type TerrainType = 'wall' | 'pit' | 'conveyor';
 
+/** Source for terrain hazards to distinguish map tiles from dynamic shrink rings */
+export type TerrainSource = 'map' | 'hazard-shrink';
+
 /** Terrain cell definition */
 export interface TerrainCell {
 	position: Position;
 	type: TerrainType;
 	/** Direction for conveyor belts */
 	direction?: Rotation;
+	/** Optional terrain source (used for hazard ring rules) */
+	source?: TerrainSource;
 }
 
 /** Pre-defined map layout identifiers */

@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import { kmClient } from '@/services/km-client';
 import {
 	applyHazardEscalation,
@@ -240,6 +241,40 @@ export function useGlobalController(): boolean {
 		await kmClient.transact(
 			[arenaStore, robotProgramsStore, matchStore],
 			([arenaState, programsState, matchState]) => {
+				const shrinkHazardDamage = Math.max(1, config.hazardShrinkDecayPerTick);
+
+				const markEliminated = (clientId: string) => {
+					if (!matchState.eliminatedPlayers[clientId]) {
+						matchState.eliminatedPlayers[clientId] = true;
+						matchState.eliminatedPlayerRounds[clientId] =
+							matchState.currentRound;
+					}
+				};
+
+				const applyPitHazardAtRobotPosition = (clientId: string) => {
+					const robot = arenaState.robots[clientId];
+					if (!robot || robot.lives <= 0) {
+						return;
+					}
+
+					const terrainKey = `${robot.position.x},${robot.position.y}`;
+					const terrainCell = arenaState.terrain?.[terrainKey];
+					if (terrainCell?.type !== 'pit') {
+						return;
+					}
+
+					if (terrainCell.source === 'hazard-shrink') {
+						robot.lives = Math.max(0, robot.lives - shrinkHazardDamage);
+					} else {
+						robot.lives = 0;
+					}
+
+					if (robot.lives <= 0) {
+						robot.lives = 0;
+						markEliminated(clientId);
+					}
+				};
+
 				const robotIds = Object.keys(arenaState.robots);
 				const aliveRobotIds = robotIds.filter(
 					(clientId) => (arenaState.robots[clientId]?.lives ?? 0) > 0
@@ -379,32 +414,16 @@ export function useGlobalController(): boolean {
 							robot.lives -= remainingDamage;
 							if (robot.lives <= 0) {
 								robot.lives = 0;
-								if (!matchState.eliminatedPlayers[hit.targetId]) {
-									matchState.eliminatedPlayers[hit.targetId] = true;
-									matchState.eliminatedPlayerRounds[hit.targetId] =
-										matchState.currentRound;
-								}
+								markEliminated(hit.targetId);
 							}
 						}
 					}
 				}
 
-				// 6. Check for pit deaths (robots standing on pits after movement)
+				// 6. Apply pit hazards after movement.
+				// Map pits still instantly eliminate, while shrink pits decay lives.
 				for (const clientId of aliveRobotIds) {
-					const robot = arenaState.robots[clientId];
-					if (!robot) continue;
-
-					const terrainKey = `${robot.position.x},${robot.position.y}`;
-					const terrainCell = arenaState.terrain?.[terrainKey];
-					if (terrainCell?.type === 'pit') {
-						// Instant death from pit
-						robot.lives = 0;
-						if (!matchState.eliminatedPlayers[clientId]) {
-							matchState.eliminatedPlayers[clientId] = true;
-							matchState.eliminatedPlayerRounds[clientId] =
-								matchState.currentRound;
-						}
-					}
+					applyPitHazardAtRobotPosition(clientId);
 				}
 
 				// 7. Apply conveyor belt movements (end of tick)
@@ -454,17 +473,7 @@ export function useGlobalController(): boolean {
 					}
 
 					arenaState.robots[clientId].position = newPos;
-
-					const newTerrainKey = `${newPos.x},${newPos.y}`;
-					const newTerrain = arenaState.terrain?.[newTerrainKey];
-					if (newTerrain?.type === 'pit') {
-						arenaState.robots[clientId].lives = 0;
-						if (!matchState.eliminatedPlayers[clientId]) {
-							matchState.eliminatedPlayers[clientId] = true;
-							matchState.eliminatedPlayerRounds[clientId] =
-								matchState.currentRound;
-						}
-					}
+					applyPitHazardAtRobotPosition(clientId);
 				}
 			}
 		);

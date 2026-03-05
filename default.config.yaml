@@ -129,7 +129,7 @@ hostSetupStep3: 'Select map layout'
 hostSetupStep4: 'Click Start Match when ready'
 hostTerrainTitle: 'Terrain Types'
 hostTerrainWall: 'Wall - Blocks movement & lasers'
-hostTerrainPit: 'Pit - Instant elimination'
+hostTerrainPit: 'Pit - Map pits eliminate instantly; shrink skulls drain 1 life'
 hostTerrainConveyor: 'Conveyor - Pushes robots each tick'
 hostRulesTitle: 'Quick Rules'
 hostRule1: 'Each robot has 3 lives'
@@ -152,6 +152,8 @@ submittedLabel: 'submitted'
 tickLabel: 'Tick'
 roundLabel: 'Round'
 yourProgramLabel: 'Your Program'
+hazardShrinkWarningTitle: 'Arena Shrink Incoming'
+hazardShrinkWarningMessage: 'Skull ring will close in next round. Stay away from the edge.'
 
 # Eliminated
 eliminatedTitle: "You're Out!"
@@ -166,6 +168,7 @@ drawTitle: 'Draw!'
 drawMessage: 'All robots were destroyed simultaneously.'
 matchCompleteMessage: 'The match has ended. Waiting for host to start a new match.'
 hazardEscalationEveryNRounds: 2
+hazardShrinkDecayPerTick: 1
 
 # Misc
 loading: 'Loading...'

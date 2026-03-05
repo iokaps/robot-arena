@@ -13,7 +13,8 @@ import type {
 	Position,
 	RobotColor,
 	Rotation,
-	TerrainCell
+	TerrainCell,
+	TerrainSource
 } from '@/types/arena';
 import type { ArenaState } from '../stores/arena-store';
 import { arenaStore } from '../stores/arena-store';
@@ -306,24 +307,19 @@ export function applyHazardEscalation(
 ): Record<string, TerrainCell> {
 	const escalatedTerrain: Record<string, TerrainCell> = { ...baseTerrain };
 	const { width, height } = gridSize;
-	const roundsPerRing = Math.max(1, config.hazardEscalationEveryNRounds);
-
-	const maxShrink = Math.max(0, Math.floor((Math.min(width, height) - 4) / 2));
-	const shrinkLevel = Math.min(
-		Math.max(0, Math.floor((currentRound - 1) / roundsPerRing)),
-		maxShrink
-	);
+	const shrinkLevel = getHazardShrinkLevelForRound(currentRound, gridSize);
 
 	if (shrinkLevel <= 0) {
 		return escalatedTerrain;
 	}
 
-	const setPit = (x: number, y: number) => {
+	const setPit = (x: number, y: number, source: TerrainSource) => {
 		const key = `${x},${y}`;
 		if (obstacles[key]) return;
 		escalatedTerrain[key] = {
 			position: { x, y },
-			type: 'pit'
+			type: 'pit',
+			source
 		};
 	};
 
@@ -348,13 +344,13 @@ export function applyHazardEscalation(
 		}
 
 		for (let x = minX; x <= maxX; x++) {
-			setPit(x, minY);
-			setPit(x, maxY);
+			setPit(x, minY, 'hazard-shrink');
+			setPit(x, maxY, 'hazard-shrink');
 		}
 
 		for (let y = minY; y <= maxY; y++) {
-			setPit(minX, y);
-			setPit(maxX, y);
+			setPit(minX, y, 'hazard-shrink');
+			setPit(maxX, y, 'hazard-shrink');
 		}
 
 		const centerX = Math.floor((minX + maxX) / 2);
@@ -367,6 +363,39 @@ export function applyHazardEscalation(
 	}
 
 	return escalatedTerrain;
+}
+
+function getMaxShrinkLevel(gridSize: {
+	width: number;
+	height: number;
+}): number {
+	return Math.max(
+		0,
+		Math.floor((Math.min(gridSize.width, gridSize.height) - 4) / 2)
+	);
+}
+
+export function getHazardShrinkLevelForRound(
+	currentRound: number,
+	gridSize: { width: number; height: number }
+): number {
+	const roundsPerRing = Math.max(1, config.hazardEscalationEveryNRounds);
+	const maxShrink = getMaxShrinkLevel(gridSize);
+	const normalizedRound = Math.max(1, currentRound);
+
+	return Math.min(
+		Math.max(0, Math.floor((normalizedRound - 1) / roundsPerRing)),
+		maxShrink
+	);
+}
+
+export function willArenaShrinkNextRound(
+	currentRound: number,
+	gridSize: { width: number; height: number }
+): boolean {
+	const currentLevel = getHazardShrinkLevelForRound(currentRound, gridSize);
+	const nextLevel = getHazardShrinkLevelForRound(currentRound + 1, gridSize);
+	return nextLevel > currentLevel;
 }
 
 function spawnRobotsForClientIds(

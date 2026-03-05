@@ -221,6 +221,7 @@ interface RobotSpriteProps {
 	showName?: boolean;
 	cellSize: number;
 	isBroken?: boolean;
+	showHazardPulse?: boolean;
 }
 
 const RobotSprite: React.FC<RobotSpriteProps> = ({
@@ -228,7 +229,8 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 	isHighlighted,
 	showName,
 	cellSize,
-	isBroken = false
+	isBroken = false,
+	showHazardPulse = false
 }) => {
 	const colors = ROBOT_COLOR_CLASSES[robot.color];
 	const rotationDeg = ROTATION_DEGREES[robot.rotation];
@@ -247,6 +249,23 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 				height: cellSize
 			}}
 		>
+			{showHazardPulse && !isBroken && (
+				<>
+					<div
+						className="border-neon-rose pointer-events-none absolute -inset-2 animate-ping rounded-full border-2 opacity-95"
+						style={{
+							boxShadow:
+								'0 0 20px oklch(0.65 0.2 20 / 0.8), inset 0 0 10px oklch(0.65 0.2 20 / 0.4)'
+						}}
+					/>
+					<div
+						className="border-neon-rose/70 pointer-events-none absolute -inset-4 animate-ping rounded-full border opacity-90"
+						style={{ animationDuration: '700ms' }}
+					/>
+					<div className="bg-neon-rose/35 pointer-events-none absolute inset-0 animate-pulse rounded-full" />
+				</>
+			)}
+
 			{/* Chibi Robot */}
 			<div
 				style={{
@@ -418,6 +437,10 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	const { gridSize, robots, obstacles, terrain, pickups } = useSnapshot(
 		arenaStore.proxy
 	);
+	const previousLivesRef = React.useRef<Record<string, number>>({});
+	const hazardPulseTimeoutsRef = React.useRef<
+		Record<string, ReturnType<typeof setTimeout>>
+	>({});
 
 	// Track robots that have completed their broken animation and should be hidden
 	const [hiddenRobots, setHiddenRobots] = React.useState<Set<string>>(
@@ -427,6 +450,73 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 	const [brokenRobots, setBrokenRobots] = React.useState<Set<string>>(
 		new Set()
 	);
+	const [hazardPulseRobots, setHazardPulseRobots] = React.useState<Set<string>>(
+		new Set()
+	);
+
+	// Trigger a short pulse when a robot loses life while standing on shrink skull hazard.
+	React.useEffect(() => {
+		const nextLives: Record<string, number> = {};
+
+		for (const [clientId, robot] of Object.entries(robots)) {
+			nextLives[clientId] = robot.lives;
+
+			const previousLives = previousLivesRef.current[clientId];
+			if (
+				typeof previousLives !== 'number' ||
+				robot.lives >= previousLives ||
+				robot.lives < 0
+			) {
+				continue;
+			}
+
+			const terrainKey = `${robot.position.x},${robot.position.y}`;
+			const terrainCell = terrain[terrainKey];
+			const tookShrinkHazardDecay =
+				terrainCell?.type === 'pit' && terrainCell.source === 'hazard-shrink';
+
+			if (!tookShrinkHazardDecay) {
+				continue;
+			}
+
+			setHazardPulseRobots((previous) => {
+				const next = new Set(previous);
+				next.add(clientId);
+				return next;
+			});
+
+			const existingTimeout = hazardPulseTimeoutsRef.current[clientId];
+			if (existingTimeout) {
+				clearTimeout(existingTimeout);
+			}
+
+			hazardPulseTimeoutsRef.current[clientId] = setTimeout(() => {
+				setHazardPulseRobots((previous) => {
+					if (!previous.has(clientId)) {
+						return previous;
+					}
+
+					const next = new Set(previous);
+					next.delete(clientId);
+					return next;
+				});
+
+				delete hazardPulseTimeoutsRef.current[clientId];
+			}, 800);
+		}
+
+		previousLivesRef.current = nextLives;
+	}, [robots, terrain]);
+
+	React.useEffect(() => {
+		const timeoutRegistry = hazardPulseTimeoutsRef.current;
+
+		return () => {
+			for (const timeout of Object.values(timeoutRegistry)) {
+				clearTimeout(timeout);
+			}
+		};
+	}, []);
 
 	// Detect newly eliminated robots and trigger broken animation
 	React.useEffect(() => {
@@ -571,6 +661,7 @@ export const ArenaGrid: React.FC<ArenaGridProps> = ({
 						showName={showNames}
 						cellSize={cellSize}
 						isBroken={brokenRobots.has(clientId)}
+						showHazardPulse={hazardPulseRobots.has(clientId)}
 					/>
 				))}
 		</div>

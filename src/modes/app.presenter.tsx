@@ -13,7 +13,8 @@ import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
 import {
 	MAP_LAYOUTS,
-	sanitizeMapLayoutId
+	sanitizeMapLayoutId,
+	willArenaShrinkNextRound
 } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { gameConfigStore } from '@/state/stores/game-config-store';
@@ -47,7 +48,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		winnerId,
 		submittedPlayers
 	} = useSnapshot(matchStore.proxy);
-	const { robots, mapLayoutId } = useSnapshot(arenaStore.proxy);
+	const { robots, mapLayoutId, gridSize } = useSnapshot(arenaStore.proxy);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
 	const playerCount = Object.keys(players).length;
@@ -112,6 +113,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		phase === 'programming' &&
 		aliveRobotCount > 0 &&
 		submittedCount >= aliveRobotCount;
+	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
 
 	// Trigger confetti on results phase with a winner
@@ -290,6 +292,17 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			</HostPresenterLayout.Header>
 
 			<HostPresenterLayout.Main className="relative justify-center">
+				{showShrinkWarning && (
+					<div className="border-neon-rose/60 bg-neon-rose/10 absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-sm border-2 px-5 py-3 shadow-[0_0_16px_var(--color-neon-rose)/0.2]">
+						<p className="font-display text-neon-rose text-sm tracking-wide uppercase">
+							{config.hazardShrinkWarningTitle}
+						</p>
+						<p className="font-mono text-sm text-slate-200">
+							{config.hazardShrinkWarningMessage}
+						</p>
+					</div>
+				)}
+
 				<ArenaGrid cellSize={56} showNames={true} activeShots={activeShots} />
 
 				<div className="absolute right-6 bottom-6">
