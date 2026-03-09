@@ -3,7 +3,6 @@ import { config } from '@/config';
 import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
 import {
 	MAP_LAYOUTS,
-	arenaActions,
 	sanitizeMapLayoutId
 } from '@/state/actions/arena-actions';
 import { gameConfigActions } from '@/state/actions/game-config-actions';
@@ -12,7 +11,6 @@ import { arenaStore } from '@/state/stores/arena-store';
 import { gameConfigStore } from '@/state/stores/game-config-store';
 import { matchStore } from '@/state/stores/match-store';
 import { playersStore } from '@/state/stores/players-store';
-import type { MapLayoutId } from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { useSnapshot } from '@kokimoki/app';
 import {
@@ -24,8 +22,10 @@ import {
 	Play,
 	RefreshCw,
 	RotateCcw,
+	Shield,
 	Skull,
-	Users
+	Users,
+	Zap
 } from 'lucide-react';
 import * as React from 'react';
 
@@ -45,10 +45,6 @@ export function HostControls() {
 	const isInMatch = phase !== 'lobby' && phase !== 'results';
 	const canStartMatch =
 		playerCount >= MIN_ARENA_PLAYERS && playerCount <= MAX_ARENA_PLAYERS;
-
-	const handleMapLayoutChange = async (layoutId: MapLayoutId) => {
-		await arenaActions.setMapLayout(layoutId);
-	};
 
 	const handleStartMatch = async () => {
 		if (!canStartMatch) return;
@@ -153,6 +149,32 @@ export function HostControls() {
 									</div>
 								</div>
 
+								<div>
+									<h4 className="mb-2 font-medium text-slate-200 uppercase">
+										{config.hostPickupTitle}
+									</h4>
+									<div className="space-y-1 text-slate-400">
+										<div className="flex items-center gap-2">
+											<Heart
+												className="text-neon-rose h-4 w-4"
+												fill="currentColor"
+											/>
+											<span>{config.hostPickupHealthPack}</span>
+										</div>
+										<div className="flex items-center gap-2">
+											<Shield className="text-neon-cyan h-4 w-4" />
+											<span>{config.hostPickupShield}</span>
+										</div>
+										<div className="flex items-center gap-2">
+											<Zap
+												className="text-neon-orange h-4 w-4"
+												fill="currentColor"
+											/>
+											<span>{config.hostPickupPowerCell}</span>
+										</div>
+									</div>
+								</div>
+
 								{/* Quick Rules */}
 								<div>
 									<h4 className="mb-2 font-medium text-slate-200 uppercase">
@@ -162,6 +184,7 @@ export function HostControls() {
 										<li>{config.hostRule1}</li>
 										<li>{config.hostRule2}</li>
 										<li>{config.hostRule3}</li>
+										<li>{config.hostRule4}</li>
 									</ul>
 								</div>
 							</div>
@@ -174,24 +197,8 @@ export function HostControls() {
 							<Map className="h-4 w-4" />
 							{config.mapSelectLabel}:
 						</label>
-						<div className="flex flex-wrap gap-2">
-							{Object.values(MAP_LAYOUTS).map((layout) => {
-								return (
-									<button
-										key={layout.id}
-										type="button"
-										onClick={() => handleMapLayoutChange(layout.id)}
-										className={cn(
-											'border-2 px-4 py-2 font-mono text-sm uppercase transition-all',
-											selectedMapLayoutId === layout.id
-												? 'border-neon-cyan bg-neon-cyan/15 text-neon-cyan shadow-[0_0_8px_var(--color-neon-cyan)/0.15]'
-												: 'hover:border-neon-cyan/40 border-slate-700 bg-slate-800/60 text-slate-400'
-										)}
-									>
-										{layout.name}
-									</button>
-								);
-							})}
+						<div className="border-neon-cyan/30 bg-neon-cyan/5 text-neon-cyan inline-flex rounded-sm border-2 px-4 py-2 font-mono text-sm uppercase shadow-[0_0_8px_var(--color-neon-cyan)/0.08]">
+							{MAP_LAYOUTS[selectedMapLayoutId].name}
 						</div>
 
 						{/* Minimap Preview */}

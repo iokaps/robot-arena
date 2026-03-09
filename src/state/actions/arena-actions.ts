@@ -460,8 +460,6 @@ function spawnRobotsForClientIds(
 		arenaState.terrain,
 		robotPositions
 	);
-
-	arenaState.mapVotes = {};
 }
 
 /**
@@ -470,18 +468,11 @@ function spawnRobotsForClientIds(
 export const arenaActions = {
 	/** Set the map layout (obstacle pattern) */
 	async setMapLayout(layoutId: MapLayoutId) {
-		await kmClient.transact([arenaStore], ([arenaState]) => {
-			arenaState.mapLayoutId = sanitizeMapLayoutId(layoutId);
-		});
-	},
-
-	/** Set current player's map vote in lobby */
-	async setMapVote(layoutId: MapLayoutId) {
 		await kmClient.transact(
 			[arenaStore, matchStore],
 			([arenaState, matchState]) => {
 				if (matchState.phase !== 'lobby') return;
-				arenaState.mapVotes[kmClient.id] = sanitizeMapLayoutId(layoutId);
+				arenaState.mapLayoutId = sanitizeMapLayoutId(layoutId);
 			}
 		);
 	},

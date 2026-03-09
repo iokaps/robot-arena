@@ -7,6 +7,7 @@ import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
 import type { MoveCommand, Position, Rotation } from '@/types/arena';
 import { cn } from '@/utils/cn';
+import { getActiveShotsForTick } from '@/utils/getActiveShots';
 import { useSnapshot } from '@kokimoki/app';
 import {
 	ArrowUp,
@@ -32,7 +33,9 @@ const COMMAND_ICONS: Record<MoveCommand, React.ReactNode> = {
  */
 export const SpectatingView: React.FC = () => {
 	const { robots, gridSize } = useSnapshot(arenaStore.proxy);
-	const { currentTick, phase, currentRound } = useSnapshot(matchStore.proxy);
+	const { currentTick, phase, currentRound, executionEvents } = useSnapshot(
+		matchStore.proxy
+	);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const myRobot = robots[kmClient.id];
 	const myProgram = programs[kmClient.id] || [];
@@ -43,38 +46,17 @@ export const SpectatingView: React.FC = () => {
 		Array<{ from: Position; direction: Rotation; shooterId: string }>
 	>([]);
 
-	// Show laser beams when robots shoot
 	React.useEffect(() => {
 		if (phase !== 'executing' || currentTick < 0) {
 			setActiveShots([]);
 			return;
 		}
 
-		// Find robots that are shooting this tick
-		const shots: Array<{
-			from: Position;
-			direction: Rotation;
-			shooterId: string;
-		}> = [];
-
-		Object.entries(programs).forEach(([clientId, program]) => {
-			const command = program[currentTick];
-			const robot = robots[clientId];
-			if (command === 'shoot' && robot) {
-				shots.push({
-					from: robot.position,
-					direction: robot.rotation,
-					shooterId: clientId
-				});
-			}
-		});
-
+		const shots = getActiveShotsForTick(executionEvents, currentTick);
 		setActiveShots(shots);
-
-		// Clear shots after animation
 		const timeout = setTimeout(() => setActiveShots([]), 500);
 		return () => clearTimeout(timeout);
-	}, [currentTick, phase, programs, robots]);
+	}, [currentTick, executionEvents, phase]);
 
 	return (
 		<div className="animate-fade-in-up flex w-full flex-col items-center gap-6">

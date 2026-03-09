@@ -20,8 +20,6 @@ export interface ArenaState {
 	pickups: Record<string, PickupCell>;
 	/** Current map layout ID (obstacle pattern) */
 	mapLayoutId: MapLayoutId;
-	/** Lobby map votes keyed by clientId */
-	mapVotes: Record<string, MapLayoutId>;
 }
 
 const initialState: ArenaState = {
@@ -30,8 +28,7 @@ const initialState: ArenaState = {
 	obstacles: {},
 	terrain: {},
 	pickups: {},
-	mapLayoutId: 'open',
-	mapVotes: {}
+	mapLayoutId: 'open'
 };
 
 /**

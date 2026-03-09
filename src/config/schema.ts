@@ -8,7 +8,7 @@ export const schema = z.object({
 	gameLobbyMd: z
 		.string()
 		.default(
-			'# Welcome to Code-A-Bot Arena!\n\nProgram your robot and battle in the arena. Match size: 2-10 players. Wait for the host to start the match.'
+			'# Welcome to Code-A-Bot Arena!\n\nProgram your robot, survive the hazards, and be the last bot standing. Match size: 2-10 players. Wait for the host to start the match.'
 		),
 	presenterLobbyMessage: z
 		.string()
@@ -23,20 +23,11 @@ export const schema = z.object({
 		.default(
 			'You joined after the round roster was locked. You will play next match.'
 		),
-	mapVotingTitle: z.string().default('Map Vote'),
-	mapVotingDescription: z
-		.string()
-		.default('Vote for your preferred layout while waiting for the host.'),
-	mapVotesLabel: z.string().default('votes'),
-	mapVoteHostOverrideNote: z
-		.string()
-		.default('Host can override map votes before starting the match.'),
 	hostReconnectHintMessage: z
 		.string()
 		.default(
 			'If someone reconnects, ask them to use the same pilot name to reclaim their robot.'
 		),
-	applyTopVotedMapButton: z.string().default('Apply Top Vote'),
 
 	// Player profile
 	createProfileMd: z
@@ -63,7 +54,7 @@ export const schema = z.object({
 	menuHelpMd: z
 		.string()
 		.default(
-			'# How to Play\n\n1. **Program** up to 5 moves\n2. **Submit** before time runs out\n3. **Watch** all robots execute simultaneously\n4. **Survive** to win!\n\n## Commands\n- **Move Forward**: Move one cell in facing direction\n- **Rotate Left/Right**: Turn 90 degrees\n- **Shoot**: Fire a laser in facing direction\n- **Empty slot**: Does nothing this turn'
+			'# How to Play\n\n## Goal\nBe the last robot standing. If everyone is destroyed on the same tick, the round ends in a draw.\n\n## Round Flow\n1. **Program** up to 5 commands in 60 seconds\n2. **Submit** to lock your sequence\n3. **Execute** while every robot acts at the same time\n4. **Repeat** until only one robot is left\n\n## Commands\n- **Move Forward**: Move one cell in the direction you are facing\n- **Rotate Left / Right**: Turn 90 degrees before movement resolves\n- **Shoot**: Fire a laser in the direction you are facing\n- **Wait**: Leave a slot empty to do nothing on that tick\n\n## Pickups\n- **Health Pack**: Restore 1 life, up to a maximum of 3\n- **Shield**: Block the next incoming hit\n- **Power Cell**: Make your next shot deal 2 damage\n\n## Hazards\n- **Walls** block movement and lasers\n- **Map pits** destroy robots instantly\n- **Shrink skull pits** drain 1 life per tick\n- **Conveyors** push robots one cell at the end of the tick\n\n## Tips\n- Use empty slots to avoid collisions or bait shots\n- Collect center pickups when the arena opens up\n- Watch the edge when the skull ring is about to shrink'
 		),
 
 	// Host controls
@@ -92,7 +83,7 @@ export const schema = z.object({
 	hostSetupTitle: z.string().default('Setup'),
 	hostSetupStep1: z.string().default('Share the Player Link or QR code'),
 	hostSetupStep2: z.string().default('Wait for players to join (2-10 players)'),
-	hostSetupStep3: z.string().default('Select map layout'),
+	hostSetupStep3: z.string().default('Review the arena layout'),
 	hostSetupStep4: z.string().default('Click Start Match when ready'),
 	hostTerrainTitle: z.string().default('Terrain Types'),
 	hostTerrainWall: z.string().default('Wall - Blocks movement & lasers'),
@@ -100,10 +91,19 @@ export const schema = z.object({
 		.string()
 		.default('Pit - Map pits eliminate instantly; shrink skulls drain 1 life'),
 	hostTerrainConveyor: z.string().default('Conveyor - Pushes robots each tick'),
+	hostPickupTitle: z.string().default('Pickups'),
+	hostPickupHealthPack: z
+		.string()
+		.default('Health Pack - Restores 1 life up to the 3-life maximum'),
+	hostPickupShield: z.string().default('Shield - Blocks the next incoming hit'),
+	hostPickupPowerCell: z
+		.string()
+		.default('Power Cell - Makes the next shot deal 2 damage'),
 	hostRulesTitle: z.string().default('Quick Rules'),
 	hostRule1: z.string().default('Each robot has 3 lives'),
 	hostRule2: z.string().default('60 seconds to program 5 moves'),
 	hostRule3: z.string().default('All robots execute simultaneously'),
+	hostRule4: z.string().default('Open Arena is the only layout in this build'),
 
 	// Programming phase
 	programmingPhaseTitle: z.string().default('Program Your Bot'),

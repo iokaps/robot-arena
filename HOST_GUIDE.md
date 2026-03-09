@@ -132,12 +132,9 @@ On the **Host screen**, you'll see:
 
 Before starting, you'll see options to customize:
 
-- **Map layout** - Choose arena style (Open, Cross, Maze, etc.)
-  - _Tip: Recommendation shows the most voted map by players_
+- **Arena layout preview** - Review the fixed Open arena and its obstacle layout
 - **Player count** - Match supports 2-10 players
 - **Game duration** - How many rounds to play
-
-> Players can vote on maps while waiting. You can accept the top vote or override with your choice.
 
 ---
 
@@ -185,7 +182,7 @@ The game now goes through these phases automatically:
 
 | Time                                       | What to Do                                     |
 | ------------------------------------------ | ---------------------------------------------- |
-| **Setup (2 mins)**                         | Configure map and settings                     |
+| **Setup (2 mins)**                         | Review arena layout and settings               |
 | **Lobby (5 mins)**                         | Wait for players, display QR code              |
 | **Programming Phase (1-2 mins per round)** | Monitor players programming, answer questions  |
 | **Execution Phase (30 secs per round)**    | Watch with spectators! Narrate if fun          |

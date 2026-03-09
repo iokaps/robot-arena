@@ -10,10 +10,9 @@ import { useGlobalController } from '@/hooks/useGlobalController';
 import { usePlayersWithOnlineStatus } from '@/hooks/usePlayersWithOnlineStatus';
 import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
-import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
-import { robotProgramsStore } from '@/state/stores/robot-programs-store';
 import type { Position, Rotation } from '@/types/arena';
+import { getActiveShotsForTick } from '@/utils/getActiveShots';
 import { useSnapshot } from '@kokimoki/app';
 import { SquareArrowOutUpRight, Users } from 'lucide-react';
 import * as React from 'react';
@@ -22,9 +21,7 @@ function App({ clientContext }: ModeGuardProps<'host'>) {
 	useDocumentTitle(config.title);
 	useGlobalController();
 
-	const { phase, currentTick } = useSnapshot(matchStore.proxy);
-	const { robots } = useSnapshot(arenaStore.proxy);
-	const { programs } = useSnapshot(robotProgramsStore.proxy);
+	const { phase, currentTick, executionEvents } = useSnapshot(matchStore.proxy);
 	const { onlinePlayersCount } = usePlayersWithOnlineStatus();
 
 	const playerLink = generateLink(clientContext.playerCode, {
@@ -47,27 +44,11 @@ function App({ clientContext }: ModeGuardProps<'host'>) {
 			return;
 		}
 
-		const shots: Array<{
-			from: Position;
-			direction: Rotation;
-			shooterId: string;
-		}> = [];
-		Object.entries(programs).forEach(([clientId, program]) => {
-			const command = program[currentTick];
-			const robot = robots[clientId];
-			if (command === 'shoot' && robot) {
-				shots.push({
-					from: robot.position,
-					direction: robot.rotation,
-					shooterId: clientId
-				});
-			}
-		});
-
+		const shots = getActiveShotsForTick(executionEvents, currentTick);
 		setActiveShots(shots);
 		const timeout = setTimeout(() => setActiveShots([]), 500);
 		return () => clearTimeout(timeout);
-	}, [currentTick, phase, programs, robots]);
+	}, [currentTick, executionEvents, phase]);
 
 	return (
 		<HostPresenterLayout.Root>

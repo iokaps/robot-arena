@@ -20,9 +20,9 @@ import { arenaStore } from '@/state/stores/arena-store';
 import { gameConfigStore } from '@/state/stores/game-config-store';
 import { matchStore } from '@/state/stores/match-store';
 import { playersStore } from '@/state/stores/players-store';
-import { robotProgramsStore } from '@/state/stores/robot-programs-store';
 import type { Position, Rotation } from '@/types/arena';
 import { cn } from '@/utils/cn';
+import { getActiveShotsForTick } from '@/utils/getActiveShots';
 import { useSnapshot } from '@kokimoki/app';
 import {
 	KmQrCode,
@@ -46,10 +46,10 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		phaseStartTimestamp,
 		programmingDuration,
 		winnerId,
-		submittedPlayers
+		submittedPlayers,
+		executionEvents
 	} = useSnapshot(matchStore.proxy);
 	const { robots, mapLayoutId, gridSize } = useSnapshot(arenaStore.proxy);
-	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
 	const playerCount = Object.keys(players).length;
 	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
@@ -65,38 +65,17 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		Array<{ from: Position; direction: Rotation; shooterId: string }>
 	>([]);
 
-	// Show laser beams when robots shoot
 	React.useEffect(() => {
 		if (phase !== 'executing' || currentTick < 0) {
 			setActiveShots([]);
 			return;
 		}
 
-		// Find robots that are shooting this tick
-		const shots: Array<{
-			from: Position;
-			direction: Rotation;
-			shooterId: string;
-		}> = [];
-
-		Object.entries(programs).forEach(([clientId, program]) => {
-			const command = program[currentTick];
-			const robot = robots[clientId];
-			if (command === 'shoot' && robot) {
-				shots.push({
-					from: robot.position,
-					direction: robot.rotation,
-					shooterId: clientId
-				});
-			}
-		});
-
+		const shots = getActiveShotsForTick(executionEvents, currentTick);
 		setActiveShots(shots);
-
-		// Clear shots after animation
 		const timeout = setTimeout(() => setActiveShots([]), 500);
 		return () => clearTimeout(timeout);
-	}, [currentTick, phase, programs, robots]);
+	}, [currentTick, executionEvents, phase]);
 
 	// Calculate remaining time for programming phase
 	const elapsedMs = serverTime - phaseStartTimestamp;
@@ -173,7 +152,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 						<div className="w-full max-w-2xl space-y-3 rounded-sm border-2 border-slate-700 bg-slate-800/40 px-6 py-5 backdrop-blur-sm">
 							<div className="flex items-center justify-between gap-3">
 								<h2 className="font-display text-neon-cyan text-2xl tracking-wide uppercase">
-									{config.mapVotingTitle}
+									{config.mapSelectLabel}
 								</h2>
 								<span className="font-mono text-sm text-slate-400 uppercase">
 									{config.mapSelectLabel}:{' '}
@@ -184,9 +163,6 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 							<div className="border-neon-lime/60 bg-neon-lime/10 rounded-sm border-2 px-3 py-2">
 								<div className="font-display text-sm tracking-wide text-slate-100 uppercase">
 									{MAP_LAYOUTS[selectedMapLayoutId].name}
-								</div>
-								<div className="font-mono text-xs text-slate-400 uppercase">
-									{config.mapVotingDescription}
 								</div>
 							</div>
 						</div>

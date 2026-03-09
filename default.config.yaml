@@ -27,6 +27,14 @@ gameLobbyMd: |
   - **Shoot** - Fire a laser (instant hit-scan)
   - **Empty slot** - Stay put this turn
 
+  ## Pickups
+
+  - **Health Pack** - Restore 1 life up to the 3-life maximum
+  - **Shield** - Block the next incoming hit
+  - **Power Cell** - Make your next shot deal 2 damage
+
+  Pickups spawn during the match, usually toward the center of the arena.
+
   ---
 
   *Waiting for the host to start the match...*
@@ -38,12 +46,7 @@ minPlayersMessage: 'Need at least 2 players'
 maxPlayersMessage: 'Maximum 10 players for this arena'
 joinNextRoundBannerTitle: 'Spectating This Match'
 joinNextRoundBannerMessage: 'You joined after the round roster was locked. You will play next match.'
-mapVotingTitle: 'Map Vote'
-mapVotingDescription: 'Vote for your preferred layout while waiting for the host.'
-mapVotesLabel: 'votes'
-mapVoteHostOverrideNote: 'Host can override map votes before starting the match.'
 hostReconnectHintMessage: 'If someone reconnects, ask them to use the same pilot name to reclaim their robot.'
-applyTopVotedMapButton: 'Apply Top Vote'
 
 # Player profile
 createProfileMd: |
@@ -67,16 +70,16 @@ menuHelpMd: |
   # How to Play Code-A-Bot Arena
 
   ## Goal
-  Be the last robot standing! Eliminate all other robots by shooting them.
+  Be the last robot standing. If the final bots destroy each other on the same tick, the round ends in a draw.
 
-  ## Game Flow
+  ## Round Flow
   1. **Programming Phase** (60 seconds)
-      - Tap commands to program up to 5 moves
-     - Plan carefully - you can't change once submitted!
+    - Tap commands to program up to 5 moves
+    - Plan carefully - once submitted, your sequence is locked
 
   2. **Execution Phase**
      - All robots execute their programs simultaneously
-     - Watch the chaos unfold on the presenter screen
+    - Rotations, movement, pickups, lasers, hazards, and conveyors resolve in order
 
   3. **Repeat** until one robot remains
 
@@ -90,16 +93,30 @@ menuHelpMd: |
   | ⊕ Shoot | Fire a laser in facing direction |
   | Empty slot | Do nothing this turn |
 
-  ## Rules
+  ## Pickups
+
+  | Pickup | Effect |
+  |--------|--------|
+  | ❤️ Health Pack | Restore 1 life, up to 3 |
+  | 🛡️ Shield | Block the next incoming hit |
+  | ⚡ Power Cell | Make your next shot deal 2 damage |
+
+  Pickups spawn during the match, usually in the center of the arena.
+
+  ## Hazards & Rules
   - Each robot has **3 lives**
   - Getting hit by a laser removes 1 life
   - Robots that collide both stop moving
   - Lasers are blocked by obstacles and other robots
+  - Map pits eliminate instantly, while shrink skull pits drain 1 life per tick
+  - Conveyors push robots at the end of each tick
 
   ## Tips
   - Predict where opponents will move
   - Use obstacles for cover
-  - Leaving an empty slot can be a smart strategy!
+  - Leaving an empty slot can be a smart strategy
+  - Grab center pickups when the arena opens up
+  - Watch the edge when the skull ring is about to shrink
 
 # Host controls
 phaseLabel: 'Phase'
@@ -125,16 +142,21 @@ hostHowToPlayTitle: 'How to Play'
 hostSetupTitle: 'Setup'
 hostSetupStep1: 'Share the Player Link or QR code'
 hostSetupStep2: 'Wait for players to join (2-10 players)'
-hostSetupStep3: 'Select map layout'
+hostSetupStep3: 'Review the arena layout'
 hostSetupStep4: 'Click Start Match when ready'
 hostTerrainTitle: 'Terrain Types'
 hostTerrainWall: 'Wall - Blocks movement & lasers'
 hostTerrainPit: 'Pit - Map pits eliminate instantly; shrink skulls drain 1 life'
 hostTerrainConveyor: 'Conveyor - Pushes robots each tick'
+hostPickupTitle: 'Pickups'
+hostPickupHealthPack: 'Health Pack - Restores 1 life up to the 3-life maximum'
+hostPickupShield: 'Shield - Blocks the next incoming hit'
+hostPickupPowerCell: 'Power Cell - Makes the next shot deal 2 damage'
 hostRulesTitle: 'Quick Rules'
 hostRule1: 'Each robot has 3 lives'
 hostRule2: '60 seconds to program 5 moves'
 hostRule3: 'All robots execute simultaneously'
+hostRule4: 'Open Arena is the only layout in this build'
 
 # Programming phase
 programmingPhaseTitle: 'Program Your Bot'

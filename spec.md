@@ -46,7 +46,7 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ### Map Layouts
 
 - **Open Arena**: Scattered corner obstacles, center cover on larger maps
-- **Testing mode (current)**: Only Open Arena is enabled to simplify validation and debugging
+- **Current build**: The arena layout is fixed to Open Arena to simplify validation and debugging
 
 ### Spawning
 
@@ -153,9 +153,7 @@ Displayed to players before the match starts:
   4. 💥 Last bot standing wins!
 - Command overview (Move, Rotate, Shoot; empty slots do nothing)
 - "Waiting for host to start" message
-- **Map voting panel**: Players can vote for preferred map layout while in lobby
-- **Map layout preview**: Players see a minimap preview of the map they tapped to vote; before voting, it falls back to the currently selected layout
-- Host can override map vote before match start
+- **Map layout preview**: Players see the fixed Open Arena minimap preview while waiting for the host
 
 ### Programming View
 
@@ -194,7 +192,7 @@ Detailed instructions available in player menu:
 
 ### Host Screen Features
 
-- **Map Layout Selection**: Open only (testing mode)
+- **Map Layout Preview**: Open Arena preview shown before the match starts
 - **Minimap Preview**: Visual preview of selected layout at actual arena size
 - **Player Count**: Shows joined players with match range (2-10)
 - **Match Controls**: Start Match / Reset Match buttons
@@ -207,7 +205,7 @@ Detailed instructions available in player menu:
 
 1. Share the Player Link or QR code with participants
 2. Wait for players to join (2-10 players per match)
-3. Choose map layout using minimap preview to see terrain
+3. Review the arena layout using the minimap preview
 4. Click "Start Match" when ready
 
 ### Map Layouts
@@ -220,7 +218,7 @@ Detailed instructions available in player menu:
 
 - Full-screen arena view
 - QR code overlay during lobby
-- **Live map vote totals**: Lobby shows current votes per layout and highlights host-selected map
+- **Arena layout card**: Lobby shows the active Open Arena layout
 - **Animated player roster**: Player names appear with staggered fade-in animation as they join during lobby
 - Robot labels with player names
 - Life counters for all robots

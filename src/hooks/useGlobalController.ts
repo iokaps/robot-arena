@@ -8,7 +8,12 @@ import { arenaStore } from '@/state/stores/arena-store';
 import { gameSessionStore } from '@/state/stores/game-session-store';
 import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
-import type { MoveCommand, Position, Rotation } from '@/types/arena';
+import type {
+	ExecutionEvent,
+	MoveCommand,
+	Position,
+	Rotation
+} from '@/types/arena';
 import { useSnapshot } from '@kokimoki/app';
 import { useEffect, useRef } from 'react';
 import { useServerTimer } from './useServerTime';
@@ -178,6 +183,7 @@ export function useGlobalController(): boolean {
 					matchState.phase = 'executing';
 					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 					matchState.currentTick = -1; // Will increment to 0 on first tick
+					matchState.executionEvents = {};
 				}
 			);
 		};
@@ -223,11 +229,6 @@ export function useGlobalController(): boolean {
 			try {
 				// Execute the current tick
 				await executeTick(expectedTick);
-
-				// Update the tick counter in the store
-				await kmClient.transact([matchStore], ([matchState]) => {
-					matchState.currentTick = expectedTick;
-				});
 			} finally {
 				isExecutingRef.current = false;
 			}
@@ -242,6 +243,7 @@ export function useGlobalController(): boolean {
 			[arenaStore, robotProgramsStore, matchStore],
 			([arenaState, programsState, matchState]) => {
 				const shrinkHazardDamage = Math.max(1, config.hazardShrinkDecayPerTick);
+				const tickEvents: ExecutionEvent[] = [];
 
 				const markEliminated = (clientId: string) => {
 					if (!matchState.eliminatedPlayers[clientId]) {
@@ -374,6 +376,16 @@ export function useGlobalController(): boolean {
 
 					const command = getCommandAtTick(program, tick);
 					if (command === 'shoot') {
+						tickEvents.push({
+							tick,
+							type: 'shoot',
+							clientId,
+							data: {
+								from: { ...robot.position },
+								rotation: robot.rotation
+							}
+						});
+
 						// Find first robot in line of fire (only alive robots)
 						const target = findShootTarget(
 							robot.position,
@@ -475,6 +487,24 @@ export function useGlobalController(): boolean {
 					arenaState.robots[clientId].position = newPos;
 					applyPitHazardAtRobotPosition(clientId);
 				}
+
+				for (const [index, event] of tickEvents.entries()) {
+					matchState.executionEvents[
+						`${kmClient.serverTimestamp()}-${tick}-${index}`
+					] = event;
+				}
+
+				matchState.currentTick = tick;
+
+				const aliveRobots = Object.entries(arenaState.robots)
+					.filter(([, robot]) => robot.lives > 0)
+					.map(([id]) => id);
+
+				if (aliveRobots.length <= 1) {
+					matchState.phase = 'results';
+					matchState.winnerId = aliveRobots[0] ?? '';
+					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+				}
 			}
 		);
 	};
@@ -520,6 +550,7 @@ export function useGlobalController(): boolean {
 					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 					matchState.submittedPlayers = {};
 					matchState.currentTick = -1;
+					matchState.executionEvents = {};
 					programsState.programs = {};
 
 					// Escalate hazards each round by shrinking safe area inward
