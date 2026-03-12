@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import { kmClient } from '@/services/km-client';
 import type { MoveCommand } from '@/types/arena';
 import { arenaStore } from '../stores/arena-store';
@@ -37,7 +38,12 @@ export const localPlayerActions = {
 	 * Note: This is an example of a multi-store transaction.
 	 */
 	async setPlayerName(name: string) {
-		const normalizedName = name.trim().toLowerCase();
+		const trimmedName = name.trim();
+		if (!trimmedName || trimmedName.length > config.playerNameMaxLength) {
+			return;
+		}
+
+		const normalizedName = trimmedName.toLowerCase();
 		const currentClientId = kmClient.id;
 		const onlineClientIds = new Set(playersStore.connections.clientIds);
 		const players = playersStore.proxy.players;
@@ -79,15 +85,15 @@ export const localPlayerActions = {
 				matchState,
 				programsState
 			]) => {
-				localPlayerState.name = name;
+				localPlayerState.name = trimmedName;
 
 				if (reclaimClientId) {
 					const reclaimedPlayer = playersState.players[reclaimClientId] ?? {
-						name
+						name: trimmedName
 					};
 					playersState.players[currentClientId] = {
 						...reclaimedPlayer,
-						name
+						name: trimmedName
 					};
 					delete playersState.players[reclaimClientId];
 
@@ -126,7 +132,7 @@ export const localPlayerActions = {
 						delete programsState.programs[reclaimClientId];
 					}
 				} else {
-					playersState.players[currentClientId] = { name };
+					playersState.players[currentClientId] = { name: trimmedName };
 				}
 			}
 		);

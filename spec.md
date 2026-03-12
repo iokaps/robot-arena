@@ -140,6 +140,7 @@ Collectible items that spawn on the arena and provide bonuses.
 
 - Player name displayed with assigned robot color indicator (colored dot + colored name text)
 - Color matches the robot on the presenter arena so players can identify themselves
+- Pilot names are limited to 7 characters
 
 ### Lobby View (How It Works)
 

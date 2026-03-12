@@ -58,6 +58,7 @@ rejoinHintMessage: 'Rejoining mid-match? Use your previous pilot name to reclaim
 playerNamePlaceholder: 'Pilot name...'
 playerNameLabel: 'Name:'
 playerNameButton: 'Join Arena'
+playerNameMaxLength: 7
 
 # Navigation
 playerLinkLabel: 'Player Link'

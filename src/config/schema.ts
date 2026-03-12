@@ -43,6 +43,7 @@ export const schema = z.object({
 	playerNamePlaceholder: z.string().default('Pilot name...'),
 	playerNameLabel: z.string().default('Name:'),
 	playerNameButton: z.string().default('Join Arena'),
+	playerNameMaxLength: z.number().int().min(1).default(7),
 
 	// Navigation
 	playerLinkLabel: z.string().default('Player Link'),

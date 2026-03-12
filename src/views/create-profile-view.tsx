@@ -46,7 +46,7 @@ export function CreateProfileView() {
 						onChange={(e) => setName(e.target.value)}
 						disabled={isLoading}
 						autoFocus
-						maxLength={50}
+						maxLength={config.playerNameMaxLength}
 						className="km-input"
 					/>
 					{name.trim() && (
