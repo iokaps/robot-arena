@@ -10,7 +10,7 @@ interface LayoutProps {
 const PlayerRoot = ({ children, className }: LayoutProps) => (
 	<div
 		className={cn(
-			'grid min-h-dvh grid-rows-[auto_1fr_auto] bg-slate-950 text-slate-100',
+			'grid min-h-dvh w-full grid-rows-[auto_1fr_auto] overflow-x-clip bg-slate-950 text-slate-100',
 			className
 		)}
 	>
@@ -34,7 +34,10 @@ const PlayerHeader = ({ children, className }: LayoutProps) => (
 
 const PlayerMain = ({ children, className }: LayoutProps) => (
 	<main
-		className={cn('container mx-auto flex items-center px-4 py-16', className)}
+		className={cn(
+			'container mx-auto flex w-full justify-center overflow-x-clip px-4 py-16',
+			className
+		)}
 	>
 		{children}
 	</main>

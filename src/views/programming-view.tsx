@@ -105,12 +105,12 @@ export const ProgrammingView: React.FC = () => {
 	};
 
 	return (
-		<div className="animate-fade-in-up flex w-full max-w-lg flex-col items-center gap-6">
+		<div className="animate-fade-in-up flex w-full max-w-md flex-col items-center gap-6 sm:max-w-lg">
 			{/* Header with timer and lives */}
-			<div className="flex w-full items-center justify-between">
+			<div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				{/* Lives display */}
 				{myRobot && (
-					<div className="flex items-center gap-2 rounded-sm border border-slate-700 bg-slate-800/60 px-3 py-2">
+					<div className="flex w-full items-center justify-between gap-2 rounded-sm border border-slate-700 bg-slate-800/60 px-3 py-2 sm:w-auto sm:justify-start">
 						<span className="text-sm text-slate-500">{config.livesLabel}</span>
 						<div className="flex gap-1">
 							{Array.from({ length: 3 }).map((_, i) => (
@@ -132,7 +132,7 @@ export const ProgrammingView: React.FC = () => {
 				{/* Timer */}
 				<div
 					className={cn(
-						'font-display flex items-center gap-2 rounded-sm border-2 px-4 py-2 text-2xl',
+						'font-display flex w-full items-center justify-center gap-2 rounded-sm border-2 px-4 py-2 text-2xl sm:w-auto',
 						isUrgent
 							? 'animate-neon-pulse border-neon-rose/60 bg-neon-rose/10 text-neon-rose shadow-[0_0_15px_var(--color-neon-rose)/0.2]'
 							: 'border-neon-cyan/50 bg-neon-cyan/5 text-neon-cyan'
@@ -160,7 +160,7 @@ export const ProgrammingView: React.FC = () => {
 			</h2>
 
 			{/* Timeline slots */}
-			<div className="flex w-full gap-2">
+			<div className="grid w-full grid-cols-5 gap-2 overflow-x-clip">
 				{Array.from({ length: 5 }).map((_, index) => {
 					const command = draftProgram[index];
 					const commandConfig = command ? getCommandConfig(command) : null;
@@ -185,7 +185,7 @@ export const ProgrammingView: React.FC = () => {
 										<button
 											type="button"
 											onClick={() => handleRemoveCommand(index)}
-											className="absolute -top-2 -right-2 rounded-full border border-slate-600 bg-slate-800 p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200"
+											className="absolute top-1 right-1 rounded-full border border-slate-600 bg-slate-800 p-1 text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200"
 										>
 											<X className="h-3 w-3" />
 										</button>
@@ -201,7 +201,7 @@ export const ProgrammingView: React.FC = () => {
 
 			{/* Command palette */}
 			{!hasSubmitted && (
-				<div className="grid w-full grid-cols-5 gap-2">
+				<div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
 					{COMMANDS.map((command) => (
 						<button
 							key={command.id}
@@ -224,7 +224,7 @@ export const ProgrammingView: React.FC = () => {
 			)}
 
 			{/* Actions */}
-			<div className="flex w-full gap-3">
+			<div className="flex w-full flex-col gap-3 sm:flex-row">
 				{!hasSubmitted ? (
 					<>
 						<button
