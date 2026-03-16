@@ -16,6 +16,7 @@ import type {
 	TerrainCell,
 	TerrainSource
 } from '@/types/arena';
+import { getActivePlayerIds } from '@/utils/getActivePlayerIds';
 import type { ArenaState } from '../stores/arena-store';
 import { arenaStore } from '../stores/arena-store';
 import type { MatchState } from '../stores/match-store';
@@ -479,6 +480,11 @@ export const arenaActions = {
 
 	/** Spawn robots for all registered players */
 	async spawnRobots() {
+		const activePlayerIds = getActivePlayerIds(
+			playersStore.proxy.players,
+			playersStore.connections.clientIds
+		);
+
 		await kmClient.transact(
 			[arenaStore, playersStore, matchStore],
 			([arenaState, playersState, matchState]) => {
@@ -486,7 +492,7 @@ export const arenaActions = {
 					arenaState,
 					playersState,
 					matchState,
-					Object.keys(playersState.players)
+					activePlayerIds
 				);
 			}
 		);

@@ -8,6 +8,7 @@ import { config } from '@/config';
 import { MAX_ARENA_PLAYERS } from '@/config/arena-maps';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGlobalController } from '@/hooks/useGlobalController';
+import { usePlayersWithOnlineStatus } from '@/hooks/usePlayersWithOnlineStatus';
 import { useServerTimer } from '@/hooks/useServerTime';
 import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
@@ -51,7 +52,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 	} = useSnapshot(matchStore.proxy);
 	const { robots, mapLayoutId, gridSize } = useSnapshot(arenaStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
-	const playerCount = Object.keys(players).length;
+	const { activePlayers, onlinePlayersCount } = usePlayersWithOnlineStatus();
+	const playerCount = onlinePlayersCount;
 	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
 
 	const serverTime = useServerTimer(100);
@@ -132,9 +134,9 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 						{/* Animated player roster */}
 						{playerCount > 0 && (
 							<div className="flex flex-wrap justify-center gap-3">
-								{Object.values(players).map((player, index) => (
+								{activePlayers.map((player, index) => (
 									<div
-										key={player.name}
+										key={player.id}
 										className="animate-fade-in-up border-neon-cyan/30 bg-neon-cyan/5 rounded-sm border-2 px-5 py-2.5 backdrop-blur-sm"
 										style={{
 											animationDelay: `${index * 80}ms`,

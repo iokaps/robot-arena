@@ -1,5 +1,11 @@
 import { config } from '@/config';
+import { MAX_ARENA_PLAYERS } from '@/config/arena-maps';
+import { useStoreConnections } from '@/hooks/useStoreConnections';
+import { kmClient } from '@/services/km-client';
 import { localPlayerActions } from '@/state/actions/local-player-actions';
+import { playersStore } from '@/state/stores/players-store';
+import { getActivePlayerIds } from '@/utils/getActivePlayerIds';
+import { useSnapshot } from '@kokimoki/app';
 import * as React from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -12,16 +18,30 @@ import remarkGfm from 'remark-gfm';
 export function CreateProfileView() {
 	const [name, setName] = React.useState('');
 	const [isLoading, setIsLoading] = React.useState(false);
+	const [joinError, setJoinError] = React.useState<string | null>(null);
+	const { players } = useSnapshot(playersStore.proxy);
+	const { clientIds: onlinePlayerIds } = useStoreConnections(playersStore);
+	const activePlayerIds = getActivePlayerIds(players, onlinePlayerIds);
+	const isCurrentPlayerRegistered = Boolean(players[kmClient.id]);
+	const isLobbyFull =
+		!isCurrentPlayerRegistered && activePlayerIds.length >= MAX_ARENA_PLAYERS;
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		const trimmedName = name.trim();
-		if (!trimmedName) return;
+		if (!trimmedName || isLobbyFull) {
+			setJoinError(isLobbyFull ? config.maxPlayersMessage : null);
+			return;
+		}
 
 		setIsLoading(true);
+		setJoinError(null);
 		try {
-			await localPlayerActions.setPlayerName(trimmedName);
+			const result = await localPlayerActions.setPlayerName(trimmedName);
+			if (result === 'full') {
+				setJoinError(config.maxPlayersMessage);
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -37,14 +57,24 @@ export function CreateProfileView() {
 			<p className="text-center font-mono text-xs text-slate-500">
 				{config.rejoinHintMessage}
 			</p>
+			{(isLobbyFull || joinError) && (
+				<p className="text-neon-rose text-center font-mono text-sm">
+					{joinError ?? config.maxPlayersMessage}
+				</p>
+			)}
 			<form onSubmit={handleSubmit} className="grid gap-5">
 				<div className="relative">
 					<input
 						type="text"
 						placeholder={config.playerNamePlaceholder}
 						value={name}
-						onChange={(e) => setName(e.target.value)}
-						disabled={isLoading}
+						onChange={(e) => {
+							setName(e.target.value);
+							if (joinError) {
+								setJoinError(null);
+							}
+						}}
+						disabled={isLoading || isLobbyFull}
 						autoFocus
 						maxLength={config.playerNameMaxLength}
 						className="km-input"
@@ -57,7 +87,7 @@ export function CreateProfileView() {
 				<button
 					type="submit"
 					className="km-btn-primary w-full"
-					disabled={!name.trim() || isLoading}
+					disabled={!name.trim() || isLoading || isLobbyFull}
 				>
 					{isLoading ? (
 						<>

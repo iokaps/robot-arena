@@ -16,7 +16,9 @@ export const schema = z.object({
 	playersJoinedLabel: z.string().default('players joined'),
 	scanToJoinMessage: z.string().default('Scan the QR code to join the battle'),
 	minPlayersMessage: z.string().default('Need at least 2 players'),
-	maxPlayersMessage: z.string().default('Maximum 10 players for this arena'),
+	maxPlayersMessage: z
+		.string()
+		.default('Maximum 10 active players for this arena'),
 	joinNextRoundBannerTitle: z.string().default('Spectating This Match'),
 	joinNextRoundBannerMessage: z
 		.string()
@@ -33,7 +35,7 @@ export const schema = z.object({
 	createProfileMd: z
 		.string()
 		.default(
-			'# Enter the Arena\n\nChoose your pilot name to begin (up to 10 pilots per match).'
+			'# Enter the Arena\n\nChoose your pilot name to begin (up to 10 active pilots per match).'
 		),
 	rejoinHintMessage: z
 		.string()

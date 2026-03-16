@@ -212,23 +212,31 @@ export function useGlobalController(): boolean {
 			const elapsedMs = serverTime - phaseStartTimestamp;
 			const tickDuration = 1200; // 1.2 seconds per tick for animations
 			const expectedTick = Math.floor(elapsedMs / tickDuration);
+			const nextTick = currentTick + 1;
 
 			// Use currentTick from store as source of truth for what's been executed
-			// This ensures new controllers can correctly resume from where the previous left off
-			if (expectedTick <= currentTick || expectedTick > 4) {
-				// Check if execution is complete
-				if (expectedTick > 4 && currentTick >= 4) {
-					// Execution complete, check for winner or start next round
+			// This ensures new controllers can correctly resume from where the previous left off.
+			// When a controller falls behind, advance one tick at a time so collisions,
+			// hazards, and animations still resolve in order.
+			if (expectedTick > 4 && currentTick >= 4) {
+				isExecutingRef.current = true;
+				try {
 					await handleExecutionComplete();
+				} finally {
+					isExecutingRef.current = false;
 				}
+				return;
+			}
+
+			if (nextTick > 4 || expectedTick < nextTick) {
 				return;
 			}
 
 			isExecutingRef.current = true;
 
 			try {
-				// Execute the current tick
-				await executeTick(expectedTick);
+				// Execute the next pending tick in order.
+				await executeTick(nextTick);
 			} finally {
 				isExecutingRef.current = false;
 			}
@@ -514,6 +522,9 @@ export function useGlobalController(): boolean {
 		await kmClient.transact(
 			[matchStore, arenaStore, robotProgramsStore],
 			([matchState, arenaState, programsState]) => {
+				// Guard: only proceed if still in executing phase
+				if (matchState.phase !== 'executing') return;
+
 				// Only count robots with lives > 0
 				const aliveRobots = Object.entries(arenaState.robots)
 					.filter(([, robot]) => robot.lives > 0)

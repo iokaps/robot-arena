@@ -1,6 +1,7 @@
 import { MinimapPreview } from '@/components/minimap-preview';
 import { config } from '@/config';
 import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
+import { usePlayersWithOnlineStatus } from '@/hooks/usePlayersWithOnlineStatus';
 import {
 	MAP_LAYOUTS,
 	sanitizeMapLayoutId
@@ -39,12 +40,15 @@ export function HostControls() {
 	const { mapLayoutId, robots, gridSize } = useSnapshot(arenaStore.proxy);
 	const { showPresenterQr } = useSnapshot(gameConfigStore.proxy);
 	const { players } = useSnapshot(playersStore.proxy);
+	const { onlinePlayersCount } = usePlayersWithOnlineStatus();
 	const selectedMapLayoutId = sanitizeMapLayoutId(mapLayoutId);
 
-	const playerCount = Object.keys(players).length;
+	const playerCount =
+		phase === 'lobby' ? onlinePlayersCount : Object.keys(players).length;
 	const isInMatch = phase !== 'lobby' && phase !== 'results';
 	const canStartMatch =
-		playerCount >= MIN_ARENA_PLAYERS && playerCount <= MAX_ARENA_PLAYERS;
+		onlinePlayersCount >= MIN_ARENA_PLAYERS &&
+		onlinePlayersCount <= MAX_ARENA_PLAYERS;
 
 	const handleStartMatch = async () => {
 		if (!canStartMatch) return;

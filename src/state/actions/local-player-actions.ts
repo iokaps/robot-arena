@@ -1,6 +1,8 @@
 import { config } from '@/config';
+import { MAX_ARENA_PLAYERS } from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
 import type { MoveCommand } from '@/types/arena';
+import { getActivePlayerIds } from '@/utils/getActivePlayerIds';
 import { arenaStore } from '../stores/arena-store';
 import {
 	localPlayerStore,
@@ -17,6 +19,8 @@ import { robotProgramsStore } from '../stores/robot-programs-store';
  *
  * Note: Uses `kmClient.id` to identify current player in global stores.
  */
+export type SetPlayerNameResult = 'invalid' | 'full' | 'joined' | 'reclaimed';
+
 export const localPlayerActions = {
 	/** Set only local player name without touching shared players registry */
 	async setLocalName(name: string) {
@@ -37,10 +41,10 @@ export const localPlayerActions = {
 	 *
 	 * Note: This is an example of a multi-store transaction.
 	 */
-	async setPlayerName(name: string) {
+	async setPlayerName(name: string): Promise<SetPlayerNameResult> {
 		const trimmedName = name.trim();
 		if (!trimmedName || trimmedName.length > config.playerNameMaxLength) {
-			return;
+			return 'invalid';
 		}
 
 		const normalizedName = trimmedName.toLowerCase();
@@ -48,6 +52,8 @@ export const localPlayerActions = {
 		const onlineClientIds = new Set(playersStore.connections.clientIds);
 		const players = playersStore.proxy.players;
 		const participantIds = matchStore.proxy.participantIds;
+		const activePlayerIds = getActivePlayerIds(players, onlineClientIds);
+		const isCurrentClientRegistered = Boolean(players[currentClientId]);
 
 		const reclaimClientId = Object.keys(players).find((clientId) => {
 			if (clientId === currentClientId) {
@@ -70,6 +76,18 @@ export const localPlayerActions = {
 			return !onlineClientIds.has(clientId);
 		});
 
+		if (
+			!reclaimClientId &&
+			!isCurrentClientRegistered &&
+			activePlayerIds.length >= MAX_ARENA_PLAYERS
+		) {
+			return 'full';
+		}
+
+		let joinResult: SetPlayerNameResult = reclaimClientId
+			? 'reclaimed'
+			: 'joined';
+
 		await kmClient.transact(
 			[
 				localPlayerStore,
@@ -85,9 +103,35 @@ export const localPlayerActions = {
 				matchState,
 				programsState
 			]) => {
+				const reclaimTargetId = reclaimClientId;
+				const activePlayerIdsAtCommit = getActivePlayerIds(
+					playersState.players,
+					playersStore.connections.clientIds
+				);
+				const currentPlayerExists = Boolean(
+					playersState.players[currentClientId]
+				);
+				const canReclaim =
+					reclaimTargetId !== undefined &&
+					reclaimTargetId !== currentClientId &&
+					Boolean(playersState.players[reclaimTargetId]) &&
+					Boolean(matchState.participantIds[reclaimTargetId]) &&
+					!matchState.participantIds[currentClientId] &&
+					!playersStore.connections.clientIds.has(reclaimTargetId);
+
+				if (
+					!canReclaim &&
+					!currentPlayerExists &&
+					activePlayerIdsAtCommit.length >= MAX_ARENA_PLAYERS
+				) {
+					joinResult = 'full';
+					return;
+				}
+
 				localPlayerState.name = trimmedName;
 
-				if (reclaimClientId) {
+				if (canReclaim && reclaimClientId) {
+					joinResult = 'reclaimed';
 					const reclaimedPlayer = playersState.players[reclaimClientId] ?? {
 						name: trimmedName
 					};
@@ -132,10 +176,13 @@ export const localPlayerActions = {
 						delete programsState.programs[reclaimClientId];
 					}
 				} else {
+					joinResult = 'joined';
 					playersState.players[currentClientId] = { name: trimmedName };
 				}
 			}
 		);
+
+		return joinResult;
 	},
 
 	/** Add a command to the draft program */

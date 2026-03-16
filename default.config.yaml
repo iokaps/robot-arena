@@ -43,7 +43,7 @@ presenterLobbyMessage: 'Waiting for players to join (2-10)...'
 playersJoinedLabel: 'players joined'
 scanToJoinMessage: 'Scan the QR code to join the battle'
 minPlayersMessage: 'Need at least 2 players'
-maxPlayersMessage: 'Maximum 10 players for this arena'
+maxPlayersMessage: 'Maximum 10 active players for this arena'
 joinNextRoundBannerTitle: 'Spectating This Match'
 joinNextRoundBannerMessage: 'You joined after the round roster was locked. You will play next match.'
 hostReconnectHintMessage: 'If someone reconnects, ask them to use the same pilot name to reclaim their robot.'
@@ -52,7 +52,7 @@ hostReconnectHintMessage: 'If someone reconnects, ask them to use the same pilot
 createProfileMd: |
   # Enter the Arena
 
-  Choose your pilot name to begin (up to 10 pilots per match).
+  Choose your pilot name to begin (up to 10 active pilots per match).
 
 rejoinHintMessage: 'Rejoining mid-match? Use your previous pilot name to reclaim your robot.'
 playerNamePlaceholder: 'Pilot name...'

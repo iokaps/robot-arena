@@ -51,11 +51,12 @@ A turn-based strategy game where players "program" their robot's moves during a 
 ### Spawning
 
 - **All players**: Distributed evenly around the inner perimeter (1 cell inside walls)
-- **Capacity**: Match starts with 2-10 players
+- **Capacity**: Match starts with 2-10 active players
 - Robots face toward center of arena
 - Minimum spacing ensured by perimeter distribution
 - Spawn positions avoid wall obstacles to ensure robots can move immediately
 - **Roster lock**: Player roster is locked when host starts a match
+- **Lobby slots**: Before the host starts, only 10 currently connected players can hold lobby seats at once; a disconnected lobby player frees a slot for someone else to join
 - **Late joiners**: Players joining after roster lock become spectators for current match and join next match
 - **Reconnect reclaim**: If a disconnected player rejoins mid-match with the same pilot name and the previous seat is offline, their seat is reclaimed
 

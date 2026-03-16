@@ -1,4 +1,5 @@
 import { playersStore } from '@/state/stores/players-store';
+import { getActivePlayers } from '@/utils/getActivePlayerIds';
 import { useSnapshot } from '@kokimoki/app';
 import { useStoreConnections } from './useStoreConnections';
 
@@ -13,6 +14,12 @@ import { useStoreConnections } from './useStoreConnections';
 export function usePlayersWithOnlineStatus() {
 	const { players } = useSnapshot(playersStore.proxy);
 	const { clientIds: onlinePlayerIds } = useStoreConnections(playersStore);
+	const activePlayers = getActivePlayers(players, onlinePlayerIds).map(
+		({ id, player }) => ({
+			id,
+			...player
+		})
+	);
 
 	const playersWithOnlineStatus = Object.entries(players).map(
 		([id, player]) => ({
@@ -22,11 +29,10 @@ export function usePlayersWithOnlineStatus() {
 		})
 	);
 
-	const onlinePlayersCount = playersWithOnlineStatus.filter(
-		(p) => p.isOnline
-	).length;
+	const onlinePlayersCount = activePlayers.length;
 
 	return {
+		activePlayers,
 		players: playersWithOnlineStatus,
 		onlinePlayersCount
 	};
