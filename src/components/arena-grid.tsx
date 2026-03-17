@@ -275,10 +275,8 @@ const RobotSprite: React.FC<RobotSpriteProps> = ({
 			>
 				<ChibiRobot
 					color={robot.color}
-					lives={robot.lives}
 					size={chibiSize}
 					hasShield={robot.shield > 0}
-					hasPowerBoost={robot.powerBoost}
 					isHighlighted={isHighlighted}
 					isBroken={isBroken}
 				/>

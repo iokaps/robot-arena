@@ -68,6 +68,7 @@ A turn-based strategy game where players "program" their robot's moves during a 
 - **Rotation**: 0° (up), 90° (right), 180° (down), 270° (left)
 - **Lives**: 3 (eliminated at 0)
 - **Color**: Auto-assigned from palette (cyan, fuchsia, lime, orange, rose, violet)
+- **Visual silhouette**: Robots use a faceless chassis design; damage is communicated through life counters rather than facial expressions
 
 ### Commands
 

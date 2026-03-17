@@ -41,313 +41,21 @@ const COLOR_VALUES: Record<
 
 interface ChibiRobotProps {
 	color: RobotColor;
-	lives: number;
 	size: number;
 	hasShield?: boolean;
-	hasPowerBoost?: boolean;
 	isHighlighted?: boolean;
 	isBroken?: boolean;
 	className?: string;
 }
 
-/** Render eye shapes based on color personality */
-const EyeShape: React.FC<{
-	color: RobotColor;
-	lives: number;
-	isBroken: boolean;
-	hasPowerBoost: boolean;
-	eyeColor: string;
-	glowColor: string;
-}> = ({ color, lives, isBroken, hasPowerBoost, eyeColor, glowColor }) => {
-	// Broken state: X eyes for all
-	if (isBroken) {
-		return (
-			<g>
-				{/* Left X eye */}
-				<line
-					x1="28"
-					y1="32"
-					x2="36"
-					y2="40"
-					stroke={eyeColor}
-					strokeWidth="3"
-					strokeLinecap="round"
-				/>
-				<line
-					x1="36"
-					y1="32"
-					x2="28"
-					y2="40"
-					stroke={eyeColor}
-					strokeWidth="3"
-					strokeLinecap="round"
-				/>
-				{/* Right X eye */}
-				<line
-					x1="64"
-					y1="32"
-					x2="72"
-					y2="40"
-					stroke={eyeColor}
-					strokeWidth="3"
-					strokeLinecap="round"
-				/>
-				<line
-					x1="72"
-					y1="32"
-					x2="64"
-					y2="40"
-					stroke={eyeColor}
-					strokeWidth="3"
-					strokeLinecap="round"
-				/>
-			</g>
-		);
-	}
-
-	// Expression modifier based on lives
-	const isWorried = lives === 1;
-	const isNeutral = lives === 2;
-	// lives === 3 is happy (default)
-
-	// Power boost glow filter
-	const filterUrl = hasPowerBoost ? 'url(#powerGlow)' : undefined;
-
-	// Eye personalities by color
-	switch (color) {
-		case 'cyan':
-			// Square LED eyes (classic bot)
-			return (
-				<g filter={filterUrl}>
-					<rect
-						x="26"
-						y={isWorried ? '34' : '30'}
-						width="12"
-						height={isWorried ? '8' : '12'}
-						fill={eyeColor}
-						rx="1"
-					/>
-					<rect
-						x="62"
-						y={isWorried ? '34' : '30'}
-						width="12"
-						height={isWorried ? '8' : '12'}
-						fill={eyeColor}
-						rx="1"
-					/>
-					{/* Highlight */}
-					<rect
-						x="28"
-						y={isWorried ? '35' : '31'}
-						width="3"
-						height="3"
-						fill={glowColor}
-						opacity="0.8"
-					/>
-					<rect
-						x="64"
-						y={isWorried ? '35' : '31'}
-						width="3"
-						height="3"
-						fill={glowColor}
-						opacity="0.8"
-					/>
-				</g>
-			);
-
-		case 'fuchsia':
-			// Round dot eyes (friendly)
-			return (
-				<g filter={filterUrl}>
-					<circle
-						cx="32"
-						cy={isWorried ? '38' : '36'}
-						r={isWorried ? '5' : '7'}
-						fill={eyeColor}
-					/>
-					<circle
-						cx="68"
-						cy={isWorried ? '38' : '36'}
-						r={isWorried ? '5' : '7'}
-						fill={eyeColor}
-					/>
-					{/* Highlight */}
-					<circle
-						cx="30"
-						cy={isWorried ? '36' : '34'}
-						r="2"
-						fill={glowColor}
-						opacity="0.8"
-					/>
-					<circle
-						cx="66"
-						cy={isWorried ? '36' : '34'}
-						r="2"
-						fill={glowColor}
-						opacity="0.8"
-					/>
-					{isNeutral && (
-						<>
-							{/* Flat bottom for neutral expression */}
-							<rect
-								x="25"
-								y="40"
-								width="14"
-								height="4"
-								fill="oklch(0.2 0.01 240)"
-							/>
-							<rect
-								x="61"
-								y="40"
-								width="14"
-								height="4"
-								fill="oklch(0.2 0.01 240)"
-							/>
-						</>
-					)}
-				</g>
-			);
-
-		case 'lime':
-			// Visor-style single bar (cyclopean)
-			return (
-				<g filter={filterUrl}>
-					<rect
-						x="24"
-						y={isWorried ? '35' : '32'}
-						width="52"
-						height={isWorried ? '6' : '10'}
-						fill={eyeColor}
-						rx="3"
-					/>
-					{/* Scanner effect */}
-					<rect
-						x="26"
-						y={isWorried ? '36' : '33'}
-						width="8"
-						height={isWorried ? '4' : '8'}
-						fill={glowColor}
-						opacity="0.6"
-						rx="2"
-					/>
-					{!isWorried && (
-						<rect
-							x="66"
-							y="33"
-							width="8"
-							height="8"
-							fill={glowColor}
-							opacity="0.4"
-							rx="2"
-						/>
-					)}
-				</g>
-			);
-
-		case 'orange':
-			// Triangle eyes (determined)
-			return (
-				<g filter={filterUrl}>
-					{isWorried ? (
-						<>
-							{/* Narrowed angry eyes when worried */}
-							<polygon points="26,40 38,40 32,34" fill={eyeColor} />
-							<polygon points="62,40 74,40 68,34" fill={eyeColor} />
-						</>
-					) : (
-						<>
-							<polygon points="26,42 38,42 32,28" fill={eyeColor} />
-							<polygon points="62,42 74,42 68,28" fill={eyeColor} />
-							{/* Highlight */}
-							<polygon
-								points="30,38 34,38 32,32"
-								fill={glowColor}
-								opacity="0.6"
-							/>
-							<polygon
-								points="66,38 70,38 68,32"
-								fill={glowColor}
-								opacity="0.6"
-							/>
-						</>
-					)}
-				</g>
-			);
-
-		case 'rose':
-			// Heart-shaped eyes (cute)
-			return (
-				<g filter={filterUrl}>
-					{isWorried ? (
-						<>
-							{/* Teary/squished hearts when worried */}
-							<ellipse cx="32" cy="37" rx="6" ry="4" fill={eyeColor} />
-							<ellipse cx="68" cy="37" rx="6" ry="4" fill={eyeColor} />
-						</>
-					) : (
-						<>
-							{/* Heart shapes made of circles + triangle */}
-							<circle cx="29" cy="33" r="5" fill={eyeColor} />
-							<circle cx="35" cy="33" r="5" fill={eyeColor} />
-							<polygon points="24,35 40,35 32,45" fill={eyeColor} />
-
-							<circle cx="65" cy="33" r="5" fill={eyeColor} />
-							<circle cx="71" cy="33" r="5" fill={eyeColor} />
-							<polygon points="60,35 76,35 68,45" fill={eyeColor} />
-
-							{/* Highlights */}
-							<circle cx="28" cy="32" r="2" fill={glowColor} opacity="0.7" />
-							<circle cx="64" cy="32" r="2" fill={glowColor} opacity="0.7" />
-						</>
-					)}
-				</g>
-			);
-
-		case 'violet':
-			// Diamond eyes (mysterious)
-			return (
-				<g filter={filterUrl}>
-					{isWorried ? (
-						<>
-							{/* Narrowed diamonds */}
-							<polygon points="32,34 38,37 32,40 26,37" fill={eyeColor} />
-							<polygon points="68,34 74,37 68,40 62,37" fill={eyeColor} />
-						</>
-					) : (
-						<>
-							<polygon points="32,28 40,36 32,44 24,36" fill={eyeColor} />
-							<polygon points="68,28 76,36 68,44 60,36" fill={eyeColor} />
-							{/* Inner glow */}
-							<polygon
-								points="32,32 36,36 32,40 28,36"
-								fill={glowColor}
-								opacity="0.5"
-							/>
-							<polygon
-								points="68,32 72,36 68,40 64,36"
-								fill={glowColor}
-								opacity="0.5"
-							/>
-						</>
-					)}
-				</g>
-			);
-
-		default:
-			return null;
-	}
-};
-
 /**
- * Cute chibi-style robot SVG component with personality-based eyes,
- * expression states based on lives, shield bubble, and broken state.
+ * Cute chibi-style robot SVG component with a faceless chassis,
+ * shield bubble, and broken state.
  */
 export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 	color,
-	lives,
 	size,
 	hasShield = false,
-	hasPowerBoost = false,
 	isHighlighted = false,
 	isBroken = false,
 	className
@@ -380,15 +88,6 @@ export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 			}}
 		>
 			<defs>
-				{/* Power boost glow filter */}
-				<filter id="powerGlow" x="-50%" y="-50%" width="200%" height="200%">
-					<feGaussianBlur stdDeviation="2" result="blur" />
-					<feMerge>
-						<feMergeNode in="blur" />
-						<feMergeNode in="SourceGraphic" />
-					</feMerge>
-				</filter>
-
 				{/* Shield bubble gradient */}
 				<radialGradient id={`shield-${color}`} cx="30%" cy="30%">
 					<stop offset="0%" stopColor={colors.glow} stopOpacity="0.3" />
@@ -505,26 +204,6 @@ export const ChibiRobot: React.FC<ChibiRobotProps> = ({
 				fill={colors.secondary}
 				opacity="0.3"
 				rx="1"
-			/>
-
-			{/* Face plate (darker area for eyes) */}
-			<rect
-				x="24"
-				y="26"
-				width="52"
-				height="24"
-				rx="4"
-				fill="oklch(0.2 0.01 240)"
-			/>
-
-			{/* Eyes based on personality */}
-			<EyeShape
-				color={color}
-				lives={lives}
-				isBroken={isBroken}
-				hasPowerBoost={hasPowerBoost}
-				eyeColor={colors.glow}
-				glowColor="#ffffff"
 			/>
 
 			{/* Arm nubs */}
