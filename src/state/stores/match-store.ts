@@ -1,5 +1,10 @@
+import { config } from '@/config';
 import { kmClient } from '@/services/km-client';
-import type { ExecutionEvent, GamePhase } from '@/types/arena';
+import type {
+	ExecutionEvent,
+	GamePhase,
+	MatchResultReason
+} from '@/types/arena';
 
 export interface MatchState {
 	/** Current game phase */
@@ -24,15 +29,19 @@ export interface MatchState {
 	currentTick: number;
 	/** Execution events for animation playback */
 	executionEvents: Record<string, ExecutionEvent>;
+	/** Total life damage dealt by each player during the current match */
+	damageDealtByPlayer: Record<string, number>;
 	/** Winner client ID (empty if no winner yet) */
 	winnerId: string;
+	/** Why the match ended */
+	resultReason: MatchResultReason | null;
 }
 
 const initialState: MatchState = {
 	phase: 'lobby',
 	participantIds: {},
 	currentRound: 0,
-	maxRounds: 10,
+	maxRounds: config.maxRounds,
 	phaseStartTimestamp: 0,
 	programmingDuration: 60,
 	submittedPlayers: {},
@@ -40,7 +49,9 @@ const initialState: MatchState = {
 	eliminatedPlayerRounds: {},
 	currentTick: -1,
 	executionEvents: {},
-	winnerId: ''
+	damageDealtByPlayer: {},
+	winnerId: '',
+	resultReason: null
 };
 
 /**

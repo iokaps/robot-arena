@@ -10,6 +10,7 @@ import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
 import type {
 	ExecutionEvent,
+	MatchResultReason,
 	MoveCommand,
 	Position,
 	Rotation
@@ -184,6 +185,7 @@ export function useGlobalController(): boolean {
 					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 					matchState.currentTick = -1; // Will increment to 0 on first tick
 					matchState.executionEvents = {};
+					matchState.resultReason = null;
 				}
 			);
 		};
@@ -421,6 +423,7 @@ export function useGlobalController(): boolean {
 				for (const hit of hits) {
 					const robot = arenaState.robots[hit.targetId];
 					if (robot && robot.lives > 0) {
+						const livesBeforeHit = robot.lives;
 						let remainingDamage = hit.damage;
 
 						// Shield absorbs 1 damage then breaks
@@ -431,7 +434,11 @@ export function useGlobalController(): boolean {
 
 						// Apply remaining damage to lives
 						if (remainingDamage > 0) {
+							const appliedDamage = Math.min(remainingDamage, livesBeforeHit);
 							robot.lives -= remainingDamage;
+							matchState.damageDealtByPlayer[hit.shooterId] =
+								(matchState.damageDealtByPlayer[hit.shooterId] ?? 0) +
+								appliedDamage;
 							if (robot.lives <= 0) {
 								robot.lives = 0;
 								markEliminated(hit.targetId);
@@ -509,9 +516,11 @@ export function useGlobalController(): boolean {
 					.map(([id]) => id);
 
 				if (aliveRobots.length <= 1) {
-					matchState.phase = 'results';
-					matchState.winnerId = aliveRobots[0] ?? '';
-					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					setMatchResult(
+						matchState,
+						aliveRobots[0] ?? '',
+						aliveRobots.length === 1 ? 'last-standing' : 'simultaneous-draw'
+					);
 				}
 			}
 		);
@@ -532,28 +541,19 @@ export function useGlobalController(): boolean {
 
 				// Check win conditions
 				if (aliveRobots.length === 0) {
-					// Draw - all eliminated
-					matchState.phase = 'results';
-					matchState.winnerId = '';
-					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					setMatchResult(matchState, '', 'simultaneous-draw');
 				} else if (aliveRobots.length === 1) {
-					// Winner!
-					matchState.phase = 'results';
-					matchState.winnerId = aliveRobots[0];
-					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					setMatchResult(matchState, aliveRobots[0], 'last-standing');
 				} else if (matchState.currentRound >= matchState.maxRounds) {
-					// Max rounds reached - most lives wins
-					let maxLives = 0;
-					let winnerId = '';
-					for (const [clientId, robot] of Object.entries(arenaState.robots)) {
-						if (robot.lives > maxLives) {
-							maxLives = robot.lives;
-							winnerId = clientId;
-						}
-					}
-					matchState.phase = 'results';
-					matchState.winnerId = winnerId;
-					matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+					const timeoutResult = resolveTimeoutResult(
+						arenaState.robots,
+						matchState.damageDealtByPlayer
+					);
+					setMatchResult(
+						matchState,
+						timeoutResult.winnerId,
+						timeoutResult.resultReason
+					);
 				} else {
 					// Start next round
 					matchState.phase = 'programming';
@@ -562,6 +562,7 @@ export function useGlobalController(): boolean {
 					matchState.submittedPlayers = {};
 					matchState.currentTick = -1;
 					matchState.executionEvents = {};
+					matchState.resultReason = null;
 					programsState.programs = {};
 
 					// Escalate hazards each round by shrinking safe area inward
@@ -588,6 +589,56 @@ export function useGlobalController(): boolean {
 	};
 
 	return isGlobalController;
+}
+
+function setMatchResult(
+	matchState: {
+		phase: 'lobby' | 'programming' | 'executing' | 'results';
+		winnerId: string;
+		resultReason: MatchResultReason | null;
+		phaseStartTimestamp: number;
+	},
+	winnerId: string,
+	resultReason: MatchResultReason
+) {
+	matchState.phase = 'results';
+	matchState.winnerId = winnerId;
+	matchState.resultReason = resultReason;
+	matchState.phaseStartTimestamp = kmClient.serverTimestamp();
+}
+
+function resolveTimeoutResult(
+	robots: Record<string, { lives: number }>,
+	damageDealtByPlayer: Record<string, number>
+): { winnerId: string; resultReason: MatchResultReason } {
+	const aliveRobots = Object.entries(robots).filter(
+		([, robot]) => robot.lives > 0
+	);
+	if (aliveRobots.length === 0) {
+		return { winnerId: '', resultReason: 'timeout-draw' };
+	}
+
+	const highestLives = Math.max(...aliveRobots.map(([, robot]) => robot.lives));
+	const lifeLeaders = aliveRobots.filter(
+		([, robot]) => robot.lives === highestLives
+	);
+
+	if (lifeLeaders.length === 1) {
+		return { winnerId: lifeLeaders[0][0], resultReason: 'timeout-lives' };
+	}
+
+	const highestDamage = Math.max(
+		...lifeLeaders.map(([clientId]) => damageDealtByPlayer[clientId] ?? 0)
+	);
+	const damageLeaders = lifeLeaders.filter(
+		([clientId]) => (damageDealtByPlayer[clientId] ?? 0) === highestDamage
+	);
+
+	if (damageLeaders.length === 1) {
+		return { winnerId: damageLeaders[0][0], resultReason: 'timeout-damage' };
+	}
+
+	return { winnerId: '', resultReason: 'timeout-draw' };
 }
 
 /** Get the position one cell forward based on rotation */

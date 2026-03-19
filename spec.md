@@ -42,6 +42,7 @@ A turn-based strategy game where players "program" their robot's moves during a 
 - Hazard rings are mostly pits with conveyors at side midpoints
 - Hazard ring skull pits drain 1 life per tick while a robot remains on them
 - Conveyors on hazard rings push robots toward the center
+- Once the normal rings exhaust the center core, the arena performs a final collapse and leaves one deterministic safe cell in the center
 
 ### Map Layouts
 
@@ -134,7 +135,9 @@ Collectible items that spawn on the arena and provide bonuses.
 
 - **Last Standing**: Final robot alive wins
 - **Draw**: If last robots eliminate each other simultaneously
-- **Timeout**: After 10 rounds with no winner, most lives wins (tiebreaker: most damage dealt)
+- **Timeout**: After the round limit (default: 12 rounds) with no winner, the surviving robot with the most lives wins
+- **Timeout Tiebreaker**: If surviving robots are tied on lives, the one with the most total damage dealt wins
+- **Timeout Draw**: If surviving robots are still tied on both lives and damage dealt, the match ends in a draw
 
 ## Player Interface
 
@@ -230,6 +233,7 @@ Detailed instructions available in player menu:
 - Hit effects (flash on damaged robot)
 - Elimination explosion animation
 - Winner announcement overlay
+- **Timeout verdict overlay**: When the round limit decides a winner or draw, the presenter keeps the final arena visible and shows a standings breakdown with lives and damage dealt
 - **Confetti celebration**: Massive confetti animation on winner screens (player + presenter), no confetti on draws
 
 ## Timing

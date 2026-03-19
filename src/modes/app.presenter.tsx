@@ -1,4 +1,5 @@
 import { ArenaGrid } from '@/components/arena-grid';
+import { MatchResultBreakdown } from '@/components/match-result-breakdown';
 import { withKmProviders } from '@/components/with-km-providers';
 import {
 	withModeGuard,
@@ -24,6 +25,11 @@ import { playersStore } from '@/state/stores/players-store';
 import type { Position, Rotation } from '@/types/arena';
 import { cn } from '@/utils/cn';
 import { getActiveShotsForTick } from '@/utils/getActiveShots';
+import { getMatchResultCopy } from '@/utils/getMatchResultCopy';
+import {
+	getMatchResultStandings,
+	isTimeoutResult
+} from '@/utils/getMatchResultStandings';
 import { useSnapshot } from '@kokimoki/app';
 import {
 	KmQrCode,
@@ -47,6 +53,8 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		phaseStartTimestamp,
 		programmingDuration,
 		winnerId,
+		resultReason,
+		damageDealtByPlayer,
 		submittedPlayers,
 		executionEvents
 	} = useSnapshot(matchStore.proxy);
@@ -96,6 +104,15 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		submittedCount >= aliveRobotCount;
 	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
 	const winnerName = winnerId ? players[winnerId]?.name || 'Unknown' : null;
+	const resultCopy = getMatchResultCopy(resultReason);
+	const showTimeoutBreakdown = isTimeoutResult(resultReason);
+	const standings = React.useMemo(
+		() =>
+			showTimeoutBreakdown
+				? getMatchResultStandings(robots, damageDealtByPlayer)
+				: [],
+		[damageDealtByPlayer, robots, showTimeoutBreakdown]
+	);
 
 	// Trigger confetti on results phase with a winner
 	React.useEffect(() => {
@@ -184,39 +201,6 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 		);
 	}
 
-	// Results view
-	if (phase === 'results') {
-		return (
-			<HostPresenterLayout.Root>
-				<HostPresenterLayout.Header />
-				<HostPresenterLayout.Main>
-					<div className="animate-fade-in-up flex flex-col items-center gap-10">
-						{winnerId ? (
-							<>
-								<Trophy className="text-neon-lime animate-shine h-36 w-36" />
-								<h1 className="font-display text-neon-lime neon-text-glow text-6xl tracking-wider uppercase">
-									{config.winnerTitle}
-								</h1>
-								<p className="font-display neon-text-glow-sm text-neon-lime text-5xl tracking-wide uppercase">
-									{winnerName}
-								</p>
-							</>
-						) : (
-							<>
-								<h1 className="font-display text-5xl tracking-wider text-slate-400 uppercase">
-									{config.drawTitle}
-								</h1>
-								<p className="font-mono text-2xl text-slate-500">
-									{config.drawMessage}
-								</p>
-							</>
-						)}
-					</div>
-				</HostPresenterLayout.Main>
-			</HostPresenterLayout.Root>
-		);
-	}
-
 	// Programming / Executing view
 	return (
 		<HostPresenterLayout.Root>
@@ -252,6 +236,19 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 						</div>
 					)}
 
+					{phase === 'results' && (
+						<div
+							className={cn(
+								'font-display flex items-center gap-2 rounded-sm border-2 px-4 py-2 uppercase',
+								winnerId
+									? 'border-neon-lime/50 bg-neon-lime/10 text-neon-lime shadow-[0_0_12px_var(--color-neon-lime)/0.12]'
+									: 'border-slate-500/60 bg-slate-800/60 text-slate-200'
+							)}
+						>
+							{config.phaseResults}
+						</div>
+					)}
+
 					{/* Submission status during programming */}
 					{phase === 'programming' && (
 						<div className="flex items-center gap-2 font-mono text-slate-400">
@@ -270,7 +267,7 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 			</HostPresenterLayout.Header>
 
 			<HostPresenterLayout.Main className="relative justify-center">
-				{showShrinkWarning && (
+				{phase !== 'results' && showShrinkWarning && (
 					<div className="border-neon-rose/60 bg-neon-rose/10 absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-sm border-2 px-5 py-3 shadow-[0_0_16px_var(--color-neon-rose)/0.2]">
 						<p className="font-display text-neon-rose text-sm tracking-wide uppercase">
 							{config.hazardShrinkWarningTitle}
@@ -283,15 +280,63 @@ function App({ clientContext }: ModeGuardProps<'presenter'>) {
 
 				<ArenaGrid cellSize={56} showNames={true} activeShots={activeShots} />
 
-				<div className="absolute right-6 bottom-6">
-					<KmQrCode
-						data={playerLink}
-						size={140}
-						className={cn('transition-opacity', {
-							invisible: !showPresenterQr
-						})}
-					/>
-				</div>
+				{phase === 'results' && (
+					<div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/45 px-6 py-10 backdrop-blur-[2px]">
+						<div className="animate-fade-in-up flex w-full max-w-3xl flex-col items-center gap-8 rounded-sm border-2 border-slate-700 bg-slate-950/88 px-8 py-8 text-center shadow-[0_0_40px_rgba(0,0,0,0.35)]">
+							{showTimeoutBreakdown && (
+								<p className="font-display text-sm tracking-[0.24em] text-slate-400 uppercase">
+									{config.roundLimitReachedTitle}
+								</p>
+							)}
+
+							{winnerId ? (
+								<>
+									<Trophy className="text-neon-lime animate-shine h-28 w-28" />
+									<h1 className="font-display text-neon-lime neon-text-glow text-5xl tracking-wider uppercase">
+										{config.winnerTitle}
+									</h1>
+									<p className="font-display neon-text-glow-sm text-neon-lime text-4xl tracking-wide uppercase">
+										{winnerName}
+									</p>
+									{resultCopy && (
+										<p className="max-w-2xl font-mono text-lg text-slate-300">
+											{resultCopy}
+										</p>
+									)}
+								</>
+							) : (
+								<>
+									<h1 className="font-display text-5xl tracking-wider text-slate-200 uppercase">
+										{config.drawTitle}
+									</h1>
+									<p className="max-w-2xl font-mono text-xl text-slate-400">
+										{resultCopy ?? config.drawMessage}
+									</p>
+								</>
+							)}
+
+							{showTimeoutBreakdown && standings.length > 0 && (
+								<MatchResultBreakdown
+									standings={standings}
+									winnerId={winnerId}
+									className="w-full max-w-xl"
+								/>
+							)}
+						</div>
+					</div>
+				)}
+
+				{phase !== 'results' && (
+					<div className="absolute right-6 bottom-6">
+						<KmQrCode
+							data={playerLink}
+							size={140}
+							className={cn('transition-opacity', {
+								invisible: !showPresenterQr
+							})}
+						/>
+					</div>
+				)}
 			</HostPresenterLayout.Main>
 		</HostPresenterLayout.Root>
 	);

@@ -50,6 +50,14 @@ export interface PickupCell {
 /** Game phase state machine */
 export type GamePhase = 'lobby' | 'programming' | 'executing' | 'results';
 
+/** Reason the current match ended. */
+export type MatchResultReason =
+	| 'last-standing'
+	| 'simultaneous-draw'
+	| 'timeout-lives'
+	| 'timeout-damage'
+	| 'timeout-draw';
+
 /** Terrain cell types */
 export type TerrainType = 'wall' | 'pit' | 'conveyor';
 

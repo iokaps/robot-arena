@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import { MAX_ARENA_PLAYERS, MIN_ARENA_PLAYERS } from '@/config/arena-maps';
 import { kmClient } from '@/services/km-client';
 import type { MoveCommand } from '@/types/arena';
@@ -72,13 +73,16 @@ export const matchActions = {
 
 				matchState.phase = 'programming';
 				matchState.currentRound = 1;
+				matchState.maxRounds = config.maxRounds;
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
 				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
+				matchState.damageDealtByPlayer = {};
 				matchState.winnerId = '';
+				matchState.resultReason = null;
 				programsState.programs = {};
 			}
 		);
@@ -126,6 +130,7 @@ export const matchActions = {
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 				matchState.currentTick = 0;
 				matchState.executionEvents = {};
+				matchState.resultReason = null;
 			}
 		);
 	},
@@ -175,6 +180,9 @@ export const matchActions = {
 			matchState.phase = 'results';
 			matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 			matchState.winnerId = winnerId;
+			matchState.resultReason = winnerId
+				? 'last-standing'
+				: 'simultaneous-draw';
 		});
 	},
 
@@ -208,13 +216,16 @@ export const matchActions = {
 
 				matchState.phase = 'programming';
 				matchState.currentRound = 1;
+				matchState.maxRounds = config.maxRounds;
 				matchState.phaseStartTimestamp = kmClient.serverTimestamp();
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
 				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
+				matchState.damageDealtByPlayer = {};
 				matchState.winnerId = '';
+				matchState.resultReason = null;
 				programsState.programs = {};
 			}
 		);
@@ -228,13 +239,16 @@ export const matchActions = {
 				matchState.phase = 'lobby';
 				matchState.participantIds = {};
 				matchState.currentRound = 0;
+				matchState.maxRounds = config.maxRounds;
 				matchState.phaseStartTimestamp = 0;
 				matchState.submittedPlayers = {};
 				matchState.eliminatedPlayers = {};
 				matchState.eliminatedPlayerRounds = {};
 				matchState.currentTick = -1;
 				matchState.executionEvents = {};
+				matchState.damageDealtByPlayer = {};
 				matchState.winnerId = '';
+				matchState.resultReason = null;
 				programsState.programs = {};
 				arenaState.robots = {};
 			}

@@ -71,7 +71,7 @@ menuHelpMd: |
   # How to Play Code-A-Bot Arena
 
   ## Goal
-  Be the last robot standing. If the final bots destroy each other on the same tick, the round ends in a draw.
+  Be the last robot standing. If the final bots destroy each other on the same tick, the round ends in a draw. If the round limit is reached, the winner is decided by most lives, then total damage dealt.
 
   ## Round Flow
   1. **Programming Phase** (60 seconds)
@@ -83,6 +83,7 @@ menuHelpMd: |
     - Rotations, movement, pickups, lasers, hazards, and conveyors resolve in order
 
   3. **Repeat** until one robot remains
+      - If no robot wins before the round limit, the game uses a timeout tiebreak
 
   ## Commands
 
@@ -111,6 +112,7 @@ menuHelpMd: |
   - Lasers are blocked by obstacles and other robots
   - Map pits eliminate instantly, while shrink skull pits drain 1 life per tick
   - Conveyors push robots at the end of each tick
+  - Late in the match, the center collapses to one final safe tile
 
   ## Tips
   - Predict where opponents will move
@@ -190,8 +192,16 @@ winnerTitle: 'Victory!'
 drawTitle: 'Draw!'
 drawMessage: 'All robots were destroyed simultaneously.'
 matchCompleteMessage: 'The match has ended. Waiting for host to start a new match.'
+roundLimitReachedTitle: 'Round Limit Reached'
+finalStandingsTitle: 'Final Standings'
+damageLabel: 'Damage'
+maxRounds: 12
 hazardEscalationEveryNRounds: 2
 hazardShrinkDecayPerTick: 1
+timeoutRoundLimitMessage: 'Round limit reached before a last bot standing result.'
+timeoutLivesWinMessage: 'Winner decided by most lives remaining.'
+timeoutDamageWinMessage: 'Lives were tied, so total damage dealt decided the winner.'
+timeoutDrawMessage: 'Round limit reached with tied lives and tied damage dealt.'
 
 # Misc
 loading: 'Loading...'

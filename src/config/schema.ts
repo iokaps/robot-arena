@@ -57,7 +57,7 @@ export const schema = z.object({
 	menuHelpMd: z
 		.string()
 		.default(
-			'# How to Play\n\n## Goal\nBe the last robot standing. If everyone is destroyed on the same tick, the round ends in a draw.\n\n## Round Flow\n1. **Program** up to 5 commands in 60 seconds\n2. **Submit** to lock your sequence\n3. **Execute** while every robot acts at the same time\n4. **Repeat** until only one robot is left\n\n## Commands\n- **Move Forward**: Move one cell in the direction you are facing\n- **Rotate Left / Right**: Turn 90 degrees before movement resolves\n- **Shoot**: Fire a laser in the direction you are facing\n- **Wait**: Leave a slot empty to do nothing on that tick\n\n## Pickups\n- **Health Pack**: Restore 1 life, up to a maximum of 3\n- **Shield**: Block the next incoming hit\n- **Power Cell**: Make your next shot deal 2 damage\n\n## Hazards\n- **Walls** block movement and lasers\n- **Map pits** destroy robots instantly\n- **Shrink skull pits** drain 1 life per tick\n- **Conveyors** push robots one cell at the end of the tick\n\n## Tips\n- Use empty slots to avoid collisions or bait shots\n- Collect center pickups when the arena opens up\n- Watch the edge when the skull ring is about to shrink'
+			'# How to Play\n\n## Goal\nBe the last robot standing. If everyone is destroyed on the same tick, the round ends in a draw. If the round limit is reached, the winner is decided by most lives, then total damage dealt.\n\n## Round Flow\n1. **Program** up to 5 commands in 60 seconds\n2. **Submit** to lock your sequence\n3. **Execute** while every robot acts at the same time\n4. **Repeat** until only one robot is left or the round limit triggers a timeout tiebreak\n\n## Commands\n- **Move Forward**: Move one cell in the direction you are facing\n- **Rotate Left / Right**: Turn 90 degrees before movement resolves\n- **Shoot**: Fire a laser in the direction you are facing\n- **Wait**: Leave a slot empty to do nothing on that tick\n\n## Pickups\n- **Health Pack**: Restore 1 life, up to a maximum of 3\n- **Shield**: Block the next incoming hit\n- **Power Cell**: Make your next shot deal 2 damage\n\n## Hazards\n- **Walls** block movement and lasers\n- **Map pits** destroy robots instantly\n- **Shrink skull pits** drain 1 life per tick\n- **Conveyors** push robots one cell at the end of the tick\n- **Final Collapse**: Late in the match, the center collapses to one last safe tile\n\n## Tips\n- Use empty slots to avoid collisions or bait shots\n- Collect center pickups when the arena opens up\n- Watch the edge when the skull ring is about to shrink'
 		),
 
 	// Host controls
@@ -145,8 +145,24 @@ export const schema = z.object({
 	matchCompleteMessage: z
 		.string()
 		.default('The match has ended. Waiting for host to start a new match.'),
+	roundLimitReachedTitle: z.string().default('Round Limit Reached'),
+	finalStandingsTitle: z.string().default('Final Standings'),
+	damageLabel: z.string().default('Damage'),
+	maxRounds: z.number().int().min(1).default(12),
 	hazardEscalationEveryNRounds: z.number().int().min(1).default(2),
 	hazardShrinkDecayPerTick: z.number().int().min(1).default(1),
+	timeoutRoundLimitMessage: z
+		.string()
+		.default('Round limit reached before a last bot standing result.'),
+	timeoutLivesWinMessage: z
+		.string()
+		.default('Winner decided by most lives remaining.'),
+	timeoutDamageWinMessage: z
+		.string()
+		.default('Lives were tied, so total damage dealt decided the winner.'),
+	timeoutDrawMessage: z
+		.string()
+		.default('Round limit reached with tied lives and tied damage dealt.'),
 
 	// Misc
 	loading: z.string().default('Loading...'),

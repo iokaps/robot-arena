@@ -309,6 +309,7 @@ export function applyHazardEscalation(
 	const escalatedTerrain: Record<string, TerrainCell> = { ...baseTerrain };
 	const { width, height } = gridSize;
 	const shrinkLevel = getHazardShrinkLevelForRound(currentRound, gridSize);
+	const maxRingShrinkLevel = getMaxRingShrinkLevel(gridSize);
 
 	if (shrinkLevel <= 0) {
 		return escalatedTerrain;
@@ -334,7 +335,11 @@ export function applyHazardEscalation(
 		};
 	};
 
-	for (let level = 1; level <= shrinkLevel; level++) {
+	for (
+		let level = 1;
+		level <= Math.min(shrinkLevel, maxRingShrinkLevel);
+		level++
+	) {
 		const minX = level;
 		const maxX = width - 1 - level;
 		const minY = level;
@@ -363,10 +368,28 @@ export function applyHazardEscalation(
 		setConveyor(maxX, centerY, 270);
 	}
 
+	if (shrinkLevel > maxRingShrinkLevel) {
+		const terminalCoreBounds = getTerminalCoreBounds(
+			gridSize,
+			maxRingShrinkLevel
+		);
+		const finalSafeCell = getFinalSafeCell(terminalCoreBounds, obstacles);
+
+		for (let y = terminalCoreBounds.minY; y <= terminalCoreBounds.maxY; y++) {
+			for (let x = terminalCoreBounds.minX; x <= terminalCoreBounds.maxX; x++) {
+				if (x === finalSafeCell.x && y === finalSafeCell.y) {
+					continue;
+				}
+
+				setPit(x, y, 'hazard-shrink');
+			}
+		}
+	}
+
 	return escalatedTerrain;
 }
 
-function getMaxShrinkLevel(gridSize: {
+function getMaxRingShrinkLevel(gridSize: {
 	width: number;
 	height: number;
 }): number {
@@ -374,6 +397,65 @@ function getMaxShrinkLevel(gridSize: {
 		0,
 		Math.floor((Math.min(gridSize.width, gridSize.height) - 4) / 2)
 	);
+}
+
+function getMaxShrinkLevel(gridSize: {
+	width: number;
+	height: number;
+}): number {
+	return getMaxRingShrinkLevel(gridSize) + 1;
+}
+
+function getTerminalCoreBounds(
+	gridSize: { width: number; height: number },
+	maxRingShrinkLevel: number
+): { minX: number; maxX: number; minY: number; maxY: number } {
+	return {
+		minX: maxRingShrinkLevel + 1,
+		maxX: gridSize.width - 2 - maxRingShrinkLevel,
+		minY: maxRingShrinkLevel + 1,
+		maxY: gridSize.height - 2 - maxRingShrinkLevel
+	};
+}
+
+function getFinalSafeCell(
+	coreBounds: { minX: number; maxX: number; minY: number; maxY: number },
+	obstacles: Record<string, Position>
+): Position {
+	const preferredX = Math.floor((coreBounds.minX + coreBounds.maxX) / 2);
+	const preferredY = Math.floor((coreBounds.minY + coreBounds.maxY) / 2);
+	const preferredKey = `${preferredX},${preferredY}`;
+
+	if (!obstacles[preferredKey]) {
+		return { x: preferredX, y: preferredY };
+	}
+
+	const candidates: Position[] = [];
+	for (let y = coreBounds.minY; y <= coreBounds.maxY; y++) {
+		for (let x = coreBounds.minX; x <= coreBounds.maxX; x++) {
+			if (!obstacles[`${x},${y}`]) {
+				candidates.push({ x, y });
+			}
+		}
+	}
+
+	candidates.sort((left, right) => {
+		const leftDistance =
+			Math.abs(left.x - preferredX) + Math.abs(left.y - preferredY);
+		const rightDistance =
+			Math.abs(right.x - preferredX) + Math.abs(right.y - preferredY);
+		if (leftDistance !== rightDistance) {
+			return leftDistance - rightDistance;
+		}
+
+		if (left.y !== right.y) {
+			return left.y - right.y;
+		}
+
+		return left.x - right.x;
+	});
+
+	return candidates[0] ?? { x: preferredX, y: preferredY };
 }
 
 export function getHazardShrinkLevelForRound(
@@ -385,7 +467,7 @@ export function getHazardShrinkLevelForRound(
 	const normalizedRound = Math.max(1, currentRound);
 
 	return Math.min(
-		Math.max(0, Math.floor((normalizedRound - 1) / roundsPerRing)),
+		Math.max(0, Math.floor(normalizedRound / roundsPerRing)),
 		maxShrink
 	);
 }

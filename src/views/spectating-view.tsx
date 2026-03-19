@@ -40,11 +40,14 @@ export const SpectatingView: React.FC = () => {
 	const myRobot = robots[kmClient.id];
 	const myProgram = programs[kmClient.id] || [];
 	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
+	const arenaContainerRef = React.useRef<HTMLDivElement | null>(null);
+	const preferredArenaWidth = gridSize.width * 36;
 
 	// Calculate active shots for visualization
 	const [activeShots, setActiveShots] = React.useState<
 		Array<{ from: Position; direction: Rotation; shooterId: string }>
 	>([]);
+	const [arenaMaxWidth, setArenaMaxWidth] = React.useState(preferredArenaWidth);
 
 	React.useEffect(() => {
 		if (phase !== 'executing' || currentTick < 0) {
@@ -57,6 +60,30 @@ export const SpectatingView: React.FC = () => {
 		const timeout = setTimeout(() => setActiveShots([]), 500);
 		return () => clearTimeout(timeout);
 	}, [currentTick, executionEvents, phase]);
+
+	React.useLayoutEffect(() => {
+		const container = arenaContainerRef.current;
+		if (!container) {
+			return;
+		}
+
+		const updateArenaWidth = () => {
+			const availableWidth = Math.max(1, Math.floor(container.clientWidth));
+			setArenaMaxWidth(Math.min(preferredArenaWidth, availableWidth));
+		};
+
+		updateArenaWidth();
+
+		if (typeof ResizeObserver === 'undefined') {
+			window.addEventListener('resize', updateArenaWidth);
+			return () => window.removeEventListener('resize', updateArenaWidth);
+		}
+
+		const resizeObserver = new ResizeObserver(() => updateArenaWidth());
+		resizeObserver.observe(container);
+
+		return () => resizeObserver.disconnect();
+	}, [preferredArenaWidth]);
 
 	return (
 		<div className="animate-fade-in-up flex w-full flex-col items-center gap-6">
@@ -105,12 +132,15 @@ export const SpectatingView: React.FC = () => {
 			)}
 
 			{/* Arena */}
-			<ArenaGrid
-				highlightedRobotId={kmClient.id}
-				cellSize={36}
-				showNames={true}
-				activeShots={activeShots}
-			/>
+			<div ref={arenaContainerRef} className="flex w-full justify-center">
+				<ArenaGrid
+					highlightedRobotId={kmClient.id}
+					cellSize={36}
+					maxWidth={arenaMaxWidth}
+					showNames={true}
+					activeShots={activeShots}
+				/>
+			</div>
 
 			{/* My program display */}
 			{myProgram.length > 0 && (
