@@ -1,13 +1,11 @@
-import { ArenaGrid } from '@/components/arena-grid';
 import { config } from '@/config';
 import { kmClient } from '@/services/km-client';
 import { willArenaShrinkNextRound } from '@/state/actions/arena-actions';
 import { arenaStore } from '@/state/stores/arena-store';
 import { matchStore } from '@/state/stores/match-store';
 import { robotProgramsStore } from '@/state/stores/robot-programs-store';
-import type { MoveCommand, Position, Rotation } from '@/types/arena';
+import type { MoveCommand } from '@/types/arena';
 import { cn } from '@/utils/cn';
-import { getActiveShotsForTick } from '@/utils/getActiveShots';
 import { useSnapshot } from '@kokimoki/app';
 import {
 	ArrowUp,
@@ -33,57 +31,11 @@ const COMMAND_ICONS: Record<MoveCommand, React.ReactNode> = {
  */
 export const SpectatingView: React.FC = () => {
 	const { robots, gridSize } = useSnapshot(arenaStore.proxy);
-	const { currentTick, phase, currentRound, executionEvents } = useSnapshot(
-		matchStore.proxy
-	);
+	const { currentTick, currentRound } = useSnapshot(matchStore.proxy);
 	const { programs } = useSnapshot(robotProgramsStore.proxy);
 	const myRobot = robots[kmClient.id];
 	const myProgram = programs[kmClient.id] || [];
 	const showShrinkWarning = willArenaShrinkNextRound(currentRound, gridSize);
-	const arenaContainerRef = React.useRef<HTMLDivElement | null>(null);
-	const preferredArenaWidth = gridSize.width * 36;
-
-	// Calculate active shots for visualization
-	const [activeShots, setActiveShots] = React.useState<
-		Array<{ from: Position; direction: Rotation; shooterId: string }>
-	>([]);
-	const [arenaMaxWidth, setArenaMaxWidth] = React.useState(preferredArenaWidth);
-
-	React.useEffect(() => {
-		if (phase !== 'executing' || currentTick < 0) {
-			setActiveShots([]);
-			return;
-		}
-
-		const shots = getActiveShotsForTick(executionEvents, currentTick);
-		setActiveShots(shots);
-		const timeout = setTimeout(() => setActiveShots([]), 500);
-		return () => clearTimeout(timeout);
-	}, [currentTick, executionEvents, phase]);
-
-	React.useLayoutEffect(() => {
-		const container = arenaContainerRef.current;
-		if (!container) {
-			return;
-		}
-
-		const updateArenaWidth = () => {
-			const availableWidth = Math.max(1, Math.floor(container.clientWidth));
-			setArenaMaxWidth(Math.min(preferredArenaWidth, availableWidth));
-		};
-
-		updateArenaWidth();
-
-		if (typeof ResizeObserver === 'undefined') {
-			window.addEventListener('resize', updateArenaWidth);
-			return () => window.removeEventListener('resize', updateArenaWidth);
-		}
-
-		const resizeObserver = new ResizeObserver(() => updateArenaWidth());
-		resizeObserver.observe(container);
-
-		return () => resizeObserver.disconnect();
-	}, [preferredArenaWidth]);
 
 	return (
 		<div className="animate-fade-in-up flex w-full flex-col items-center gap-6">
@@ -132,15 +84,6 @@ export const SpectatingView: React.FC = () => {
 			)}
 
 			{/* Arena */}
-			<div ref={arenaContainerRef} className="flex w-full justify-center">
-				<ArenaGrid
-					highlightedRobotId={kmClient.id}
-					cellSize={36}
-					maxWidth={arenaMaxWidth}
-					showNames={true}
-					activeShots={activeShots}
-				/>
-			</div>
 
 			{/* My program display */}
 			{myProgram.length > 0 && (

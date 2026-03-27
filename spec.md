@@ -173,9 +173,11 @@ Displayed to players before the match starts:
 
 ### Spectating View (during execution)
 
-- Full arena view
-- Highlight own robot
-- Shot trails and hit effects
+- Lives display for own robot
+- Current tick progress indicator (tick 1–5)
+- Shrink hazard warning banner when the arena will collapse next round
+- Own program replay strip with current tick highlighted
+- Arena map is shown on the presenter screen only; the player view does not display it
 
 ### Eliminated View
 

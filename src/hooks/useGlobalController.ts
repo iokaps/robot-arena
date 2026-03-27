@@ -662,72 +662,106 @@ function resolveSimultaneousMoves(
 	robots: Record<string, { position: Position; lives: number }>,
 	intendedMoves: Record<string, Position>
 ): Record<string, Position> {
-	const finalPositions: Record<string, Position> = {};
-	const destinationCounts: Record<string, number> = {};
-	const occupiedByStationary = new Set<string>();
+	// Robots that are confirmed blocked and will not move this tick.
+	const blocked = new Set<string>();
 
-	for (const [clientId, destination] of Object.entries(intendedMoves)) {
-		if (!aliveRobotIds.includes(clientId)) {
-			continue;
-		}
-
-		const key = `${destination.x},${destination.y}`;
-		destinationCounts[key] = (destinationCounts[key] ?? 0) + 1;
-	}
-
+	// Robots that have no intended move are always treated as stationary.
 	for (const clientId of aliveRobotIds) {
-		if (intendedMoves[clientId]) {
-			continue;
+		if (!intendedMoves[clientId]) {
+			blocked.add(clientId);
 		}
-
-		const robot = robots[clientId];
-		if (!robot || robot.lives <= 0) {
-			continue;
-		}
-
-		occupiedByStationary.add(`${robot.position.x},${robot.position.y}`);
 	}
 
-	for (const [clientId, destination] of Object.entries(intendedMoves)) {
-		const robot = robots[clientId];
-		if (!robot || robot.lives <= 0) {
-			continue;
-		}
+	// Iterative fixed-point: keep resolving until no new robots become blocked.
+	// This handles chain-blocking scenarios where A→B→C(wall) must block both A and B.
+	let changed = true;
+	while (changed) {
+		changed = false;
 
-		const destinationKey = `${destination.x},${destination.y}`;
-		if ((destinationCounts[destinationKey] ?? 0) > 1) {
-			continue;
-		}
-
-		if (occupiedByStationary.has(destinationKey)) {
-			continue;
-		}
-
-		const hasHeadOnSwap = Object.entries(intendedMoves).some(
-			([otherClientId, otherDestination]) => {
-				if (otherClientId === clientId) {
-					return false;
-				}
-
-				const otherRobot = robots[otherClientId];
-				if (!otherRobot || otherRobot.lives <= 0) {
-					return false;
-				}
-
-				return (
-					otherDestination.x === robot.position.x &&
-					otherDestination.y === robot.position.y &&
-					destination.x === otherRobot.position.x &&
-					destination.y === otherRobot.position.y
-				);
+		// Build the set of cells occupied by blocked robots.
+		const occupiedByBlocked = new Set<string>();
+		for (const clientId of blocked) {
+			const robot = robots[clientId];
+			if (!robot || robot.lives <= 0) {
+				continue;
 			}
-		);
-
-		if (hasHeadOnSwap) {
-			continue;
+			occupiedByBlocked.add(`${robot.position.x},${robot.position.y}`);
 		}
 
-		finalPositions[clientId] = destination;
+		// Count how many non-blocked movers target each cell.
+		const destinationCounts: Record<string, number> = {};
+		for (const [clientId, destination] of Object.entries(intendedMoves)) {
+			if (blocked.has(clientId)) {
+				continue;
+			}
+			const key = `${destination.x},${destination.y}`;
+			destinationCounts[key] = (destinationCounts[key] ?? 0) + 1;
+		}
+
+		// Collect robots that must be blocked this iteration before mutating
+		// the blocked set, so contested pairs are all evaluated in the same pass.
+		const newlyBlocked: string[] = [];
+
+		for (const [clientId, destination] of Object.entries(intendedMoves)) {
+			if (blocked.has(clientId)) {
+				continue;
+			}
+
+			const robot = robots[clientId];
+			if (!robot || robot.lives <= 0) {
+				continue;
+			}
+
+			const destinationKey = `${destination.x},${destination.y}`;
+
+			// Contested: two or more non-blocked movers target the same cell.
+			if ((destinationCounts[destinationKey] ?? 0) > 1) {
+				newlyBlocked.push(clientId);
+				continue;
+			}
+
+			// Blocked cell: destination occupied by a blocked (stationary) robot.
+			if (occupiedByBlocked.has(destinationKey)) {
+				newlyBlocked.push(clientId);
+				continue;
+			}
+
+			// Head-on swap: two non-blocked robots exchanging positions.
+			const hasHeadOnSwap = Object.entries(intendedMoves).some(
+				([otherClientId, otherDestination]) => {
+					if (otherClientId === clientId || blocked.has(otherClientId)) {
+						return false;
+					}
+					const otherRobot = robots[otherClientId];
+					if (!otherRobot || otherRobot.lives <= 0) {
+						return false;
+					}
+					return (
+						otherDestination.x === robot.position.x &&
+						otherDestination.y === robot.position.y &&
+						destination.x === otherRobot.position.x &&
+						destination.y === otherRobot.position.y
+					);
+				}
+			);
+
+			if (hasHeadOnSwap) {
+				newlyBlocked.push(clientId);
+			}
+		}
+
+		for (const clientId of newlyBlocked) {
+			blocked.add(clientId);
+			changed = true;
+		}
+	}
+
+	// Build final positions: only robots with an intended move that are not blocked.
+	const finalPositions: Record<string, Position> = {};
+	for (const [clientId, destination] of Object.entries(intendedMoves)) {
+		if (!blocked.has(clientId)) {
+			finalPositions[clientId] = destination;
+		}
 	}
 
 	return finalPositions;

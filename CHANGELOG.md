@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.6 - 2026-03-27
+
+### Player-Facing Changes
+
+- The arena map is no longer shown on the player's mobile device during the execution phase. Players watch the match unfold on the presenter screen; their phone shows lives, tick progress, shrink warnings, and their own program replay.
+- Fixed a collision bug where a robot could move into a cell already occupied by a blocked robot. Chain-blocking scenarios (A→B→wall) now correctly prevent all trailing robots from moving.
+
+### Technical Changes
+
+- `SpectatingView` no longer renders `ArenaGrid` or its associated ResizeObserver and shot-tracking state.
+- `resolveSimultaneousMoves` replaced with an iterative fixed-point algorithm that correctly propagates blocking through arbitrarily long chains of robots before finalising positions.
+
 ## 0.3.5 - 2026-03-19
 
 ### Release Summary
