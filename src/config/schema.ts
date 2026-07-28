@@ -1,4 +1,4 @@
-import { z } from '@kokimoki/kit';
+import { z } from 'zod';
 
 export const schema = z.object({
 	// Game title
