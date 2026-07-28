@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 - Removed `eslint-plugin-react` from the active lint configuration because its latest release does not support ESLint 10.
 - Kept React Hooks linting enabled while disabling newly introduced `react-hooks/immutability` and `react-hooks/set-state-in-effect` rules that are out of scope for this remediation.
 - Added direct `@eslint/js@^10.0.1` and `globals@^17.8.0` dev dependencies for packages imported by `eslint.config.mjs`.
-- Added `zod@^4.4.3` as an explicit dependency and updated the config schema to import `z` directly from `zod`, matching the newer `@kokimoki/kit@^1.6.7` package shape.
+- Added `zod@^4.4.3` as an explicit dependency, updated the config schema to import `z` directly from `zod`, and set `@kokimoki/kit@1.8.3` for the Kokimoki Vite tooling.
 
 ## 0.3.6 - 2026-03-27
 
