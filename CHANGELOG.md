@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.8 - 2026-07-28
+
+### Security
+
+- Cleared the npm audit report by updating the lint/tooling dependency graph and regenerating the lockfile.
+- Added a targeted npm override for `uuid@11.1.1` to keep `vite-plugin-top-level-await@^1.6.0` on the current plugin line while using the patched transitive dependency.
+
+### Technical Changes
+
+- Upgraded the ESLint stack to `eslint@^10.8.0`, `typescript-eslint@^8.65.0`, `eslint-plugin-react-hooks@^7.1.1`, and `eslint-plugin-react-refresh@^0.5.3`.
+- Removed `eslint-plugin-react` from the active lint configuration because its latest release does not support ESLint 10.
+- Kept React Hooks linting enabled while disabling newly introduced `react-hooks/immutability` and `react-hooks/set-state-in-effect` rules that are out of scope for this remediation.
+- Added direct `@eslint/js@^10.0.1` and `globals@^17.8.0` dev dependencies for packages imported by `eslint.config.mjs`.
+- Added `zod@^4.4.3` as an explicit dependency and updated the config schema to import `z` directly from `zod`, matching the newer `@kokimoki/kit@^1.6.7` package shape.
+
 ## 0.3.6 - 2026-03-27
 
 ### Player-Facing Changes
