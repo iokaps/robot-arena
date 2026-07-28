@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.3 - 2026-07-28
+
+### Fixed
+
+- Removed Kokimoki's production `km-loading` overlay after the React app mounts so host, presenter, and player views are no longer hidden behind the loading screen.
+
+## 0.4.2 - 2026-07-28
+
+### Fixed
+
+- Expanded the Kokimoki `clientContext` fallback so deployed host, presenter, and player links can launch even when the SDK returns a `null` context and the environment placeholder is unresolved.
+
+## 0.4.0 - 2026-07-28
+
+### Fixed
+
+- Added a guarded Kokimoki `clientContext` fallback so deployed games can recover from a `null` SDK context using the environment-provided host/player/presenter context instead of staying on the loading screen.
+
 ## 0.3.8 - 2026-07-28
 
 ### Security
